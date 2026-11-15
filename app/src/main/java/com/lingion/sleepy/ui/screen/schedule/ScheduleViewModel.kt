@@ -81,6 +81,10 @@ data class ScheduleState(
         currentTable?.hydratedWith(effectivePeriodTable)
     }
 
+    /** Resolve the schedule that is effective on a specific calendar date. */
+    fun effectiveTableFor(date: LocalDate): TimeTableEntity? =
+        currentTable?.hydratedWith(effectivePeriodTable, date)
+
     /** Format-only display input; real clocks and persisted data remain unchanged. */
     val effectiveRenderTimeJson: String?
         get() = effectiveCurrentTable?.timeJson?.let { TimeTableUtils.sanitizeTimeJsonForDisplay(it) }
@@ -471,7 +475,10 @@ class ScheduleViewModel : ViewModel() {
         com.lingion.sleepy.data.undo.UndoManager.beginBatch()
         val newId = try {
             val newId = repo.insertTable(
-                source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis(), reminderOverride = null)
+                source.copy(
+                    id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis(),
+                    reminderOverride = null, jwSchoolSourceJson = "", jwSchoolSourceVerified = false,
+                )
             )
             if (courses.isNotEmpty()) {
                 // groupId 整组映射到新 UUID — 同一门课的节次共享新组 ID, 副本内仍可整组编辑

@@ -74,7 +74,10 @@ fun TodayScreen(
         DateUtils.semesterStatus(it.startDate, it.maxWeek, courseDate ?: today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
-    val renderTj = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
+    // 今日页可能被测试/预览钉死到非系统日期；作息必须按正在展示的日期解析。
+    val renderTj = state.effectiveTableFor(today)?.timeJson
+        ?.let(TimeTableUtils::sanitizeTimeJsonForDisplay)
+        ?: state.effectiveCurrentTable?.timeJson
     val presentation = viewModel.presentationCache.today(state, today)
     val todayCourses = presentation.courses
 
@@ -201,7 +204,9 @@ fun CompactTodayPane(
         DateUtils.semesterStatus(it.startDate, it.maxWeek, courseDate ?: today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
-    val renderTj = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
+    val renderTj = state.effectiveTableFor(today)?.timeJson
+        ?.let(TimeTableUtils::sanitizeTimeJsonForDisplay)
+        ?: state.effectiveCurrentTable?.timeJson
     val presentation = viewModel.presentationCache.today(state, today)
     val todayCourses = presentation.courses
     val laneRows = presentation.rows

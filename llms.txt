@@ -28,6 +28,8 @@ Timetables and preferences are stored locally. The source does not integrate Fir
 
 Network operations include school academic import, WakeUP online share-token resolution through the third-party api.wakeup.fun service, public holiday-data refresh, GitHub/mirror update checks and downloads. System calendar export, file sharing and backups intentionally transfer data to the chosen destination. Never publish credentials, cookies, tokens, captchas or identifiable schedules in issues or test fixtures.
 
+Current-main WebDAV capability (not included in the v1.0.64 release): Android users can configure their own HTTPS WebDAV server, manually upload timestamped full `.sleepybackup` files, list and restore remote backups, and test the connection. Requests go directly to the configured server; there is no Sleepy relay, background sync or in-app remote-delete action. The archive is not encrypted, and WebDAV credentials are kept in app-private settings with the password encrypted by Android Keystore. Removing local settings does not delete server copies.
+
 ## Timetables and editing
 
 - Multiple local course tables with independent start dates, maximum weeks and period schedules.

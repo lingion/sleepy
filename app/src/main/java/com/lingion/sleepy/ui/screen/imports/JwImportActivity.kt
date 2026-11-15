@@ -46,6 +46,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CancellationException
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.console.ui.dbgTag
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -78,8 +79,10 @@ import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import android.webkit.WebView
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.EffectivePeriodResolver
 import com.lingion.sleepy.util.QqJoin
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.usableComboScheduleJson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -132,6 +135,8 @@ class JwImportActivity : ComponentActivity() {
             SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
                 val nativeActions = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
                 val jwViewModel: JwImportViewModel = viewModel()
+                val jwSchools by jwViewModel.schools.collectAsState()
+                val jwImportState by jwViewModel.importState.collectAsState()
                 val scheduleViewModel: ScheduleViewModel = viewModel()
                 // v1.0.56 T6: 第三 Tab「作息表」数据源 — 绑定现有作息表直接用
                 val allPeriodTables by scheduleViewModel.allPeriodTables.collectAsState(initial = emptyList())
@@ -140,16 +145,60 @@ class JwImportActivity : ComponentActivity() {
                 val incomingDraftId = intent.getStringExtra(EXTRA_DRAFT_ID)
                 val targetTableId = intent.getLongExtra(EXTRA_TARGET_TABLE_ID, 0L)
                 val updateMode = intent.getBooleanExtra(EXTRA_UPDATE_TABLE, false)
+                var authorizedUpdateSourceJson by remember { mutableStateOf<String?>(null) }
+                var updateSourceChecked by remember(updateMode) { mutableStateOf(!updateMode) }
+                LaunchedEffect(updateMode, targetTableId, jwSchools, jwImportState) {
+                    if (!updateMode) return@LaunchedEffect
+                    if (jwSchools.isEmpty()) {
+                        if (jwImportState is JwImportViewModel.ImportState.Error) {
+                            updateSourceChecked = true
+                            finish()
+                        }
+                        return@LaunchedEffect
+                    }
+                    val source = try {
+                        val target = SleepyApp.get().repository.getTable(targetTableId)
+                        target?.takeIf { it.jwSchoolSourceVerified }?.let {
+                            com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
+                                it.jwSchoolSourceJson, jwSchools, sourceVerified = true,
+                            )
+                        }
+                    } catch (e: CancellationException) {
+                        throw e
+                    } catch (_: Exception) {
+                        null
+                    }
+                    authorizedUpdateSourceJson = source?.let {
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.toSchoolSourceJson(it)
+                    }
+                    updateSourceChecked = true
+                    if (source == null) finish()
+                }
+                val initialSourceJson = authorizedUpdateSourceJson
+                val initialSourceSchool = remember(initialSourceJson, jwSchools) {
+                    initialSourceJson?.let {
+                        com.lingion.sleepy.data.jw.JwImportDraftCodec.schoolFromSourceJson(
+                            it, jwSchools, sourceVerified = true,
+                        )
+                    }
+                }
                 // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
                 // SaveableStateProvider(key = stage 类名), WebView 登录返回学校列表时
                 // 列表滚动位置与 rememberSaveable 态原样恢复。
                 val saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
 
-                var selectedSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
-                var catalogNotice by remember { mutableStateOf<JwSchoolInfo?>(null) }
+                var selectedSchool by remember(initialSourceSchool) { mutableStateOf(initialSourceSchool) }
+                var catalogNotice by remember(updateMode) {
+                    mutableStateOf(initialSourceSchool?.takeIf { !updateMode && it.isUnverified })
+                }
                 // 2026-10-18 离线回路: 未验证学校导入成功后弹报告弹窗(复制+加QQ群), 已验证学校维持静默 finish
                 var reportDialogSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
-                var stage by remember { mutableStateOf<Stage>(Stage.SelectSchool) }
+                var stage by remember(updateMode, initialSourceSchool) {
+                    mutableStateOf<Stage>(
+                        if (updateMode && initialSourceSchool != null) Stage.WebViewLogin
+                        else Stage.SelectSchool
+                    )
+                }
                 var errorMsg by remember { mutableStateOf<String?>(null) }
                 var statusMsg by remember { mutableStateOf<String?>(null) }
                 val statusSnackbarHostState = remember { SnackbarHostState() }
@@ -181,6 +230,7 @@ class JwImportActivity : ComponentActivity() {
                 var configTermWeekCount by remember { mutableIntStateOf(0) }
                 var configTermWeekText by remember { mutableStateOf("") }
                 var importSourceJson by remember { mutableStateOf("") }
+                var configComboScheduleJson by remember { mutableStateOf("") }
                 var selectedSgAdapterId by remember { mutableStateOf("") }
                 var configTimeJson by remember { mutableStateOf("") }
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
@@ -210,6 +260,7 @@ class JwImportActivity : ComponentActivity() {
                         termWeekCount = configTermWeekCount.takeIf { it in 0..366 } ?: 0,
                         termWeekText = configTermWeekText,
                         importSourceJson = importSourceJson,
+                        comboScheduleJson = configComboScheduleJson,
                         selectedSgAdapterId = selectedSgAdapterId,
                         tableName = configTableName,
                         smartConfigJson = Json.encodeToString(configSmartConfig),
@@ -518,6 +569,7 @@ class JwImportActivity : ComponentActivity() {
                         ?: snapshot.courses.maxOfOrNull { it.endWeek }?.toString().orEmpty()
                     configTermWeekCount = configTermWeekText.toIntOrNull() ?: 0
                     importSourceJson = snapshot.importSourceJson
+                    configComboScheduleJson = snapshot.comboScheduleJson
                     selectedSgAdapterId = snapshot.selectedSgAdapterId
                     configTableName = snapshot.tableName.ifBlank {
                         getString(R.string.jw_import_title, snapshot.school.name)
@@ -550,6 +602,12 @@ class JwImportActivity : ComponentActivity() {
                 }
 
                 when {
+                    updateMode && !updateSourceChecked -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            LinearProgressIndicator()
+                        }
+                    }
+
                     importFinished -> {
                         LaunchedEffect(Unit) { finish() }
                     }
@@ -576,6 +634,7 @@ class JwImportActivity : ComponentActivity() {
                                         startDate = configStartDate,
                                         courses = jwViewModel.toCourseEntities(parsedCourses, targetId, "#FF6750A4"),
                                         timeJson = configTimeJson,
+                                        comboScheduleJson = configComboScheduleJson,
                                         nodesPerDay = parsedCourses.maxOf { maxOf(it.startNode, it.endNode) },
                                         maxWeek = maxOf(configTermWeekCount, parsedCourses.maxOf { it.endWeek })
                                     ),
@@ -835,8 +894,21 @@ class JwImportActivity : ComponentActivity() {
                                         confirmError = getString(R.string.slot_time_invalid, invalidRows.first().node)
                                         return@TextButton
                                     }
+                                    if (configBindPeriodTableId != null && configBindPeriodTableId!! > 0L && configComboScheduleJson.isNotBlank()) {
+                                        confirmError = getString(R.string.jw_combo_schedule_bind_conflict)
+                                        return@TextButton
+                                    }
+                                    val confirmedBaseJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
+                                    if (configComboScheduleJson.isNotBlank()) {
+                                        try {
+                                            EffectivePeriodResolver.validate(confirmedBaseJson, configComboScheduleJson)
+                                        } catch (e: IllegalArgumentException) {
+                                            confirmError = "组合作息无效：${e.message ?: "请重新导入"}"
+                                            return@TextButton
+                                        }
+                                    }
                                     confirmError = null
-                                    configTimeJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
+                                    configTimeJson = confirmedBaseJson
                                     // 落库
                                     statusMsg = getString(R.string.import_parsing)
                                     isApplying = true
@@ -850,6 +922,8 @@ class JwImportActivity : ComponentActivity() {
                                                 nodesPerDay = effectiveRows.maxOfOrNull { it.node } ?: 1,
                                                 maxWeek = maxOf(configTermWeekCount, confirmedCourses.maxOf { it.endWeek }),
                                                 importSourceJson = importSourceJson,
+                                                comboScheduleJson = configComboScheduleJson,
+                                                jwSchoolSourceJson = com.lingion.sleepy.data.jw.JwImportDraftCodec.toSchoolSourceJson(school),
                                                 periodTable = if (configBindPeriodTableId == -1L) {
                                                     ScheduleParser.ParsedPeriodTable(
                                                         sourceId = 0L,
@@ -869,7 +943,18 @@ class JwImportActivity : ComponentActivity() {
                                                 context = this@JwImportActivity,
                                                 onImported = { imported = true },
                                                 bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 },
+                                                fromConfirmedJwImport = true,
+                                                confirmedComboScheduleJson = configComboScheduleJson,
                                             )
+                                            if (imported && configComboScheduleJson.isNotBlank() &&
+                                                usableComboScheduleJson(configTimeJson, configComboScheduleJson).isBlank()
+                                            ) {
+                                                android.widget.Toast.makeText(
+                                                    this@JwImportActivity,
+                                                    getString(R.string.jw_combo_schedule_skipped),
+                                                    android.widget.Toast.LENGTH_LONG,
+                                                ).show()
+                                            }
                                             if (imported) finishOrReport(school)
                                         } catch (e: Exception) {
                                             Log.e("JwImport", "import failed", e)
@@ -1013,6 +1098,10 @@ class JwImportActivity : ComponentActivity() {
                                             configTermWeekCount = maxOf(configTermWeekCount, courses.maxOf { it.endWeek })
                                             configTermWeekText = configTermWeekCount.toString()
                                             importSourceJson = capturedImportSourceJson
+                                            configComboScheduleJson = if (effectiveType == JwProtocol.TYPE_SG_ASSET) {
+                                                runCatching { org.json.JSONObject(htmlForParse).optJSONObject("comboSchedule")?.toString().orEmpty() }
+                                                    .getOrDefault("")
+                                            } else ""
                                             if (effectiveType == JwProtocol.TYPE_SG_ASSET) {
                                                 selectedSgAdapterId = com.lingion.sleepy.data.jw.JwSgSourceMetadata.read(importSourceJson)
                                                     ?.optJSONObject("adapter")?.optString("adapterId").orEmpty()

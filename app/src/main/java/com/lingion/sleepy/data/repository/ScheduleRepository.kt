@@ -159,7 +159,8 @@ class ScheduleRepository(private val db: AppDatabase) {
                 // Freeze the effective bell schedule so a later shared-schedule update cannot change the backup.
                 val backupId = tableDao.insert(effective.copy(
                     id = 0, name = name, isDefault = false, periodTableId = null,
-                    preBindSnapshotJson = "", createdAt = AppClock.millis(), reminderEnabled = false, reminderOverride = null
+                    preBindSnapshotJson = "", createdAt = AppClock.millis(), reminderEnabled = false, reminderOverride = null,
+                    jwSchoolSourceJson = "", jwSchoolSourceVerified = false,
                 ))
                 courseDao.insertAll(existing.map { it.copy(id = 0, tableId = backupId) })
             }

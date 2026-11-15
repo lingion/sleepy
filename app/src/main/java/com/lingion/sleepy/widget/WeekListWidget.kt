@@ -191,7 +191,7 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
                                 date = date,
                                 dayOfWeek = dayOfWeek,
                                 courses = visible,
-                                timeJson = table.timeJson,
+                                timeJson = source.tableFor(date).timeJson,
                                 isGrey = HolidayManager.shouldGrey(context, date, table.id)
                             )
                         }

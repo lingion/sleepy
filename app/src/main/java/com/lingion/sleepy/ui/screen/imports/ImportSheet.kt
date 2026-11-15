@@ -1835,6 +1835,8 @@ internal suspend fun applyNewTableImport(
     onImported: () -> Unit,
     bindPeriodTableId: Long? = null,
     confirmedSmartConfigJson: String = "",
+    confirmedComboScheduleJson: String = "",
+    fromConfirmedJwImport: Boolean = false,
 ) {
     val repo = SleepyApp.get().repository
     val confirmedStartDate = DateUtils.normalizeStartDate(confirmedStartDateRaw)
@@ -1845,6 +1847,7 @@ internal suspend fun applyNewTableImport(
         bindingId = bindPeriodTableId,
         name = preview.parseResult.periodTable?.name?.takeIf { it.isNotBlank() } ?: tableName,
         confirmedTimeJson = confirmedTimeJson,
+        comboScheduleJson = confirmedComboScheduleJson,
     )?.copy(nodesPerDay = nodes, smartConfigJson = confirmedSmartConfigJson)
     repo.importNewTable(
         table = TimeTableEntity(
@@ -1856,6 +1859,7 @@ internal suspend fun applyNewTableImport(
             smartConfigJson = confirmedSmartConfigJson,
             importSourceJson = preview.parseResult.importSourceJson,
             jwSchoolSourceJson = preview.parseResult.jwSchoolSourceJson,
+            jwSchoolSourceVerified = fromConfirmedJwImport && preview.parseResult.jwSchoolSourceJson.isNotBlank(),
             periodTableId = bindPeriodTableId,
         ),
         courses = preview.parseResult.courses,

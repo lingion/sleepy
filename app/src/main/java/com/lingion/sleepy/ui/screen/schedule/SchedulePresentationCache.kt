@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.screen.schedule
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
@@ -21,6 +22,7 @@ internal class SchedulePresentationCache {
     private data class Inputs(
         val table: TimeTableEntity?,
         val timeJson: String?,
+        val periodTable: PeriodTableEntity?,
         val courses: List<CourseEntity>,
         val transfers: List<HolidayTransferEntry>,
     )
@@ -33,7 +35,7 @@ internal class SchedulePresentationCache {
     private var todayPresentation: TodayPresentation? = null
 
     private fun prepare(state: ScheduleState) {
-        val next = Inputs(state.currentTable, state.effectiveCurrentTable?.timeJson, state.courses, state.transfers)
+        val next = Inputs(state.currentTable, state.effectiveCurrentTable?.timeJson, state.effectivePeriodTable, state.courses, state.transfers)
         if (next == inputs) return
         inputs = next
         weeks.clear()
@@ -48,13 +50,15 @@ internal class SchedulePresentationCache {
 
     private fun buildWeekCourses(state: ScheduleState, week: Int): List<CourseEntity> {
         val table = state.currentTable
-        val timeJson = state.effectiveCurrentTable?.timeJson
         return if (table == null) {
+            val timeJson = state.effectiveCurrentTable?.timeJson
             state.courses.filter { it.inWeek(week) }
                 .map { course -> timeJson?.let { course.normalizeNode(it) } ?: course }
         } else {
             (1..7).flatMap { day ->
                 val date = DateUtils.dateOfWeek(table.startDate, week, day)
+                // 作息按日期解析, 同一天的课程共享结果 (不在逐课程循环里重复解析组合 JSON)。
+                val timeJson = state.effectiveTableFor(date)?.timeJson
                 HolidayTransferOps.coursesForDate(
                     date, table.startDate, table.maxWeek, state.courses, state.transfers,
                 ).map { course ->
@@ -75,7 +79,7 @@ internal class SchedulePresentationCache {
     }
 
     private fun buildToday(state: ScheduleState, date: LocalDate): TodayPresentation {
-        val timeJson = state.effectiveRenderTimeJson ?: state.effectiveCurrentTable?.timeJson
+        val timeJson = state.effectiveTableFor(date)?.timeJson
         val courses = (state.currentTable?.let { table ->
             HolidayTransferOps.coursesForDate(
                 date, table.startDate, table.maxWeek, state.courses, state.transfers,

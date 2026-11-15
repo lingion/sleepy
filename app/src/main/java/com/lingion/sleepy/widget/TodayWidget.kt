@@ -475,10 +475,10 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     if (source == null) {
                         WidgetData(date = target, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey, isToday = target == today)
                     } else {
-                        val table = source.table
                         val effectiveTarget = if (autoNearestBusyDay &&
                             source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
                         ) source.display.targetDate else target
+                        val table = source.tableFor(effectiveTarget)
                         val isGrey = HolidayManager.shouldGrey(context, effectiveTarget, table.id)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, HolidayTransferHelper.courseDateForDate(context, table.id, effectiveTarget) ?: effectiveTarget)
                         val visible = source.coursesOn(effectiveTarget)

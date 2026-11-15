@@ -2,6 +2,8 @@ package com.lingion.sleepy.widget
 
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.AppClock
+import java.time.LocalDate
 
 /**
  * Widget 共用：找当前要展示的课表。
@@ -15,7 +17,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
  *   （如测试/导入副表），widget 就脱离用户在 App 里设的默认表，App 与 widget 不同步。
  */
 object WidgetTableResolver {
-    suspend fun resolveCurrentTable(): TimeTableEntity? {
+    suspend fun resolveCurrentTable(date: LocalDate = LocalDate.now(AppClock)): TimeTableEntity? {
         val app = SleepyApp.get()
         val repo = app.repository
         val all = repo.getAllTables()
@@ -42,7 +44,7 @@ object WidgetTableResolver {
         // issue#40: 选出的表若绑定了独立时间节次表, 出口水合 —
         // 节次时间/智慧节次/节次数按绑定表解释, 兼容列兜底。悬空引用静默回退旧列。
         val chosen = selectedHit ?: defaultHit ?: best.takeIf { bestCount > 0 } ?: return null
-        return chosen.hydratedWith(repo.getPeriodTableOrNull(chosen.periodTableId))
+        return chosen.hydratedWith(repo.getPeriodTableOrNull(chosen.periodTableId), date)
     }
 
     /** issue#40: null 安全取时间节次表 — id 为 null 或查无此行都返回 null */
@@ -62,7 +64,7 @@ object WidgetTableResolver {
      * [WidgetBindingStore.remove] is invoked only from the receiver's
      * `onDeleted` callback when the widget instance itself is removed.
      */
-    suspend fun resolveBoundTable(widgetId: Int): TimeTableEntity? {
+    suspend fun resolveBoundTable(widgetId: Int, date: LocalDate = LocalDate.now(AppClock)): TimeTableEntity? {
         val app = SleepyApp.get()
         val boundId = WidgetBindingStore.get(app, widgetId) ?: return null
         val table = runCatching { app.repository.getTable(boundId) }.getOrNull() ?: return null
@@ -70,6 +72,6 @@ object WidgetTableResolver {
         val periodTable = table.periodTableId?.let {
             runCatching { app.repository.getPeriodTable(it) }.getOrNull()
         }
-        return table.hydratedWith(periodTable)
+        return table.hydratedWith(periodTable, date)
     }
 }

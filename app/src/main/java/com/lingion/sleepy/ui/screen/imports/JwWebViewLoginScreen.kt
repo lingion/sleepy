@@ -288,7 +288,9 @@ fun JwWebViewLoginScreen(
                 val sgConfig = obj.optJSONObject("sgConfig")
                 val data = if (rawData.isNotBlank() && school.type == JwProtocol.TYPE_SG_ASSET && sgConfig != null) {
                     org.json.JSONObject().put("sleepySgAsset", true)
-                        .put("coursesJson", rawData).put("config", sgConfig).apply {
+                        .put("coursesJson", rawData).put("config", sgConfig)
+                        .apply {
+                            obj.optJSONObject("comboSchedule")?.let { put("comboSchedule", it) }
                             sgAdapterChoice?.let { adapter ->
                                 put("adapter", org.json.JSONObject().put("adapterId", adapter.adapterId)
                                     .put("schoolId", adapter.schoolId).put("category", adapter.category)

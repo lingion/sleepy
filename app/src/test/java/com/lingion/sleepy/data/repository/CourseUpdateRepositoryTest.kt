@@ -8,6 +8,7 @@ import com.lingion.sleepy.data.diff.diffImportedCourses
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.undo.UndoManager
+import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import kotlinx.coroutines.runBlocking
 import org.junit.*
@@ -69,5 +70,36 @@ class CourseUpdateRepositoryTest {
         assertEquals(listOf(old), repo.getCourses(1))
         assertEquals(listOf(foreign), repo.getCourses(2))
         assertFalse(repo.canUndo)
+    }
+
+    @Test fun automaticPreImportBackupDoesNotInheritJwUpdateQualification() = runBlocking {
+        val timeJson = TimeTableUtils.buildTimeJsonFromRows(listOf(
+            TimeTableUtils.TimeSlotRow(1, "08:00", "08:45"),
+        ))
+        val jwTable = table.copy(
+            id = 3,
+            timeJson = timeJson,
+            jwSchoolSourceJson = "verified school source",
+            jwSchoolSourceVerified = true,
+        )
+        db.timeTableDao().insert(jwTable)
+        db.courseDao().insert(old.copy(id = 0, tableId = jwTable.id))
+
+        repo.appendImportedCourses(
+            tableId = jwTable.id,
+            incoming = listOf(old.copy(id = 0, tableId = jwTable.id, day = 2, courseName = "Imported")),
+            incomingTimeJson = timeJson,
+            incomingNodes = 1,
+            backupOriginal = true,
+            appendConflicts = false,
+            authoritativeGroups = true,
+            backupName = "Before import",
+        )
+
+        val backup = repo.getAllTables().single { it.name.startsWith("Before import") }
+        assertEquals("", backup.jwSchoolSourceJson)
+        assertFalse(backup.jwSchoolSourceVerified)
+        assertTrue(repo.getTable(jwTable.id)!!.jwSchoolSourceVerified)
+        assertEquals("verified school source", repo.getTable(jwTable.id)!!.jwSchoolSourceJson)
     }
 }

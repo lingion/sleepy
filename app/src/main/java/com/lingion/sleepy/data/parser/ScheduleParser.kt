@@ -1465,6 +1465,8 @@ object ScheduleParser {
          */
         val periodTable: ParsedPeriodTable? = null,
         val importSourceJson: String = "",
+        /** Optional source-provided date-aware timetable combination. */
+        val comboScheduleJson: String = "",
         val jwSchoolSourceJson: String = "",
     )
 
