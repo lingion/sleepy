@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.nav
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -881,12 +882,13 @@ private fun MainRoute(
                 fallbackBarHeight
             }
 
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(colors.background)
                     .windowInsetsPadding(WindowInsets.statusBars)
             ) {
+                val sheetBackingHeight = maxHeight
                 CompositionLocalProvider(LocalNavExtraBottomPadding provides barHeight) {
                     Box(Modifier.fillMaxSize().layerBackdrop(backdrop)) {
                         MainTabs(
@@ -906,16 +908,19 @@ private fun MainRoute(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .fillMaxWidth()
+                            .height(barHeight)
                             .onSizeChanged { barHeightPx = it.height }
                     ) {
-                        // Paint a full Sheet contour, then expose exactly the measured Material bar height.
-                        // The 40dp overflow keeps its 20dp lower corners below the crop edge.
+                        // Keep the original Sheet's full optical geometry. The viewport begins at
+                        // the Sheet's top edge, preserving its top rim and corners; only the lower
+                        // part extends beyond the measured Material bar and is clipped away.
                         Box(Modifier.matchParentSize().clipToBounds()) {
                             Box(
                                 Modifier
+                                    .align(Alignment.TopCenter)
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp)
-                                    .requiredHeight(barHeight + 40.dp)
+                                    .requiredHeight(sheetBackingHeight)
                                     .glassControl(
                                         shape = NativeGlassSheetShape,
                                         enabled = false,
