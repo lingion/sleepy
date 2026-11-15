@@ -21,9 +21,10 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
@@ -54,9 +55,21 @@ internal fun sliderVisualX(width: Float, fraction: Float, inset: Float, rtl: Boo
         if (rtl) 1f - fraction.coerceIn(0f, 1f) else fraction.coerceIn(0f, 1f)
 
 /**
+ * Native26.5's rail reaches beyond the lens center near the domain boundary.
+ * A bounded spatial approximation keeps the interior center mapping and avoids
+ * an endpoint-only jump. The 8dp approach band uses the existing track height;
+ * it is not a recovered UIKit timing law or an overdrive model.
+ */
+internal fun sliderRailEndExtension(distanceToEnd: Float, halfThumb: Float, approach: Float): Float {
+    val t = (1f - distanceToEnd.coerceAtLeast(0f) / approach.coerceAtLeast(1f)).coerceIn(0f, 1f)
+    return halfThumb * t * t * (3f - 2f * t)
+}
+
+/**
  * A continuous rounded rail, white original-value ghosts with the same thumb silhouette and dots below the rail.
- * Material passes its already-inset track width; glass passes the full control plus inset.
- * Neither path adds a Material thumb gap, stop marker or in-rail tick.
+ * The rail covers the whole glass control. Its value anchors, ticks and ghosts
+ * keep the shorter thumb-center travel; an endpoint lens must not sample a rail
+ * that stops halfway underneath it. Material uses its own official track.
  */
 @Composable
 internal fun AppSliderTrack(
@@ -78,25 +91,40 @@ internal fun AppSliderTrack(
     var lastGhost by remember { mutableStateOf<ClosedFloatingPointRange<Float>?>(null) }
     ghost?.let { lastGhost = it }
     Box(modifier.fillMaxWidth().height(GlassSliderThumbMetrics.TOUCH_HEIGHT.dp)) {
-        Canvas(Modifier.fillMaxWidth().padding(horizontal = inset)
+        Canvas(Modifier.fillMaxWidth()
             .height(GlassSliderThumbMetrics.TRACK_HEIGHT.dp).align(Alignment.Center).testTag("slider-track")) {
             val rtl = layoutDirection == LayoutDirection.Rtl
-            fun x(fraction: Float) = sliderVisualX(size.width, fraction, 0f, rtl)
+            val padding = inset.toPx().coerceIn(0f, size.width / 2f)
+            fun x(fraction: Float) = sliderVisualX(size.width, fraction, padding, rtl)
             val corner = CornerRadius(size.height / 2f)
             val alpha = if (enabled) 1f else .38f
             if (trackBrush != null) {
-                // Logical hue direction follows the same RTL transform as the thumb.
-                if (rtl) {
-                    withTransform({ scale(-1f, 1f, center) }) {
-                        drawRoundRect(trackBrush, cornerRadius = corner, alpha = alpha)
-                    }
-                } else drawRoundRect(trackBrush, cornerRadius = corner, alpha = alpha)
+                // Retain the gradient's value anchors at the thumb centers.
+                // Its clamped endpoint colors extend under the outer halves.
+                val travel = (size.width - 2f * padding).coerceAtLeast(1f)
+                val paint = Paint()
+                trackBrush.applyTo(Size(travel, size.height), paint, alpha)
+                drawIntoCanvas { canvas ->
+                    canvas.save()
+                    canvas.translate(if (rtl) size.width - padding else padding, 0f)
+                    if (rtl) canvas.scale(-1f, 1f)
+                    canvas.drawRoundRect(-padding, 0f, travel + padding, size.height,
+                        corner.x, corner.y, paint)
+                    canvas.restore()
+                }
             } else {
                 drawRoundRect(inactive.copy(alpha = inactive.alpha * alpha), cornerRadius = corner)
-                val first = x(startFraction())
-                val last = x(endFraction())
-                drawRoundRect(primary.copy(alpha = primary.alpha * alpha), Offset(minOf(first, last), 0f),
-                    Size(abs(last - first), size.height), corner)
+                val start = startFraction().coerceIn(0f, 1f)
+                val end = endFraction().coerceIn(0f, 1f)
+                if (end > start) {
+                    val direction = if (rtl) -1f else 1f
+                    val travel = (size.width - 2f * padding).coerceAtLeast(0f)
+                    val approach = GlassSliderThumbMetrics.TRACK_HEIGHT.dp.toPx()
+                    val first = x(start) - direction * sliderRailEndExtension(start * travel, padding, approach)
+                    val last = x(end) + direction * sliderRailEndExtension((1f - end) * travel, padding, approach)
+                    drawRoundRect(primary.copy(alpha = primary.alpha * alpha), Offset(minOf(first, last), 0f),
+                        Size(abs(last - first), size.height), corner)
+                }
             }
         }
         Canvas(Modifier.fillMaxWidth().padding(horizontal = inset)

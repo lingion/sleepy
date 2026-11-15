@@ -117,6 +117,21 @@ data class DockToneResponse(
     )
 }
 
+/** Optional edge-only channel separation. Blend controls continuous transitions from the inherited profile. */
+data class LiquidGlassDispersionProfile(val widthDp: Double, val blend: Double = 1.0)
+
+/** Finite quadratic inward sampling shoulder; null keeps the inherited circular section. */
+data class LiquidGlassRefractionShoulder(val widthDp: Double, val blend: Double = 1.0)
+
+/** A local replacement for the inherited frost, feathered at both ends of its inset interval. */
+data class LiquidGlassFrostBand(
+    val startDp: Double,
+    val endDp: Double,
+    val featherDp: Double,
+    val blurDp: Double,
+    val blend: Double = 1.0,
+)
+
 /**
  * 液态玻璃的外观参数, 逐字段对应 FLClash 的 `lib/ui/liquid_glass.dart` 中的
  * `LiquidGlassStyle`。长度单位是 dp —— 着色器会把 [bevel] 与 [refraction]
@@ -147,6 +162,8 @@ data class LiquidGlassStyle(
     val rimAdded: Double = 0.0,
     val endShade: Double = 0.0,
     val dispersion: Double = 0.0,
+    /** Null keeps the inherited dispersion; an explicit profile has quadratic edge-only support. */
+    val dispersionProfile: LiquidGlassDispersionProfile? = null,
     val rimBlur: Double = 0.0,
     val hairline: Double = 0.0,
     val hairlineSide: Double? = null,
@@ -157,6 +174,10 @@ data class LiquidGlassStyle(
      * 这是尚未拟合、验收的图像响应自由度，不表示原生玻璃的物理厚度。
      */
     val refractionProfilePower: Double = 1.0,
+    /** Local common-channel transport, independent of dispersion, frost and contour lighting. */
+    val refractionShoulder: LiquidGlassRefractionShoulder? = null,
+    /** Optional shoulder-local frost, preserving the clear face and contour response. */
+    val frostBand: LiquidGlassFrostBand? = null,
     /** Engineering panel source-field gain, not identified physical thickness; zero keeps normal-only refraction. */
     val lateralRefractionGain: Double = 0.0,
     /** Optional narrow contour band, independent of the wider refraction bevel. */
@@ -183,6 +204,8 @@ data class LiquidGlassStyle(
             refraction = refraction * amount,
             refractionLimit = refractionLimit,
             refractionProfilePower = refractionProfilePower,
+            refractionShoulder = refractionShoulder,
+            frostBand = frostBand?.copy(blurDp = frostBand.blurDp * amount),
             lateralRefractionGain = lateralRefractionGain,
             edgeFrostWidth = edgeFrostWidth,
             edgeFrostBlur = edgeFrostBlur * amount,
@@ -199,6 +222,7 @@ data class LiquidGlassStyle(
             rimAdded = rimAdded,
             endShade = endShade * amount,
             dispersion = dispersion * amount,
+            dispersionProfile = dispersionProfile,
             rimBlur = rimBlur * amount,
             hairline = hairline * amount,
             hairlineSide = hairlineSide?.times(amount),
@@ -301,6 +325,45 @@ data class LiquidGlassStyle(
             )
         }
 
+        private fun lerpDispersionProfile(
+            a: LiquidGlassDispersionProfile?, b: LiquidGlassDispersionProfile?, t: Double,
+        ): LiquidGlassDispersionProfile? = when {
+            a == b -> a
+            a == null -> b?.copy(blend = b.blend * t)
+            b == null -> a.copy(blend = a.blend * (1.0 - t))
+            else -> LiquidGlassDispersionProfile(
+                widthDp = lerpDouble(a.widthDp, b.widthDp, t),
+                blend = lerpDouble(a.blend, b.blend, t),
+            )
+        }
+
+        private fun lerpRefractionShoulder(
+            a: LiquidGlassRefractionShoulder?, b: LiquidGlassRefractionShoulder?, t: Double,
+        ): LiquidGlassRefractionShoulder? = when {
+            a == b -> a
+            a == null -> b?.copy(blend = b.blend * t)
+            b == null -> a.copy(blend = a.blend * (1.0 - t))
+            else -> LiquidGlassRefractionShoulder(
+                widthDp = lerpDouble(a.widthDp, b.widthDp, t),
+                blend = lerpDouble(a.blend, b.blend, t),
+            )
+        }
+
+        private fun lerpFrostBand(
+            a: LiquidGlassFrostBand?, b: LiquidGlassFrostBand?, t: Double,
+        ): LiquidGlassFrostBand? = when {
+            a == b -> a
+            a == null -> b?.copy(blend = b.blend * t)
+            b == null -> a.copy(blend = a.blend * (1.0 - t))
+            else -> LiquidGlassFrostBand(
+                startDp = lerpDouble(a.startDp, b.startDp, t),
+                endDp = lerpDouble(a.endDp, b.endDp, t),
+                featherDp = lerpDouble(a.featherDp, b.featherDp, t),
+                blurDp = lerpDouble(a.blurDp, b.blurDp, t),
+                blend = lerpDouble(a.blend, b.blend, t),
+            )
+        }
+
         fun lerp(a: LiquidGlassStyle, b: LiquidGlassStyle, t: Double): LiquidGlassStyle =
             LiquidGlassStyle(
                 tint = lerpColor(a.tint, b.tint, t),
@@ -311,6 +374,8 @@ data class LiquidGlassStyle(
                 refraction = lerpDouble(a.refraction, b.refraction, t),
                 refractionLimit = lerpDouble(a.refractionLimit, b.refractionLimit, t),
                 refractionProfilePower = lerpDouble(a.refractionProfilePower, b.refractionProfilePower, t),
+                refractionShoulder = lerpRefractionShoulder(a.refractionShoulder, b.refractionShoulder, t),
+                frostBand = lerpFrostBand(a.frostBand, b.frostBand, t),
                 lateralRefractionGain = lerpDouble(a.lateralRefractionGain, b.lateralRefractionGain, t),
                 edgeFrostWidth = lerpDouble(a.edgeFrostWidth, b.edgeFrostWidth, t),
                 edgeFrostBlur = lerpDouble(a.edgeFrostBlur, b.edgeFrostBlur, t),
@@ -326,6 +391,7 @@ data class LiquidGlassStyle(
                 rimAdded = lerpDouble(a.rimAdded, b.rimAdded, t),
                 endShade = lerpDouble(a.endShade, b.endShade, t),
                 dispersion = lerpDouble(a.dispersion, b.dispersion, t),
+                dispersionProfile = lerpDispersionProfile(a.dispersionProfile, b.dispersionProfile, t),
                 rimBlur = lerpDouble(a.rimBlur, b.rimBlur, t),
                 hairline = lerpDouble(a.hairline, b.hairline, t),
                 hairlineSide = lerpDouble(a.hairlineSideOrHairline, b.hairlineSideOrHairline, t),
@@ -481,33 +547,39 @@ data class LiquidGlassStyle(
          * Single-Slider stable-state body, measured separately from the Dock.
          * The tint is the 8-bit representation of the native26.5 tonal-light fit;
          * its multi-background GPU comparison is recorded in alignment notes73.
-         * The half-depth comparison74/75 reduces the extra inward lower segment;
-         * it does not establish native depth or eliminate the documented rim error.
-         * Other controls retain their separate lens profiles.
+         * The RGB-star/native26.5 calibration constrains a finite inward shoulder;
+         * it changes common sampling rather than widening channel separation.
+         * This is an engineering fit, not an identified physical thickness.
          */
         fun sliderLens(dark: Boolean): LiquidGlassStyle =
+            sliderLensCheckpoint(dark).copy(
+                refraction = 7.8,
+                refractionShoulder = LiquidGlassRefractionShoulder(7.5),
+            )
+
+        private fun sliderLensCheckpoint(dark: Boolean): LiquidGlassStyle =
             LiquidGlassStyle(
                 tint = Color(0x21C5C5C3),
                 blur = 0.0,
-                refraction = -2.15,
+                refraction = 2.15,
+                frostBand = LiquidGlassFrostBand(1.5, 7.0, .5, 1.1),
                 bevel = 5.5,
                 saturation = 1.0,
                 brightness = 1.0,
                 rim = if (dark) 0.3 else 0.6,
                 rimWidth = 1.1,
                 endShade = 0.045,
-                dispersion = 0.0,
+                dispersion = 5.0,
+                dispersionProfile = LiquidGlassDispersionProfile(widthDp = 6.5),
                 rimBlur = 1.5,
                 hairline = 0.42,
             )
 
         /**
-         * Range candidate reuses the existing Single F material without changing
-         * its own geometry or input policy. This is a provisional combined profile,
-         * not an independently fitted native Range material; validate both roles
-         * before changing their shared body.
+         * Keep the range checkpoint until the smaller lenses have their own
+         * source-transport verification. Single-slider calibration cannot identify it.
          */
-        fun rangeSliderLens(dark: Boolean): LiquidGlassStyle = sliderLens(dark)
+        fun rangeSliderLens(dark: Boolean): LiquidGlassStyle = sliderLensCheckpoint(dark)
 
         /** Glyph refraction retains the Dock's independent content dispersion. */
         fun controlLensContent(colorScheme: ColorScheme, dark: Boolean): LiquidGlassStyle =
