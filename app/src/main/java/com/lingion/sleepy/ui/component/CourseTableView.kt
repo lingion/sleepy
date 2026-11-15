@@ -272,8 +272,31 @@ fun CardsGridView(
         else TimeTableUtils.RenderSlotPlan(baseSlots)
     }
     val renderSlots = renderPlan.slots
+    // Rendering and drag projection query the same node positions many times.
+    // Keep indexOfFirst's first-match behavior if a malformed plan repeats a node.
+    val slotIndexByNode = remember(renderSlots) {
+        buildMap<Int, Int> {
+            renderSlots.forEachIndexed { index, slot ->
+                if (slot.nodeStart !in this) put(slot.nodeStart, index)
+            }
+        }
+    }
     val maxNode = renderSlots.maxOfOrNull { it.nodeEnd } ?: 12
     val sortedDays = remember(visibleDays) { visibleDays.sorted() }
+    val dayIndexByDay = remember(sortedDays) {
+        sortedDays.withIndex().associate { (index, day) -> day to index }
+    }
+    val fractionalRowsByCourseId = remember(courses, renderSlots, visibleDays) {
+        courses.asSequence()
+            .filter { it.ownTime && it.day in visibleDays }
+            .associate { course ->
+                course.id to TimeTableUtils.timeToFractionalRows(
+                    course.startTime,
+                    course.endTime,
+                    renderSlots,
+                )
+            }
+    }
     val groups = remember(courses) { courses.groupBy { it.groupId } }
     val dayCount = sortedDays.size
 
@@ -293,7 +316,7 @@ fun CardsGridView(
     // 视觉上就是"第 0 节在第 1 节之上" / "第 N+1 节在第 N 节之下", 与插入直觉一致。
     //   返回 -1 = 该节点不在 renderSlots(典型场景: 课程来自已删除的旧 timeJson, 数据脏)
     //   调用方需先判 >= 0 再绘;cardY 那侧 .coerceAtLeast(0) 兜底防负坐标。
-    fun slotIndexOf(node: Int): Int = renderSlots.indexOfFirst { it.nodeStart == node }
+    fun slotIndexOf(node: Int): Int = slotIndexByNode[node] ?: -1
 
     // issue#8 网格整体缩放: 0.7~1.3, 字号/行高/间距/圆角/内边距等比联动
     // (12节连堂课表缩到 0.7 可一屏放下; 只影响本 Cards 视图, 小组件与列表视图不受影响)
@@ -641,7 +664,9 @@ fun CardsGridView(
                 animationSpec = if (floatState.dragging) snap() else floatFade,
                 label = "floatGridBlur",
             )
-            val floatGridNodes = renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }
+            val floatGridNodes = remember(renderSlots) {
+                renderSlots.filter { !it.isPlaceholder }.map { it.nodeStart }
+            }
             // 卡片顶/底边在网格坐标系的 dp 边界 (bottom=true 取底边, 与胶囊同口径)。
             fun floatBoundary(node: Int, bottom: Boolean): Dp? {
                 val idx = slotIndexOf(node)
@@ -652,7 +677,7 @@ fun CardsGridView(
             fun liftCourse(course: CourseEntity) {
                 if (!floatAware) { onCourseLongClick?.invoke(course); return }
                 val nodeIdx = slotIndexOf(course.startNode)
-                val dayIdx = sortedDays.indexOf(course.day)
+                val dayIdx = dayIndexByDay[course.day] ?: -1
                 if (nodeIdx < 0 || dayIdx < 0) return
                 val steps = course.step.coerceAtLeast(1).coerceAtMost(renderSlots.size - nodeIdx)
                 quickAddState.dismiss()
@@ -1157,13 +1182,13 @@ fun CardsGridView(
                         }
                         if (inGrid.isEmpty()) continue
                         val anchor = cluster.courses.first() // 主课判定序首位,决定簇基点
-                        val dayIdx = sortedDays.indexOf(cluster.day)
+                        val dayIdx = dayIndexByDay[cluster.day] ?: -1
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
                         // 用户报障 2026-09-10: 簇锚点用锚课**小数行坐标**(ownTime 锚课
                         // 不再被 slotIndexOf 整格吸附丢掉小数偏移, 整簇上移 ~0.9 行的本体);
                         // 加权 dp 与簇内 spanDpOf 同一真值。
                         val anchorFrac = if (anchor.ownTime && anchor.startTime.isNotBlank() && anchor.endTime.isNotBlank()) {
-                            TimeTableUtils.timeToFractionalRows(anchor.startTime, anchor.endTime, renderSlots)?.first
+                            fractionalRowsByCourseId[anchor.id]?.first
                         } else null
                         val anchorRow = anchorFrac ?: slotIndexOf(anchor.startNode).coerceAtLeast(0).toFloat()
                         val cardY = yOfRows(anchorRow)
@@ -1212,7 +1237,7 @@ fun CardsGridView(
                         val nodeIdx = slotIndexOf(course.startNode)
                         if (nodeIdx < 0) continue
                         if (course.id in clusteredIds) continue // 簇内课已由 ConflictClusterCard 绘制
-                        val dayIdx = sortedDays.indexOf(course.day)
+                        val dayIdx = dayIndexByDay[course.day] ?: -1
                         // 步长上限按剩余行数算(边缘节点也按 renderSlots 总行数取模)
                         val steps = course.step.coerceAtLeast(1)
                             .coerceAtMost(renderSlots.size - nodeIdx)
@@ -1221,9 +1246,7 @@ fun CardsGridView(
                         // 用户反馈 2026-09-09: 比例映射基于 renderSlots(含占位节次) —
                         // 12:30 落在 11:40~12:30 占位行内, 不再侵入 14:00 行;
                         // 时间映射失败退回整格吸附(normalizeNode 已反算 nodeIdx/steps)
-                        val frac = if (course.ownTime) TimeTableUtils.timeToFractionalRows(
-                            course.startTime, course.endTime, renderSlots
-                        ) else null
+                        val frac = if (course.ownTime) fractionalRowsByCourseId[course.id] else null
                         val cardY = frac?.let { yOfRows(it.first) } ?: yOfRows(nodeIdx.toFloat())
                         // 卡高走 natural 跨度 − 普通行隙 — 薄带不进卡高 (2026-10-17 修: 旧公式减
                         // gapAfterRow=gapH+带, 而 cardY 的 yOfRows 已加带, 同带双扣 → 锚行胶囊回缩)。
@@ -1307,7 +1330,7 @@ fun CardsGridView(
                     val qaSelected = quickAddState.selection?.takeIf { quickAddEnabled }
                     val qaStart = qaSelected?.let { slotIndexOf(it.startNode) } ?: -1
                     val qaEnd = qaSelected?.let { slotIndexOf(it.endNode) } ?: -1
-                    val qaDay = qaSelected?.let { sortedDays.indexOf(it.day) } ?: -1
+                    val qaDay = qaSelected?.let { dayIndexByDay[it.day] ?: -1 } ?: -1
                     val qaVisible = qaSelected != null && qaStart >= 0 && qaEnd >= qaStart && qaDay >= 0
                     // 胶囊在滚动 Column 的词法作用域内(嵌于网格 Box), @LayoutScopeMarker
                     // 屏蔽隐式 ColumnScope 接收者 — 按编译器提示用显式接收者点列级重载,
