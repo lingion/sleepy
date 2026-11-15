@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
@@ -18,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
@@ -52,8 +54,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -67,7 +67,6 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
-import android.os.Build
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
@@ -75,9 +74,8 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.kyant.backdrop.drawPlainBackdrop
-import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
-import com.lingion.sleepy.ui.component.liquidglass.liquidGlass
+import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialRole
+import com.lingion.sleepy.ui.component.liquidglass.NativeGlassSheetShape
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.OfficialNavIconMotion
@@ -118,7 +116,6 @@ import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.screen.mine.WidgetSettingsScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetGalleryScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.util.AppPrefs
@@ -870,17 +867,18 @@ private fun MainRoute(
         // 从未接驱动 → 接线表 + 按压跟踪在此挂上(dock 分支不受影响)。
         val officialMotion = rememberOfficialNavIconMotion(Tab.entries.map { it.motionKey }, currentTab.ordinal)
         if (LocalUiStyle.current == UiStyle.LiquidGlass) {
-            // Keep the page behind one edge-to-edge material; reserve its measured height for scrolling.
+            // Sample the page behind the bar and keep the measured bar height available to scroll content.
             val backdrop = rememberLayerBackdrop()
             val colors = MaterialTheme.colorScheme
-            val dark = LocalDarkTheme.current || colors.surface.luminance() < 0.5f
-            val barTint = colors.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f)
             val density = LocalDensity.current
             var barHeightPx by remember { mutableIntStateOf(0) }
-            val reservedBottom = if (barHeightPx > 0) {
+            val fallbackBarHeight = with(density) {
+                80.dp + WindowInsets.navigationBars.getBottom(this).toDp()
+            }
+            val barHeight = if (barHeightPx > 0) {
                 with(density) { barHeightPx.toDp() }
             } else {
-                with(density) { 80.dp + WindowInsets.navigationBars.getBottom(this).toDp() }
+                fallbackBarHeight
             }
 
             Box(
@@ -889,7 +887,7 @@ private fun MainRoute(
                     .background(colors.background)
                     .windowInsetsPadding(WindowInsets.statusBars)
             ) {
-                CompositionLocalProvider(LocalNavExtraBottomPadding provides reservedBottom) {
+                CompositionLocalProvider(LocalNavExtraBottomPadding provides barHeight) {
                     Box(Modifier.fillMaxSize().layerBackdrop(backdrop)) {
                         MainTabs(
                             currentTab = currentTab,
@@ -904,42 +902,44 @@ private fun MainRoute(
                             updateNoticeVisible = updateNoticeVisible,
                         )
                     }
-                }
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .onSizeChanged { barHeightPx = it.height }
-                        .background(barTint)
-                        .then(
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                Modifier.drawPlainBackdrop(
-                                    backdrop = backdrop,
-                                    shape = { RectangleShape },
-                                    effects = {
-                                        liquidGlass(
-                                            context = ctxForExit,
-                                            style = LiquidGlassStyle.pill(colors, dark),
-                                        )
-                                    },
-                                )
-                            } else Modifier
-                        )
-                ) {
-                    NavigationBar(
-                        modifier = Modifier.fillMaxWidth(),
-                        containerColor = Color.Transparent,
-                        tonalElevation = 0.dp,
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .onSizeChanged { barHeightPx = it.height }
                     ) {
-                        Tab.entries.forEach { tab ->
-                            NavigationBarItem(
-                                colors = NavigationBarItemDefaults.colors(indicatorColor = colors.secondaryContainer),
-                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
-                                selected = currentTab == tab,
-                                onClick = { setCurrentTab(tab) },
-                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
-                                label = { Text(stringResource(tab.labelRes)) },
+                        // Paint a full Sheet contour, then expose exactly the measured Material bar height.
+                        // The 40dp overflow keeps its 20dp lower corners below the crop edge.
+                        Box(Modifier.matchParentSize().clipToBounds()) {
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp)
+                                    .requiredHeight(barHeight + 40.dp)
+                                    .glassControl(
+                                        shape = NativeGlassSheetShape,
+                                        enabled = false,
+                                        registerPane = false,
+                                        role = GlassMaterialRole.Sheet,
+                                        backdropOverride = backdrop,
+                                    )
                             )
+                        }
+                        NavigationBar(
+                            modifier = Modifier.fillMaxWidth(),
+                            containerColor = Color.Transparent,
+                            tonalElevation = 0.dp,
+                        ) {
+                            Tab.entries.forEach { tab ->
+                                NavigationBarItem(
+                                    colors = NavigationBarItemDefaults.colors(indicatorColor = colors.secondaryContainer),
+                                    modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
+                                    selected = currentTab == tab,
+                                    onClick = { setCurrentTab(tab) },
+                                    icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
+                                    label = { Text(stringResource(tab.labelRes)) },
+                                )
+                            }
                         }
                     }
                 }

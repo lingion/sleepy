@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntSize
 import com.kyant.backdrop.drawPlainBackdrop
 import com.kyant.backdrop.BackdropRenderOptions
+import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.LayerBackdrop
 import com.lingion.sleepy.ui.theme.LocalDarkTheme
 import com.lingion.sleepy.ui.theme.LocalUiStyle
@@ -95,7 +96,9 @@ internal fun Modifier.observeGlassControlPointers(
     }
 }
 
-/** Adds optical material without owning clicks or introducing a second semantic node. */
+/** Adds optical material without owning clicks or introducing a second semantic node.
+ * [backdropOverride] lets a glass control sample a scene supplied outside a [GlassHost] subtree.
+ */
 @Composable
 fun Modifier.glassControl(
     shape: Shape = CircleShape,
@@ -110,12 +113,13 @@ fun Modifier.glassControl(
     pressedContentAlpha: Float = 1f,
     exportedBackdrop: LayerBackdrop? = null,
     sharedInteraction: GlassControlInteraction? = null,
+    backdropOverride: Backdrop? = null,
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
     val consumerDepth = LocalGlassDepth.current
     val isOverlay = LocalGlassOverlay.current
-    if (LocalUiStyle.current != UiStyle.LiquidGlass || host == null || LocalGlassGrouped.current) return this
+    if (LocalUiStyle.current != UiStyle.LiquidGlass || (host == null && backdropOverride == null) || LocalGlassGrouped.current) return this
     val context = LocalContext.current
     val dark = LocalDarkTheme.current
     val colors = MaterialTheme.colorScheme
@@ -148,9 +152,13 @@ fun Modifier.glassControl(
     val radiusSampling = (!dark && (role == GlassMaterialRole.Alert || role == GlassMaterialRole.Sheet)) ||
         material.rimBlur < 0.0
     val minimumBlurDp = (material.blur + min(material.rimBlur, 0.0)).coerceAtLeast(0.0).toFloat()
-    val filterBand = if (inheritedMaterial == null) samplingHost.filterBand(consumerDepth, isOverlay, minimumBlurDp) else null
-    val scene = rememberGlassSamplingBackdrop()
-    val backdrop = remember(samplingHost, scene, filterBand) { filterBand?.backdrop(samplingHost) ?: checkNotNull(scene) }
+    val filterBand = if (backdropOverride == null && inheritedMaterial == null) {
+        samplingHost?.filterBand(consumerDepth, isOverlay, minimumBlurDp)
+    } else null
+    val scene = if (backdropOverride == null) rememberGlassSamplingBackdrop() else null
+    val backdrop = remember(samplingHost, scene, filterBand, backdropOverride) {
+        backdropOverride ?: filterBand?.backdrop(checkNotNull(samplingHost)) ?: checkNotNull(scene)
+    }
     val contentPlacementLayer = placementLayer && LocalGlassPlacementLayer.current
     val renderOptions = remember(contentPlacementLayer) {
         if (contentPlacementLayer) BackdropRenderOptions.Default else BackdropRenderOptions(placementLayer = false)
