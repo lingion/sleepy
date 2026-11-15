@@ -41,7 +41,7 @@ import com.lingion.sleepy.ui.theme.UiStyle
 
 /**
  * 实心轨道，按住时滑片渐变为采样轨道和宿主背景的玻璃镜片。
- * iOS 26.5 原生测量与 Android 对齐范围见 docs/native-glass-control-alignment.md。
+ * iOS 26.5 原生研究与对齐记录见 https://github.com/Kerry1020/sleepy-liquid-glass。
  * 轨道 63×28，静止片 37×24、两端留白 2，行程 22；触摸目标保留 Android 48dp。
  */
 @Composable
