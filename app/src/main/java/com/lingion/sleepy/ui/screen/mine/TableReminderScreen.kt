@@ -5,13 +5,13 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -26,8 +26,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +43,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.ui.component.SettingsLayout
+import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
@@ -98,17 +101,9 @@ class TableReminderViewModel internal constructor(
 
 @Composable
 fun TableReminderScreen(onBack: () -> Unit, vm: TableReminderViewModel = viewModel()) {
-    // Read the list here: a delegated read inside LazyColumn would only
-    // recompose its content, without rerunning this screen's acknowledgement.
-    val tables = vm.tables.collectAsStateWithLifecycle(initialValue = null).value
     val context = LocalContext.current
-    val appContext = context.applicationContext
     val colors = MaterialTheme.colorScheme
     val masterEnabled = remember { AppPrefs.isReminderEnabled(context) }
-    // Subscribe in the same composition that acknowledges the rendered list.
-    // Lazy items alone must not own the write-return recomposition.
-    val pending = vm.pending
-    SideEffect { vm.acknowledgeObservedTables(tables) }
 
     Scaffold(
         containerColor = colors.background,
@@ -130,16 +125,56 @@ fun TableReminderScreen(onBack: () -> Unit, vm: TableReminderViewModel = viewMod
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Text(
-                    stringResource(if (masterEnabled) R.string.table_reminder_subtitle else R.string.table_reminder_master_off),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurfaceVariant
-                )
+                TableReminderContent(masterEnabled = masterEnabled, vm = vm)
             }
-            if (tables?.isEmpty() == true) {
-                item { Text(stringResource(R.string.table_reminder_empty), color = colors.onSurfaceVariant) }
-            }
-            items(tables.orEmpty(), key = { it.id }) { table ->
+        }
+    }
+}
+
+/** The page keeps this card in its existing slot, including while reminders are disabled. */
+@Composable
+internal fun TableReminderCard(
+    masterEnabled: Boolean,
+    vm: TableReminderViewModel = viewModel(),
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    SettingsCard(
+        title = stringResource(R.string.settings_table_reminder_scope),
+        expanded = expanded,
+        onToggle = { expanded = !expanded },
+    ) {
+        TableReminderContent(masterEnabled = masterEnabled, vm = vm)
+    }
+}
+
+/** Shared by the inline accordion and the retained legacy destination; no nested scrolling. */
+@Composable
+internal fun TableReminderContent(
+    masterEnabled: Boolean,
+    vm: TableReminderViewModel,
+) {
+    // Read both values in the composition that acknowledges the rendered list.
+    // A write can finish after Room's echo without emitting another table list.
+    val tables = vm.tables.collectAsStateWithLifecycle(initialValue = null).value
+    val pending = vm.pending
+    SideEffect { vm.acknowledgeObservedTables(tables) }
+    val appContext = LocalContext.current.applicationContext
+    val colors = MaterialTheme.colorScheme
+
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(SettingsLayout.cardGap),
+    ) {
+        Text(
+            stringResource(if (masterEnabled) R.string.table_reminder_subtitle else R.string.table_reminder_master_off),
+            style = MaterialTheme.typography.bodyMedium,
+            color = colors.onSurfaceVariant,
+        )
+        if (tables?.isEmpty() == true) {
+            Text(stringResource(R.string.table_reminder_empty), color = colors.onSurfaceVariant)
+        }
+        tables.orEmpty().forEach { table ->
+            key(table.id) {
                 val enabled = table.id !in pending
                 val interactions = remember { MutableInteractionSource() }
                 Row(
