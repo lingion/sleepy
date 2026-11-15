@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -35,10 +36,12 @@ import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSiz
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -48,6 +51,9 @@ import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -61,6 +67,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
+import android.os.Build
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.entryProvider
@@ -68,6 +75,9 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.kyant.backdrop.drawPlainBackdrop
+import com.lingion.sleepy.ui.component.liquidglass.LiquidGlassStyle
+import com.lingion.sleepy.ui.component.liquidglass.liquidGlass
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.OfficialNavIconMotion
@@ -108,6 +118,9 @@ import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.screen.mine.WidgetSettingsScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetGalleryScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.LocalDarkTheme
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.MainActivity
@@ -856,37 +869,114 @@ private fun MainRoute(
         // 2026-11-08 报障"更新后底栏图标不动"正落在此分支: 官方 item 图标此前
         // 从未接驱动 → 接线表 + 按压跟踪在此挂上(dock 分支不受影响)。
         val officialMotion = rememberOfficialNavIconMotion(Tab.entries.map { it.motionKey }, currentTab.ordinal)
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = MaterialTheme.colorScheme.background,
-            bottomBar = {
-                NavigationBar {
-                    Tab.entries.forEach { tab ->
-                        NavigationBarItem(
-                            colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondaryContainer),
-                            modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
-                            selected = currentTab == tab,
-                            onClick = { setCurrentTab(tab) },
-                            icon = { GlassNavigationIcon(tab, selected = currentTab == tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine, motion = officialMotion) },
-                            label = { Text(stringResource(tab.labelRes)) },
+        if (LocalUiStyle.current == UiStyle.LiquidGlass) {
+            // Keep the page behind one edge-to-edge material; reserve its measured height for scrolling.
+            val backdrop = rememberLayerBackdrop()
+            val colors = MaterialTheme.colorScheme
+            val dark = LocalDarkTheme.current || colors.surface.luminance() < 0.5f
+            val barTint = colors.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f)
+            val density = LocalDensity.current
+            var barHeightPx by remember { mutableIntStateOf(0) }
+            val reservedBottom = if (barHeightPx > 0) {
+                with(density) { barHeightPx.toDp() }
+            } else {
+                with(density) { 80.dp + WindowInsets.navigationBars.getBottom(this).toDp() }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(colors.background)
+                    .windowInsetsPadding(WindowInsets.statusBars)
+            ) {
+                CompositionLocalProvider(LocalNavExtraBottomPadding provides reservedBottom) {
+                    Box(Modifier.fillMaxSize().layerBackdrop(backdrop)) {
+                        MainTabs(
+                            currentTab = currentTab,
+                            setCurrentTab = setCurrentTab,
+                            navigator = navigator,
+                            mainVm = mainVm,
+                            mainScope = mainScope,
+                            viewMode = scheduleViewMode,
+                            onViewModeChange = onScheduleViewModeChange,
+                            onCreateNewTable = onCreateNewTable,
+                            holder = holder,
+                            updateNoticeVisible = updateNoticeVisible,
                         )
                     }
                 }
-            },
-        ) { padding ->
-            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-                MainTabs(
-                    currentTab = currentTab,
-                    setCurrentTab = setCurrentTab,
-                    navigator = navigator,
-                    mainVm = mainVm,
-                    mainScope = mainScope,
-                    viewMode = scheduleViewMode,
-                    onViewModeChange = onScheduleViewModeChange,
-                    onCreateNewTable = onCreateNewTable,
-                    holder = holder,
-                    updateNoticeVisible = updateNoticeVisible,
-                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                        .onSizeChanged { barHeightPx = it.height }
+                        .background(barTint)
+                        .then(
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                                Modifier.drawPlainBackdrop(
+                                    backdrop = backdrop,
+                                    shape = { RectangleShape },
+                                    effects = {
+                                        liquidGlass(
+                                            context = ctxForExit,
+                                            style = LiquidGlassStyle.pill(colors, dark),
+                                        )
+                                    },
+                                )
+                            } else Modifier
+                        )
+                ) {
+                    NavigationBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        containerColor = Color.Transparent,
+                        tonalElevation = 0.dp,
+                    ) {
+                        Tab.entries.forEach { tab ->
+                            NavigationBarItem(
+                                colors = NavigationBarItemDefaults.colors(indicatorColor = colors.secondaryContainer),
+                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
+                                selected = currentTab == tab,
+                                onClick = { setCurrentTab(tab) },
+                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
+                                label = { Text(stringResource(tab.labelRes)) },
+                            )
+                        }
+                    }
+                }
+            }
+        } else {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                containerColor = MaterialTheme.colorScheme.background,
+                bottomBar = {
+                    NavigationBar {
+                        Tab.entries.forEach { tab ->
+                            NavigationBarItem(
+                                colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondaryContainer),
+                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
+                                selected = currentTab == tab,
+                                onClick = { setCurrentTab(tab) },
+                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
+                                label = { Text(stringResource(tab.labelRes)) },
+                            )
+                        }
+                    }
+                },
+            ) { padding ->
+                Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                    MainTabs(
+                        currentTab = currentTab,
+                        setCurrentTab = setCurrentTab,
+                        navigator = navigator,
+                        mainVm = mainVm,
+                        mainScope = mainScope,
+                        viewMode = scheduleViewMode,
+                        onViewModeChange = onScheduleViewModeChange,
+                        onCreateNewTable = onCreateNewTable,
+                        holder = holder,
+                        updateNoticeVisible = updateNoticeVisible,
+                    )
+                }
             }
         }
     }
@@ -907,7 +997,7 @@ private fun GlassNavigationIcon(
     showUpdateDot: Boolean,
     motion: OfficialNavIconMotion? = null,
 ) {
-    if (com.lingion.sleepy.ui.theme.LocalUiStyle.current == com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass) {
+    if (LocalUiStyle.current == UiStyle.LiquidGlass) {
         Box(
             Modifier.size(width = 64.dp, height = 32.dp)
                 .glassControl(shape = RoundedCornerShape(percent = 50))
