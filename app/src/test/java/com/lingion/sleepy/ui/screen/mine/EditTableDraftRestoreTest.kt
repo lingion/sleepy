@@ -80,6 +80,14 @@ class EditTableDraftRestoreTest {
             shadowOf(android.os.Looper.getMainLooper()).idle()
             model.state.value.tables.any { it.id == 1L }
         }
+        // The editor's combined content subscription becomes ready separately
+        // from the table list. Wait for the merged editable field, not a label
+        // that may already exist in the incoming unmerged layout.
+        compose.waitUntil(10_000) {
+            compose.onAllNodes(
+                hasSetTextAction() and hasText(app.getString(R.string.edit_table_name)),
+            ).fetchSemanticsNodes().size == 1
+        }
         fun field(id: Int) = compose.onNodeWithText(app.getString(id))
         field(R.string.edit_table_name).performTextReplacement("Unsubmitted name")
         field(R.string.edit_table_start_date).performTextReplacement("2026-09-14")
