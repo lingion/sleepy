@@ -85,7 +85,7 @@ class GlassAlertWindowRenderTest {
         compose.waitForIdle()
         val density = compose.density.density
         val referenceSurface = compose.runOnIdle { OpticalCaptureWindow.from(checkNotNull(referenceView)) }
-        capture(referenceSurface, "reference")
+        referenceSurface.awaitHwuiCommit()
         val actualReference = compose.runOnIdle { referenceSurface.root.width }
         val expectedReference = (320f * density).roundToInt()
         assumeTrue("Default platform theme does not establish the required 320dp cap: expected $expectedReference px, actual $actualReference px",
@@ -114,7 +114,7 @@ class GlassAlertWindowRenderTest {
                 assertTrue("$phase right halo", actual.right <= product.root.width - .5f)
                 assertTrue("$phase bottom halo", actual.bottom <= product.root.height - .5f)
             }
-            capture(product, phase, requireHalo = true)
+            capture(product, phase)
             return actual
         }
         val rest = checkPane("rest", 320f)
@@ -136,14 +136,12 @@ class GlassAlertWindowRenderTest {
         compose.waitForIdle()
     }
 
-    private fun capture(surface: OpticalCaptureWindow, phase: String, requireHalo: Boolean = false) {
+    private fun capture(surface: OpticalCaptureWindow, phase: String) {
         val pixels = surface.capture()
         try {
-            if (requireHalo) {
-                val core = opaqueBounds(pixels)
-                assertTrue("$phase actual alpha core has left/top drawing room", core.left >= 1 && core.top >= 1)
-                assertTrue("$phase actual alpha core has right/bottom drawing room", core.right <= pixels.width - 1 && core.bottom <= pixels.height - 1)
-            }
+            val core = opaqueBounds(pixels)
+            assertTrue("$phase actual alpha core has left/top drawing room", core.left >= 1 && core.top >= 1)
+            assertTrue("$phase actual alpha core has right/bottom drawing room", core.right <= pixels.width - 1 && core.bottom <= pixels.height - 1)
         } finally { pixels.recycle() }
     }
 

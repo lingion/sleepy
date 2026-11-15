@@ -93,8 +93,7 @@ class DockBackdropAppearanceRenderTest {
                 // Fixed observation budget, independent of the desired state or score.
                 SystemClock.sleep(3_000)
                 val node = compose.onNodeWithTag("dock-material", useUnmergedTree = true).fetchSemanticsNode()
-                val bitmap = surface.capture()
-                bitmap.recycle()
+                surface.awaitHwuiCommit()
                 assertEquals("stage$index gray$value", if (enabled) expected[index] else true, node.config[DockMaterialDark])
                 if (enabled) assertTrue(abs(node.config[DockBackdropLuma] - value / 255f) < .012f)
             }
