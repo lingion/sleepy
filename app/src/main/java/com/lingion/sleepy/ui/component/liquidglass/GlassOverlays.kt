@@ -409,9 +409,14 @@ fun GlassModalBottomSheet(
  * at y=1314 it is x=38 (bottom radius ~20pt). Reference:
  * native-static-optics/rest/optics-fine_grid-light-presentations-sheet-rest.png.
  */
-private val NativeGlassSheetShape: CornerBasedShape = NativeGlassSheetContour(
+internal val NativeGlassSheetShape: CornerBasedShape = NativeGlassSheetContour(
     topStart = CornerSize(36.dp), topEnd = CornerSize(36.dp),
     bottomEnd = CornerSize(20.dp), bottomStart = CornerSize(20.dp),
+)
+
+/** The visible upper section of the Sheet: preserve its top rim and corners, crop below. */
+internal val NativeGlassSheetTopSectionShape: CornerBasedShape = NativeGlassSheetShape.copy(
+    bottomEnd = CornerSize(0.dp), bottomStart = CornerSize(0.dp),
 )
 
 /** Publish the same contour's radii to the optical shader's directional rim. */
