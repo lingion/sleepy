@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialExpressiveTheme
@@ -78,6 +80,12 @@ class GlassButtonsTest {
         compose.onNodeWithText("Delete").assertIsNotEnabled()
         compose.onNodeWithText("Back").performClick()
         assertEquals(101, calls)
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w600dp-h800dp-mdpi")
+    fun officialReferenceComparedWithItself() {
+        assertOfficialParity(defaultPairs().map { it.copy(wrapped = it.official) })
     }
 
     @Test
@@ -259,13 +267,20 @@ class GlassButtonsTest {
         )
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     private fun assertOfficialParity(pairs: List<ButtonPair>, requirePressChange: Boolean = false) {
         compose.mainClock.autoAdvance = false
         val selected = mutableStateOf(pairs.first())
         val source = MutableInteractionSource()
         compose.setContent {
             MaterialExpressiveTheme {
-                CompositionLocalProvider(LocalUiStyle provides UiStyle.Classic) {
+                CompositionLocalProvider(
+                    LocalUiStyle provides UiStyle.Classic,
+                    // Native RippleDrawable uses the platform clock, not mainClock. Sequential
+                    // captures can differ even for two official buttons. Isolate that indication
+                    // while still comparing shape morphs, colors, borders, elevation and dimensions.
+                    LocalRippleConfiguration provides null,
+                ) {
                     // Keep both shadows at the same window coordinates and the same animation time.
                     Box(Modifier.background(Color.White)) {
                         key(selected.value.name) {
