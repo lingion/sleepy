@@ -37,7 +37,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
-/** Runs the production containers with sparse pages: each marker sits in the other page's gap. */
+/** Runs the production containers with sparse pages and checks single-page transition behavior. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [35], qualifiers = "w360dp-h640dp-port-xhdpi")
@@ -91,13 +91,46 @@ class TabContentTransitionPixelTest {
             }
         }
 
+        fun assertTargetEntersFromBelow(target: Tab) {
+            val pixels = compose.onNodeWithTag("viewport").captureToImage().toPixelMap()
+            val marker = if (target == first) Color.Red else Color.Green
+            val actualTop = (0 until pixels.height).firstNotNullOfOrNull { y ->
+                (0 until pixels.width).firstOrNull { x ->
+                    pixels[x, y].toArgb() == marker.toArgb()
+                }?.let { y }
+            }
+            val expectedTop = (pixels.height * .3f).toInt()
+            assertTrue(
+                "Target page should enter below its final position",
+                actualTop != null && actualTop > expectedTop,
+            )
+        }
+
+        fun assertTargetAtFinalPosition(target: Tab) {
+            val pixels = compose.onNodeWithTag("viewport").captureToImage().toPixelMap()
+            val marker = if (target == first) Color.Red else Color.Green
+            val actualTop = (0 until pixels.height).firstNotNullOfOrNull { y ->
+                (0 until pixels.width).firstOrNull { x ->
+                    pixels[x, y].toArgb() == marker.toArgb()
+                }?.let { y }
+            }
+            val expectedTop = (pixels.height * .3f).toInt()
+            assertEquals("Target page should settle at its final position", expectedTop, actualTop)
+        }
+
         fun switchAndSample(target: Tab) {
+            val outgoing = if (target == first) second else first
             compose.runOnIdle { current.value = target }
+            // The Robolectric semantics tree observes this state change after two frames.
+            pumpFrames(2)
+            compose.onNodeWithTag(target.name).assertExists()
+            compose.onNodeWithTag(outgoing.name).assertDoesNotExist()
+            pumpFrames(2)
+            assertTargetEntersFromBelow(target)
             repeat(2) {
                 pumpFrames(2)
-                // Both pages must still be composed: a settled-only screenshot is insufficient.
-                compose.onNodeWithTag(first.name).assertExists()
-                compose.onNodeWithTag(second.name).assertExists()
+                // The target remains visible throughout its single-page entrance.
+                compose.onNodeWithTag(target.name).assertExists()
                 assertPixels(target)
             }
         }
@@ -105,15 +138,18 @@ class TabContentTransitionPixelTest {
         assertPixels(first)
         switchAndSample(second)
         settle()
+        assertTargetAtFinalPosition(second)
         assertPixels(second)
         switchAndSample(first)
         settle()
+        assertTargetAtFinalPosition(first)
         assertPixels(first)
         // Reverse before the outgoing page is disposed, in both directions.
         switchAndSample(second)
         switchAndSample(first)
         switchAndSample(second)
         settle()
+        assertTargetAtFinalPosition(second)
         assertPixels(second)
     }
 

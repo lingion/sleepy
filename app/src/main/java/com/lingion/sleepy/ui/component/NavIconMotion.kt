@@ -2,7 +2,7 @@ package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -25,6 +25,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.sin
+
+private const val NavIconActivationDurationMs = 150
 
 /**
  * Dock tab 图标的专属动效键 — 按语义命名, 不按 ordinal 匹配(增删 tab 不串位)。
@@ -117,6 +119,8 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
 
     // 一次性脉冲相位: 语义由各 key 定义(PageFlip 1→0; Hop/Jelly 0→1→0)。
     private val pulse = Animatable(0f)
+    // Set before the first suspension so same-frame launches also coalesce.
+    private var pulseActive = false
 
     // GearSpin 专用: 累计弧度(跨 360 不跳变)。
     private val spin = Animatable(0f)
@@ -131,42 +135,51 @@ class NavIconDriver internal constructor(internal val key: NavIconMotionKey) {
     internal fun spinRadians(): Float = spin.value
 
     internal suspend fun activate() {
-        when (key) {
-            NavIconMotionKey.PageFlip -> {
-                pulse.snapTo(1f)
-                pulse.animateTo(
-                    0f,
-                    tween(durationMillis = 650, easing = LinearEasing),
-                )
-            }
+        if (key == NavIconMotionKey.GearSpin) {
+            spin.animateTo(
+                spin.value + PI.toFloat() / 2f,
+                tween(NavIconActivationDurationMs, easing = FastOutSlowInEasing),
+            )
+            return
+        }
+        if (key == NavIconMotionKey.None || pulseActive) return
 
-            NavIconMotionKey.Hop -> {
-                pulse.snapTo(1f)
-                pulse.animateTo(
-                    0f,
-                    tween(durationMillis = 500, easing = FastOutSlowInEasing),
+        // Claim the pulse before snapTo's first suspension. A pulse already in
+        // flight owns this driver's phase until its natural return to rest;
+        // coalesce re-triggers instead of jumping back to the start.
+        pulseActive = true
+        try {
+            when (key) {
+                NavIconMotionKey.PageFlip -> pulse.animateTo(
+                    targetValue = 0f,
+                    animationSpec = keyframes {
+                        durationMillis = NavIconActivationDurationMs
+                        1f at 50 using FastOutSlowInEasing
+                        0f at NavIconActivationDurationMs using FastOutSlowInEasing
+                    },
                 )
-            }
 
-            NavIconMotionKey.Jelly -> {
-                pulse.snapTo(1f)
-                pulse.animateTo(
-                    0f,
-                    tween(durationMillis = 600, easing = FastOutSlowInEasing),
-                )
-            }
+                NavIconMotionKey.Hop -> {
+                    pulse.snapTo(1f)
+                    pulse.animateTo(
+                        0f,
+                        tween(durationMillis = NavIconActivationDurationMs, easing = FastOutSlowInEasing),
+                    )
+                }
 
-            NavIconMotionKey.GearSpin -> {
-                spin.animateTo(
-                    spin.value + PI.toFloat() / 2f,
-                    spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
-                        stiffness = Spring.StiffnessLow,
-                    ),
-                )
-            }
+                NavIconMotionKey.Jelly -> {
+                    pulse.snapTo(1f)
+                    pulse.animateTo(
+                        0f,
+                        tween(durationMillis = NavIconActivationDurationMs, easing = FastOutSlowInEasing),
+                    )
+                }
 
-            NavIconMotionKey.None -> Unit
+                NavIconMotionKey.GearSpin,
+                NavIconMotionKey.None -> Unit
+            }
+        } finally {
+            pulseActive = false
         }
     }
 
@@ -235,8 +248,8 @@ fun NavIconDriverEffects(
 ) {
     // 激活动画跑在 bar 组合作用域, 不跑在 LaunchedEffect 子作用域:
     // 快速连切 tab 时 effect 重启会杀掉在飞的旧动画 → 旧图标冻结在
-    // 形变中间帧(pulse=部分值)。外部 scope 只随组合销毁取消,
-    // 同 driver 重复激活由 animateTo 内部抢占 + activate() 首行 snapTo 归零。
+    // 形变中间帧(pulse=部分值)。外部 scope 只随组合销毁取消;
+    // 已在播放的 pulse 由 activate() 合并触发并自然复位, 不重置相位。
     val actScope = rememberCoroutineScope()
     LaunchedEffect(selectedIndex, drivers) {
         drivers.forEachIndexed { i, d ->
