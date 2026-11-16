@@ -15,14 +15,13 @@ class JwSimcParser(source: String) : JwParser(source) {
         "16:15" to "17:00", "17:00" to "17:45",
     )
 
-    private val marshal = Regex("""\btable\s*\.\s*marshalTable\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*;""")
-        .find(source)?.groupValues?.drop(1)?.map { it.toIntOrNull() }
+    private val marshal by lazy { JwScriptSource(source).marshalArguments() }
 
     private fun weeks(bitmap: String): String {
         val values = marshal ?: return ""
-        val origin = values[0] ?: return ""
-        val from = values[1] ?: return ""
-        val to = values[2] ?: return ""
+        val origin = values[0]
+        val from = values[1]
+        val to = values[2]
         if (bitmap.isEmpty() || bitmap.any { it != '0' && it != '1' } || origin <= 0 || from <= 0 || to < from) return ""
         val first = origin.toLong() + from - 2
         val last = origin.toLong() + to - 2

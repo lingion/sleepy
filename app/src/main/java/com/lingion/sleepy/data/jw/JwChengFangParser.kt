@@ -20,10 +20,14 @@ import org.json.JSONArray
  */
 class JwChengFangParser(source: String) : JwParser(source) {
 
+    private val data by lazy { courseData(source) }
+
+    /** The field structure identifies CF; the JavaScript binding is not a protocol identifier. */
+    fun hasCourseData(): Boolean = data != null
+
     override fun generateCourseList(): List<JwCourse> {
         val result = arrayListOf<JwCourse>()
-        val json = extractKbxxJson(source) ?: return result
-        val arr = try { JSONArray(json) } catch (e: Exception) { return result }
+        val arr = data?.value as? JSONArray ?: return result
 
         for (i in 0 until arr.length()) {
             val o = arr.optJSONObject(i) ?: continue
@@ -69,36 +73,20 @@ class JwChengFangParser(source: String) : JwParser(source) {
     }
 
     companion object {
-        /**
-         * 从 HTML 里抠 `var kbxx = [...]`。
-         * 字符串感知的括号配对，找不到标记 / 找不到 '[' / 括号不平衡 → null。
-         */
-        fun extractKbxxJsonForTest(html: String): String? = extractKbxxJson(html)
+        fun extractKbxxJsonForTest(html: String): String? = courseData(html)?.json
 
-        private fun extractKbxxJson(html: String): String? {
-            val marker = "var kbxx"
-            val idx = html.indexOf(marker)
-            if (idx < 0) return null
-            var arrStart = idx + marker.length
-            while (arrStart < html.length && html[arrStart] != '[') arrStart++
-            if (arrStart >= html.length) return null
-
-            var depth = 0
-            var inStr = false
-            var esc = false
-            for (i in arrStart until html.length) {
-                val c = html[i]
-                if (esc) { esc = false; continue }
-                if (c == '\\') { esc = true; continue }
-                if (c == '"') { inStr = !inStr; continue }
-                if (inStr) continue
-                when (c) {
-                    '[' -> depth++
-                    ']' -> { depth--; if (depth == 0) return html.substring(arrStart, i + 1) }
-                }
+        private fun courseData(source: String): JwScriptJson.Literal? = (if (
+            listOf("kcmc", "xq", "jcdm2", "zcs").all(source::contains)
+        ) JwScriptJson.find(source) { literal ->
+            val array = literal.value as? JSONArray ?: return@find false
+            (0 until array.length()).any { index ->
+                val row = array.optJSONObject(index)
+                row != null && listOf("kcmc", "xq", "jcdm2", "zcs").all(row::has)
             }
-            return null
-        }
+        } else null) ?: if (source.contains("kbxx")) JwScriptJson.find(source) {
+            // An anonymous [] has no schema. Keep only the established empty-term signal.
+            it.binding?.substringAfterLast('.') == "kbxx" && (it.value as? JSONArray)?.length() == 0
+        } else null
 
         internal fun weekIntList2WeekBeanList(input: List<Int>): List<Triple<Int, Int, Int>> {
             if (input.isEmpty()) return emptyList()
@@ -135,22 +123,9 @@ class JwChengFangParser(source: String) : JwParser(source) {
         }
     }
 
-    /** T8: var kbxx + CF 字段四件套 = 100; 仅 var kbxx = 70 */
-    override fun confidence(): Int {
-        if (!source.contains("var kbxx")) return 0
-        val hasFields = source.contains("kcmc") && (source.contains("teaxms") ||
-            source.contains("jxcdmcs") || source.contains("jcdm2"))
-        return if (hasFields) 100 else 70
-    }
+    override fun confidence(): Int = (data?.value as? JSONArray)?.let { if (it.length() > 0) 100 else 70 } ?: 0
 
     override fun matchedFeatures(): List<String> {
-        if (!source.contains("var kbxx")) return emptyList()
-        return buildList {
-            add("var kbxx")
-            if (source.contains("kcmc")) add("字段=kcmc")
-            if (source.contains("teaxms")) add("字段=teaxms")
-            if (source.contains("jxcdmcs")) add("字段=jxcdmcs")
-            if (source.contains("jcdm2")) add("字段=jcdm2")
-        }
+        return if (data != null) listOf("cf-course-schema") else emptyList()
     }
 }

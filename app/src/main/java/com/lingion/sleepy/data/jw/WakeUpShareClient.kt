@@ -147,12 +147,17 @@ internal object WakeUpShareClient {
                 put("name", JsonPrimitive(courseName))
                 put("teacher", JsonPrimitive(detail["teacher"].contentOrNullSafe2() ?: ""))
                 put("position", JsonPrimitive(detail["room"].contentOrNullSafe2() ?: ""))
+                put("note", JsonPrimitive(detail["courseNote"].contentOrNullSafe2() ?: ""))
                 put("day", JsonPrimitive(day))
                 put("startNode", JsonPrimitive(startNode))
                 put("step", JsonPrimitive(step))
                 put("startWeek", JsonPrimitive(startWeek))
                 put("endWeek", JsonPrimitive(endWeek))
                 put("type", JsonPrimitive(type))
+                if ((detail["ownTime"] as? JsonPrimitive)?.content == "true") {
+                    put("startTime", JsonPrimitive(detail["startTime"].contentOrNullSafe2() ?: ""))
+                    put("endTime", JsonPrimitive(detail["endTime"].contentOrNullSafe2() ?: ""))
+                }
             }
         }
         val startDate = WakeUpShareProtocol.convertToSemesterStartDate(
@@ -160,7 +165,7 @@ internal object WakeUpShareClient {
         )
         val maxWeek = parts.uiConfig["maxWeek"]?.jsonPrimitive?.intOrNull
         val root = buildJsonObject {
-            put("name", JsonPrimitive("WakeUP 分享课表"))
+            put("name", JsonPrimitive(parts.uiConfig["tableName"].contentOrNullSafe2() ?: "WakeUP 分享课表"))
             if (startDate != null) put("startDate", JsonPrimitive(startDate))
             put("courses", JsonArray(courses))
             put(

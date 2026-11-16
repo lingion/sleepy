@@ -1818,45 +1818,42 @@ const val QZ_APP_FETCH_JS = """
             method:'POST',
             credentials:'include',
             headers: { 'token': token }
-          }).then(function(r){ return r.text(); });
+          }).then(function(r){
+            if (r.status === 401) throw new Error('登录已过期: 请重新登录后再点导入');
+            if (!r.ok) throw new Error('课表接口 HTTP ' + r.status);
+            return r.text();
+          }).then(function(text){
+            var response = JSON.parse(text);
+            if (response && String(response.code) === '401') throw new Error('登录已过期: 请重新登录后再点导入');
+            if (!response || (String(response.code) !== '1' && String(response.code) !== '200')) {
+              throw new Error('课表接口返回异常');
+            }
+            return response;
+          });
         };
         // 课表端点一次只回一周 (week= 空 = 当前教学周, data 单元素);
         // 只抓当前周会丢掉仅在后续周出现的课 — 先取 teachingWeek 周数列表,
         // 再并行逐周拉取合并 (与燕大 boya_pp 逐周方案同构)
-        return call('/teachingWeek').then(function(twText){
+        return call('/teachingWeek').then(function(tw){
+          if (!Array.isArray(tw.data) || !tw.data.length) throw new Error('未取得完整教学周列表，请进入本学期课表后重试');
           var weekNums = [];
-          try {
-            var tw = JSON.parse(twText);
-            if (tw && tw.code != '401' && tw.data && tw.data.length) {
-              for (var i = 0; i < tw.data.length; i++) {
-                var n = parseInt(tw.data[i].week, 10);
-                if (n >= 1 && n <= 30) weekNums.push(n);
-              }
-            }
-          } catch(e) {}
-          if (!weekNums.length) weekNums = [1];
-          var expired = false;
+          for (var i = 0; i < tw.data.length; i++) {
+            var raw = String(tw.data[i] && tw.data[i].week).trim();
+            var n = Number(raw);
+            if (!/^\d+$/.test(String(raw)) || !(n >= 1 && n <= 30)) throw new Error('教学周列表格式异常');
+            if (weekNums.indexOf(n) < 0) weekNums.push(n);
+          }
           var reqs = weekNums.map(function(w){
             return call('/student/curriculum?week=' + w + '&kbjcmsid=')
-              .then(function(text){
-                try { if (JSON.parse(text).code == '401') expired = true; } catch(e) {}
-                return text;
-              })
-              .catch(function(){ return null; });
+              .then(function(response){
+                if (!Array.isArray(response.data) || response.data.some(function(grid){
+                  return !grid || !Array.isArray(grid.courses);
+                })) throw new Error('第' + w + '周课表结构异常，请重试');
+                return response;
+              });
           });
-          return Promise.all(reqs).then(function(texts){
-            if (expired) {
-              post({ok:false, err:'登录已过期: 请重新登录后再点导入'});
-              return;
-            }
-            var ok = texts.filter(function(t){ return t !== null; });
-            if (!ok.length) {
-              post({ok:false, err:'课表接口无响应: 请确认已登录并进入课表页'});
-              return;
-            }
-            post({ok:true, data: JSON.stringify({weeks: ok.map(function(t){
-              try { return JSON.parse(t); } catch(e) { return null; }
-            }).filter(function(j){ return j !== null; })})});
+          return Promise.all(reqs).then(function(weeks){
+            post({ok:true, data: JSON.stringify({weeks: weeks})});
           });
         });
       })
@@ -1893,6 +1890,7 @@ private const val BOYA_PP_FETCH_JS = """
         if (!r.ok) throw new Error('接口请求失败 HTTP ' + r.status);
         return r.json();
       }).then(function(j){
+        if (j && String(j.code) === '401') throw new Error('登录态已失效，请重新登录研究生平台后再点导入');
         if (!j || (j.code !== 200 && j.code !== '200')) {
           throw new Error((j && j.message) ? j.message : '接口返回异常');
         }
@@ -1901,21 +1899,34 @@ private const val BOYA_PP_FETCH_JS = """
     };
     get('/api/login/currentUser')
     .then(function(u){ return (u && u.termName) ? String(u.termName) : ''; })
-    .catch(function(){ return ''; })
+    .catch(function(e){
+      if (String(e && e.message || '').indexOf('登录态已失效') >= 0) throw e;
+      return '';
+    })
     .then(function(termName){
       return get('/api/microForm/term').then(function(terms){
-        var list = terms || [];
-        var cur = null;
-        for (var i = 0; i < list.length; i++) {
-          if (termName && list[i].termName === termName) { cur = list[i]; break; }
-          if (!termName && String(list[i].currentTerm) === '是') { cur = list[i]; }
-        }
+        if (!Array.isArray(terms)) throw new Error('学期列表结构异常');
+        var selected = terms.filter(function(term){ return term && (termName ? term.termName === termName : String(term.currentTerm) === '是'); });
+        if (selected.length > 1) throw new Error('学期选择存在冲突，请重新进入本学期课表');
+        var cur = selected[0];
         if (!cur || !cur.termName) throw new Error('未找到当前学期，请确认已进入本学期课表页');
         return cur;
       });
     })
     .then(function(term){
       var T = term.termName;
+      // Calendar endpoints are inclusive: an end date on Monday still uses that week.
+      var rawWeekCount = String(term.weekEnd == null ? '' : term.weekEnd).trim();
+      var maxWeek;
+      if (rawWeekCount) {
+        maxWeek = Number(rawWeekCount);
+        if (!/^\d+$/.test(rawWeekCount) || !(maxWeek >= 1 && maxWeek <= 30)) throw new Error('学期周数格式异常');
+      } else {
+        var firstDay = new Date(String(term.termBeginTime || '').slice(0, 10) + 'T00:00:00Z').getTime();
+        var lastDay = new Date(String(term.termEndTime || '').slice(0, 10) + 'T00:00:00Z').getTime();
+        maxWeek = Math.floor((lastDay - firstDay) / (7 * 24 * 3600 * 1000)) + 1;
+        if (!(maxWeek >= 1 && maxWeek <= 30)) throw new Error('未取得完整学期周数，请重新进入本学期课表');
+      }
       var periodsP = get('/api/schedule/class/setting/current?yearTerm=' + encodeURIComponent(T))
       .then(function(cfg){
         var periods = [];
@@ -1932,27 +1943,18 @@ private const val BOYA_PP_FETCH_JS = """
           periods.sort(function(a, b){ return a.node - b.node; });
         } catch(e) { periods = []; }
         return periods;
-      }).catch(function(){ return []; });
-      // 总周数: weekEnd 优先 ("19"), 兜底按起止日推算, 再兜底 30
-      var maxWeek = parseInt(term.weekEnd, 10);
-      if (!(maxWeek >= 1 && maxWeek <= 30)) {
-        try {
-          var ms = new Date(term.termEndTime) - new Date(term.termBeginTime);
-          maxWeek = Math.ceil(ms / (7 * 24 * 3600 * 1000));
-        } catch(e) { maxWeek = 0; }
-        if (!(maxWeek >= 1 && maxWeek <= 30)) maxWeek = 30;
-      }
+      }).catch(function(e){
+        if (String(e && e.message || '').indexOf('登录态已失效') >= 0) throw e;
+        return [];
+      });
       var weekReqs = [];
       for (var w = 1; w <= maxWeek; w++) {
         weekReqs.push(
           get('/api/schedule/table/byStudent?page=0&size=500&whichWeek=' + w +
               '&yearTerm=' + encodeURIComponent(T))
-          .then(function(rows){ return rows || []; })
-          .catch(function(e){
-            // 单周偶发失败不致命, 静默跳过; 但 401 登录失效必须中止 —
-            // 否则会以部分数据伪装成完整课表
-            if (e && String(e.message || '').indexOf('登录态已失效') >= 0) throw e;
-            return [];
+          .then(function(rows){
+            if (!Array.isArray(rows)) throw new Error('逐周课表结构异常，请重试');
+            return rows;
           })
         );
       }
@@ -2943,14 +2945,7 @@ private fun captureOnce(wv: WebView, declaredType: String?, onResult: (FrameCapt
 /** 带重试的抓取: 空壳 iframe / 延迟渲染容器按 1500ms 间隔重试, 至多 3 次。 */
 private fun captureWithRetry(wv: WebView, retryCount: Int, declaredType: String?, onResult: (FrameCaptureResult) -> Unit) {
     captureOnce(wv, declaredType) { first ->
-        // ① 空壳 iframe: 先于 Readiness 判定(about:blank 壳不属于"容器空")
-        val shell = first.html.isBlank() || RenderReadinessChecker.checkBlankShell(first.html)
-        // ② readiness 只看选中 frame 的 html
-        val readiness = when {
-            retryCount >= 3 -> RenderReadinessChecker.Readiness.GIVE_UP
-            shell -> RenderReadinessChecker.Readiness.DELAY   // 空壳 → 等导航
-            else -> RenderReadinessChecker.check(first.html, retryCount)
-        }
+        val readiness = RenderReadinessChecker.check(first, retryCount)
         when (readiness) {
             RenderReadinessChecker.Readiness.READY -> onResult(first)
             RenderReadinessChecker.Readiness.DELAY -> {

@@ -3,6 +3,7 @@ package com.lingion.sleepy.data.jw
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -20,7 +21,17 @@ class JwNuitParser(source: String) : JwParser(source) {
             val name = obj.string("courseName")
             val details = obj.string("classDateAndPlace")
             if (name.isBlank() || details.isBlank()) return@flatMap emptyList()
-            details.split('，', ',').flatMap { parseDetail(name, it) }
+            appointments(details).flatMap { parseDetail(name, it) }
+        }
+    }
+
+    /** Find each complete four-field prefix before considering commas in its room. */
+    private fun appointments(details: String): List<String> {
+        val prefix = Regex("""(?:^|[,，])\s*([0-9][^/]*?)/\s*星期[一二三四五六日]\s*/\s*第\d+节-第\d+节\s*/\s*[^/]+?\[主讲]\s*/""")
+        val starts = prefix.findAll(details).toList()
+        return starts.mapIndexed { index, match ->
+            details.substring(match.range.first, starts.getOrNull(index + 1)?.range?.first ?: details.length)
+                .trimStart(',', '，').trim()
         }
     }
 
@@ -29,23 +40,16 @@ class JwNuitParser(source: String) : JwParser(source) {
         val weeks = parseWeeks(match.groupValues[1])
         val day = dayMap[match.groupValues[2]] ?: return emptyList()
         val start = match.groupValues[3].toIntOrNull() ?: return emptyList()
-        val end = match.groupValues[4].toIntOrNull() ?: start
+        val end = match.groupValues[4].toIntOrNull() ?: return emptyList()
+        if (start !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || end !in start..EXPLICIT_SCHEDULE_RESOURCE_BOUND) return emptyList()
         val teacher = match.groupValues[5].trim()
         val room = match.groupValues[6].trim()
         return weeks.map { week -> JwCourse(name, room, teacher, day, start, end, week, week) }
     }
 
-    private fun parseWeeks(text: String): List<Int> = text.replace(Regex("\\[[^]]*]"), "")
-        .replace("周", "").replace(" ", "")
-        .split(',', '，')
-        .flatMap { segment ->
-            val odd = segment.contains("(单)")
-            val even = segment.contains("(双)")
-            val clean = segment.replace("(单)", "").replace("(双)", "")
-            val bounds = clean.split('-', limit = 2).mapNotNull { it.toIntOrNull() }
-            val range = when (bounds.size) { 2 -> bounds[0]..bounds[1]; 1 -> bounds[0]..bounds[0]; else -> IntRange.EMPTY }
-            range.filter { (!odd || it % 2 == 1) && (!even || it % 2 == 0) }
-        }
+    private fun parseWeeks(text: String): List<Int> = schoolWeekRanges(
+        text.replace(Regex("\\[[^]]*]"), ""),
+    ).flatMap { (first, last, parity) -> (first..last).filter { parity == 0 || it % 2 == parity % 2 } }
 
     override fun confidence(): Int = runCatching {
         val rows = json.parseToJsonElement(source).jsonObject["datas"]
@@ -60,4 +64,4 @@ class JwNuitParser(source: String) : JwParser(source) {
 }
 
 private fun JsonObject.string(key: String): String =
-    this[key]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
+    (this[key] as? JsonPrimitive)?.contentOrNull?.trim().orEmpty()

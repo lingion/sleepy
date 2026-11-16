@@ -22,7 +22,7 @@
   "sources": [
     {
       "path": "scripts/data/school_catalog_baseline.json",
-      "sha256": "d8aeabba6e97e56e96a81e10eddd3a5c6d616a5c4ac7c939ef7b443c8a7fef77"
+      "sha256": "18d56ebfb7be90637716c60f8b3038bd08c6327e46de8b2a60d6decfc17951e8"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "f9ab0978fc63e0a9b95bfab2e540208f18160ab97182a55f8673405e5e785e7f"
+      "sha256": "c790490ecb927965615fb12db904903870b69bb8c0101dad1e65f616f8e1dc19"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -56,13 +56,13 @@
   "matchingPolicy": "Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.",
   "ownershipAudit": {
     "evidenceCounts": {
-      "unknown": 2276,
-      "verified": 748,
+      "unknown": 2277,
+      "verified": 747,
       "contradicted": 1
     },
     "actions": {
-      "retained-existing-config-ownership-unresolved": 140,
-      "ownership-confirmed": 748,
+      "retained-existing-config-ownership-unresolved": 141,
+      "ownership-confirmed": 747,
       "retained-wakeup-declared-owner": 590,
       "retained-wakeup-662-declared-owner": 1304,
       "retained-shiguang-adapters-owner": 56,
@@ -731,9 +731,9 @@
       {
         "catalogId": "G_广西农业职业技术大学",
         "name": "广西农业职业技术大学",
-        "ownershipStatus": "verified",
-        "action": "ownership-confirmed",
-        "operationalUrl": "https://jwxt.gxnzd.com.cn/jwglxt/xtgl/login_slogin.html",
+        "ownershipStatus": "unknown",
+        "action": "retained-existing-config-ownership-unresolved",
+        "operationalUrl": "https://vpn.gxnzd.com.cn",
         "authenticatedImportTested": false
       },
       {

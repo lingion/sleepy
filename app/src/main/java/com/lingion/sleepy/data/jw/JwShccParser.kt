@@ -1,14 +1,17 @@
 package com.lingion.sleepy.data.jw
 
 import org.json.JSONArray
-import org.json.JSONTokener
 
-/** SHCC embeds ypData as JSON; teacher parentheses contain each meeting's week list. */
+/** SHCC embeds course rows as JSON; teacher parentheses contain each meeting's week list. */
 class JwShccParser(source: String) : JwParser(source) {
-    private val assignment by lazy { Regex("""\bvar\s+ypData\s*=""").find(source) }
+    private val data by lazy { JwScriptJson.find(source) { literal ->
+        val rows = literal.value as? JSONArray ?: return@find false
+        (0 until rows.length()).any { index -> rows.optJSONObject(index)?.let { row ->
+            listOf("kcS", "js", "xqj", "djj", "skcd").all(row::has)
+        } == true }
+    } }
     override fun generateCourseList(): List<JwCourse> = buildList {
-        val start = assignment?.range?.last?.plus(1) ?: return@buildList
-        val rows = JSONTokener(source.substring(start)).nextValue() as? JSONArray ?: return@buildList
+        val rows = data?.value as? JSONArray ?: return@buildList
         for (index in 0 until rows.length()) {
             val row = rows.optJSONObject(index) ?: continue
             val name = (row.opt("kcS") as? String)?.trim().orEmpty()
@@ -26,6 +29,6 @@ class JwShccParser(source: String) : JwParser(source) {
             }
         }
     }.distinct()
-    override fun confidence(): Int = if (assignment != null) 100 else 0
-    override fun matchedFeatures(): List<String> = if (assignment != null) listOf("ypData") else emptyList()
+    override fun confidence(): Int = if (data != null) 100 else 0
+    override fun matchedFeatures(): List<String> = if (data != null) listOf("shcc-course-schema") else emptyList()
 }

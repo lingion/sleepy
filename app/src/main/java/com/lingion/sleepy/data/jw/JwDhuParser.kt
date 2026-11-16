@@ -5,10 +5,11 @@ import org.jsoup.nodes.Element
 
 /** Declared legacy DHU HTML. The row label, not the number of preceding rows, supplies the period. */
 class JwDhuParser(source: String) : JwParser(source) {
-    private val table by lazy { Jsoup.parse(source).selectFirst("table") }
+    private val document by lazy { Jsoup.parse(source) }
+    private val courses by lazy { courseTableCandidates(document, null, ::parseTable) }
+    override fun generateCourseList(): List<JwCourse> = courses
 
-    override fun generateCourseList(): List<JwCourse> {
-        val sourceTable = table ?: return emptyList()
+    private fun parseTable(sourceTable: Element): List<JwCourse> {
         val rows = legacyDhuEcjtuRows(sourceTable) ?: return emptyList()
         return mergeCourseWeeks(buildList {
             for (row in rows) {
@@ -42,9 +43,9 @@ class JwDhuParser(source: String) : JwParser(source) {
         }
     }
 
-    override fun confidence(): Int = if (table?.select("tr")?.any { row ->
+    override fun confidence(): Int = if (document.select("table").any { table -> table.select("tr").any { row ->
         row.closest("table") == table && row.children().firstOrNull()?.let { period(it.text()) } != null
-    } == true) 80 else 0
+    } }) 80 else 0
 
     override fun matchedFeatures(): List<String> = if (confidence() > 0) listOf("DHU/chinese-period-grid") else emptyList()
 }

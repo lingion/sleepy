@@ -11,7 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 /**
  * 四川大学 (SCU) 自建门户教务 mobile JSON 解析器。
  *
- * 数据源: scu.edu.cn 移动端 (用户粘 JSON 后 fetch) — 路径 x.dateList[0].selectCourseList[]。
+ * 数据源: scu.edu.cn 移动端 (用户粘 JSON 后 fetch) — 路径 x.dateList[].selectCourseList[]。
  * 每课程下挂 timeAndPlaceList[] (一个课程可能多次出现在不同时间地点)。
  * 字段集 (timeAndPlace): {classroomName, teachingBuildingName, weekDescription,
  *                            classSessions, continuingSession, classDay, campusName,
@@ -36,8 +36,9 @@ class JwScuParser(source: String) : JwParser(source) {
         val root = runCatching { json.parseToJsonElement(source).jsonObject }
             .getOrNull() ?: return emptyList()
         val dateList = root["dateList"] as? JsonArray ?: return emptyList()
-        val first = dateList.firstOrNull() as? JsonObject ?: return emptyList()
-        val selectCourseList = first["selectCourseList"] as? JsonArray ?: return emptyList()
+        val selectCourseList = dateList.flatMap { group ->
+            ((group as? JsonObject)?.get("selectCourseList") as? JsonArray).orEmpty()
+        }
         val out = mutableListOf<JwCourse>()
         for (el in selectCourseList) {
             val course = el as? JsonObject ?: continue
@@ -52,10 +53,11 @@ class JwScuParser(source: String) : JwParser(source) {
                 val room = building + classroom
                 val weekDesc = tp.str("weekDescription")
                 val startNode = tp.str("classSessions").toIntOrNull() ?: continue
-                val continuing = tp.str("continuingSession").toIntOrNull() ?: 1
-                val endNode = startNode + continuing - 1
+                val continuing = if ("continuingSession" in tp) tp.str("continuingSession").toIntOrNull() ?: continue else 1
+                val endNode = explicitScheduleEnd(startNode, continuing) ?: continue
                 val rawDay = tp.str("classDay").toIntOrNull() ?: continue
                 val day = rawDay + 1  // 0-indexed Mon..Sun → 1..7
+                if (rawDay !in 0..6) continue
                 val (parity, cleanedWeeks) = extractParity(weekDesc)
                 val weeks = parseWeeks(cleanedWeeks)
                 for ((sw, ew) in weeks) {
@@ -67,6 +69,7 @@ class JwScuParser(source: String) : JwParser(source) {
                         2 -> if (sw % 2 != 0) sw + 1 else sw
                         else -> sw
                     }
+                    if (adjustedStart > ew) continue
                     out += JwCourse(
                         name = name,
                         room = room,
@@ -128,10 +131,7 @@ class JwScuParser(source: String) : JwParser(source) {
         return runCatching {
             val root = json.parseToJsonElement(source).jsonObject
             val dl = root["dateList"] as? JsonArray
-            if (dl != null && dl.isNotEmpty()) {
-                val first = dl[0] as? JsonObject
-                if ((first?.get("selectCourseList")) is JsonArray) 90 else 0
-            } else 0
+            if (dl?.any { (it as? JsonObject)?.get("selectCourseList") is JsonArray } == true) 90 else 0
         }.getOrDefault(0)
     }
 
@@ -140,8 +140,7 @@ class JwScuParser(source: String) : JwParser(source) {
         val ok = runCatching {
             val root = json.parseToJsonElement(source).jsonObject
             val dl = root["dateList"] as? JsonArray
-            dl != null && dl.isNotEmpty() &&
-                ((dl[0] as? JsonObject)?.get("selectCourseList")) is JsonArray
+            dl?.any { (it as? JsonObject)?.get("selectCourseList") is JsonArray } == true
         }.getOrDefault(false)
         if (ok) out += "selectCourseList"
         return out
