@@ -37,120 +37,15 @@ class JwNewZfParser(source: String) : JwParser(source) {
 
     // ─── JSON 提取 ────────────────────────────────────────────
 
-    /**
-     * 标记关键字（按上游 NewZFParser.kt / 拾光 zhengfang_01.js / FlowCourse / zfn_api /
-     * GZUS-PRO / SHUFEZJ / NBUT / HUEL / QUT 调研结论排序）：
-     *   - "kbList": 主流, FlowCourse 嗅探条件原文 text.indexOf('kbList') !== -1
-     *   - "xskbcx_json": SHUFEZJ 注释提及, 极少版本
-     *   - "kbxx": v1.0.29 兼容(老 fixture 使用), 保留但降级到最后; CF 防御靠字段 guard
-     *
-     * 已剔除（调研确认无佐证或是 bug 源）：
-     *   - "tmp_list": 无任何上游/适配器实证, 属臆造
-     *   - "xskbcx": 作 marker 会命中 URL 子串如 /kbcx/xskbcx_cxXsgrkb.html, 产生假 JSON
-     */
-    private val JSON_MARKERS = listOf("\"kbList\"", "\"xskbcx_json\"", "\"kbxx\"")
-
+    /** Select one complete static timetable; binding names and wrappers carry no course meaning. */
     private fun parseEmbeddedJson(): List<JwCourse> {
-        for (marker in JSON_MARKERS) {
-            val idx = findJsonKeyIndex(source, marker) ?: continue
-            val jsonStr = extractBalanced(source, idx) ?: continue
-            val courses = parseCourseJsonArray(jsonStr)
-            if (courses.isNotEmpty()) return courses
+        var courses = emptyList<JwCourse>()
+        JwScriptJson.find(source) { literal ->
+            if (literal.value !is JSONArray && literal.value !is org.json.JSONObject) return@find false
+            courses = parseCourseJsonArray(literal.json)
+            courses.isNotEmpty()
         }
-        // T8 补充: JS 变量赋值形态 `var kbList = [...]` / `var kbxx=[...]`（无引号键名）
-        for (name in listOf("kbList", "xskbcx_json", "kbxx")) {
-            val idx = findJsonVarIndex(source, name) ?: continue
-            val jsonStr = extractBalanced(source, idx) ?: continue
-            val courses = parseCourseJsonArray(jsonStr)
-            if (courses.isNotEmpty()) return courses
-        }
-
-        // 尝试纯 JSON 页面（API 响应被 WebView 直接渲染, 或移动端深层包装）
-        val trimmed = source.trim()
-        if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
-            val courses = parseCourseJsonArray(trimmed)
-            if (courses.isNotEmpty()) return courses
-        }
-
-        return emptyList()
-    }
-
-    /**
-     * 严格 JSON 键搜索: 找到 marker 后, 要求后续非空字符为 JSON 开始符 ({ 或 [)。
-     * 命中位置返回 JSON 开始符的下标, 以便 extractBalanced 从该处起算。
-     *
-     * 反例(应跳过):
-     *   ".../kbcx/xskbcx_cxXsgrkb.html..."  // URL 子串, xskbcx 后面是 '_', 非空白+{
-     *   "var foo = \"xskbcx_json_other\""   // 标识符前缀, xskbcx_json 后面是 '_'
-     */
-    private fun findJsonKeyIndex(s: String, quotedKey: String): Int? {
-        var from = 0
-        while (true) {
-            val idx = s.indexOf(quotedKey, from)
-            if (idx < 0) return null
-            val after = idx + quotedKey.length
-            if (after >= s.length) return null
-            // 跳过空白
-            var p = after
-            while (p < s.length && s[p].isWhitespace()) p++
-            // JSON 键形态 "kbList": [ 允许单个冒号
-            if (p < s.length && s[p] == ':') {
-                p++
-                while (p < s.length && s[p].isWhitespace()) p++
-            }
-            if (p >= s.length) { from = idx + 1; continue }
-            when (s[p]) {
-                '{', '[' -> return p
-                else -> { from = idx + 1; continue }
-            }
-        }
-    }
-
-    /**
-     * T8: JS 变量赋值形态的严格搜索 — `var kbList = [...]`。
-     * marker 后必须跳过空白与单个 '=', 后续非空字符为 { 或 [。
-     */
-    private fun findJsonVarIndex(s: String, name: String): Int? {
-        val marker = "var $name"
-        var from = 0
-        while (true) {
-            val idx = s.indexOf(marker, from)
-            if (idx < 0) return null
-            var p = idx + marker.length
-            while (p < s.length && s[p].isWhitespace()) p++
-            if (p < s.length && s[p] == '=') {
-                p++
-                while (p < s.length && s[p].isWhitespace()) p++
-                if (p < s.length && (s[p] == '{' || s[p] == '[')) return p
-            }
-            from = idx + 1
-        }
-    }
-
-    /** 从 start 位置提取配对的 JSON 数组/对象（括号匹配） */
-    private fun extractBalanced(s: String, start: Int): String? {
-        if (start >= s.length) return null
-        val open = s[start]
-        val close = when (open) {
-            '[' -> ']'
-            '{' -> '}'
-            else -> return null
-        }
-        var depth = 0
-        var inStr = false
-        var esc = false
-        for (i in start until s.length) {
-            val c = s[i]
-            if (esc) { esc = false; continue }
-            if (c == '\\') { esc = true; continue }
-            if (c == '"') { inStr = !inStr; continue }
-            if (inStr) continue
-            when (c) {
-                open -> depth++
-                close -> { depth--; if (depth == 0) return s.substring(start, i + 1) }
-            }
-        }
-        return null
+        return courses
     }
 
     private fun parseCourseJsonArray(jsonStr: String): List<JwCourse> {
@@ -231,7 +126,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
         if (depth > 4) return null  // 防御: 最多下钻 4 层
         for (key in listOf("kbList", "kbxx", "tmp_list")) {
             val v = obj.optJSONArray(key)
-            if (v != null) return v
+            if (v != null && isCourseArray(v)) return v
         }
         for (key in obj.keys()) {
             val v = obj.optJSONObject(key)
@@ -241,6 +136,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
             }
             val arr = obj.optJSONArray(key)
             if (arr != null) {
+                if (isCourseArray(arr)) return arr
                 for (i in 0 until arr.length()) {
                     val inner = arr.optJSONObject(i) ?: continue
                     findKbListArray(inner, depth + 1)?.let { return it }
@@ -248,6 +144,17 @@ class JwNewZfParser(source: String) : JwParser(source) {
             }
         }
         return null
+    }
+
+    private fun isCourseArray(array: JSONArray): Boolean = (0 until array.length()).any { index ->
+        val row = array.optJSONObject(index) ?: return@any false
+        if (listOf("teaxms", "jxcdmcs", "jcdm2", "zcs").any(row::has)) return@any false
+        listOf(
+            listOf("kcmc", "kcm", "kc_mc", "courseName", "rlkcmc", "jxbmc"),
+            listOf("xqj", "kcxq", "xq", "classDay", "skxq", "xqjmc"),
+            listOf("jcs", "jc", "classSessions", "ksjcsd", "ksjc"),
+            listOf("zcd", "kkzc", "zc", "classWeek", "skzc"),
+        ).all { keys -> keys.any(row::has) }
     }
 
     /**
