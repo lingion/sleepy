@@ -273,6 +273,7 @@ object ScheduleParser {
 
         return lossless(name, startDate, courses, harvested.timeJson, harvested.nodesPerDay, harvested.periodTable)
             .copy(
+                maxWeek = root["tableInfo"]?.jsonObject?.get("maxWeek")?.jsonPrimitive?.intOrNull ?: 0,
                 importSourceJson = originalImportSource(sourceText),
                 jwSchoolSourceJson = originalJwSchoolSource(sourceText),
             )
@@ -427,6 +428,7 @@ object ScheduleParser {
         val harvested = harvestTimeFromTableInfo(root, name)
         return lossless(name, startDate, courses, harvested.timeJson, harvested.nodesPerDay, harvested.periodTable)
             .copy(
+                maxWeek = root["tableInfo"]?.jsonObject?.get("maxWeek")?.jsonPrimitive?.intOrNull ?: 0,
                 importSourceJson = originalImportSource(sourceText),
                 jwSchoolSourceJson = originalJwSchoolSource(sourceText),
             )
