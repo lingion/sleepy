@@ -449,12 +449,7 @@ internal object WakeUpCompat {
 
     /** XMU embeds an ordinary JSON array; SKZC has no leading week-zero sentinel. */
     internal fun parseJzXmu(source: String): List<JwCourse> {
-        val start = Regex("""var\s+scheduleList\s*=""").find(source)?.range?.last?.plus(1)
-            ?: return emptyList()
-        val remainder = source.substring(start)
-        val end = Regex(""";\s*var\s+notArrangedList""").find(remainder)?.range?.first
-            ?: return emptyList()
-        val rows = parseJson(remainder.substring(0, end)) as? JSONArray ?: return emptyList()
+        val rows = xmuRows(source) ?: return emptyList()
         return buildList {
             for (i in 0 until rows.length()) {
                 val row = rows.optJSONObject(i) ?: continue
@@ -472,6 +467,14 @@ internal object WakeUpCompat {
             }
         }
     }
+
+    internal fun xmuRows(source: String): JSONArray? = JwScriptJson.find(source) { literal ->
+        val array = literal.value as? JSONArray ?: return@find false
+        (0 until array.length()).any { index ->
+            val row = array.optJSONObject(index)
+            row != null && listOf("KCM", "SKXQ", "KSJC", "JSJC", "SKZC").all(row::has)
+        }
+    }?.value as? JSONArray
 
     fun parseChaoxing(source: String): List<JwCourse> {
         val root = parseJson(source)
@@ -1342,8 +1345,7 @@ class JwJzParser(source: String) : WakeUpMarkerParser(source, setOf("courseTable
                 ".x-table", "table[id^=jsTbl_] td[xq][jc]",
                 "td[data-role=item] .mtt_arrange_item",
             )) if (doc.selectFirst(selector) != null) add("jz=$selector")
-            if (Regex("""\bvar\s+scheduleList\s*=""").containsMatchIn(source) &&
-                Regex("""\bvar\s+notArrangedList\s*=""").containsMatchIn(source)) add("jz=scheduleList")
+            if (WakeUpCompat.xmuRows(source) != null) add("jz=schedule-schema")
         }
     }
     override fun confidence(): Int = if (nativeFeatures.isNotEmpty()) 95 else super.confidence()
