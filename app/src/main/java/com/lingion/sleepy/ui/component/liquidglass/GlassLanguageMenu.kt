@@ -410,8 +410,7 @@ private fun LanguagePopup(
                 } }) {
                 if (anchor.width > 0f) {
                     // Bound the optical pass to the card/menu region rather than shading the whole window.
-                    val carrier = Rect(minOf(geometry.anchor.left, geometry.material.left), minOf(geometry.anchor.top, geometry.material.top),
-                        maxOf(geometry.anchor.right, geometry.material.right), maxOf(geometry.anchor.bottom, geometry.material.bottom))
+                    val carrier = geometry.carrier
                     val shape = LanguageMenuMorphShape(geometry.anchor.translate(-carrier.topLeft),
                         geometry.material.translate(-carrier.topLeft), motion.alpha, density.density)
                     // A retained placement clip keeps the source card's first-frame height

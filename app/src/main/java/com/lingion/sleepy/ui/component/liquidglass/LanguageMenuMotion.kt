@@ -384,4 +384,10 @@ internal data class LanguageMenuGeometry(
     val content: Rect,
     val anchor: Rect,
     val anchorContentScale: Float,
-)
+) {
+    val carrier: Rect
+        get() = Rect(
+            minOf(anchor.left, material.left), minOf(anchor.top, material.top),
+            maxOf(anchor.right, material.right), maxOf(anchor.bottom, material.bottom),
+        )
+}
