@@ -21,7 +21,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * 字段映射（教务 → JwCourse）：
  *   courseName → name
  *   staffName  → teacher（整名保留）
- *   classPlace{N}/classTime{N} 成对槽位 (1..40)：
+ *   classPlace{N}/classTime{N} 成对数字槽位 (读取实际 classTime 后缀)：
  *     classTime  "7、10-12、14-15周 星期三 5节" → 周次段×星期×节次
  *     classPlace "X30547(犀浦)(教师甲)"        → room（教师括号截掉）
  *
@@ -70,7 +70,8 @@ class JwYethanParser(source: String) : JwParser(source) {
             if (name.isBlank()) continue
             val teacher = str("staffName")
 
-            for (i in 1..40) {
+            val slots = o.keys.mapNotNull { Regex("""classTime([1-9]\d*)""").matchEntire(it)?.groupValues?.get(1)?.toIntOrNull() }
+            for (i in slots.sorted()) {
                 val timeRaw = str("classTime$i")
                 if (timeRaw.isBlank()) continue
                 val place = roomOf(str("classPlace$i"))
@@ -83,17 +84,18 @@ class JwYethanParser(source: String) : JwParser(source) {
                     nodeStr.substringBefore('-').trim().toIntOrNull() ?: continue
                 } else nodeStr.trim().toIntOrNull() ?: continue
                 val endNode = if (nodeStr.contains('-')) {
-                    nodeStr.substringAfter('-').trim().toIntOrNull() ?: startNode
+                    nodeStr.substringAfter('-').trim().toIntOrNull() ?: continue
                 } else startNode
 
+                if (startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
                 for ((sw, ew) in weekRuns(m.groupValues[1])) {
                     result += JwCourse(
                         name = name,
                         room = place,
                         teacher = teacher,
-                        day = day.coerceIn(1, 7),
-                        startNode = startNode.coerceAtLeast(1),
-                        endNode = endNode.coerceAtLeast(startNode),
+                        day = day,
+                        startNode = startNode,
+                        endNode = endNode,
                         startWeek = sw,
                         endWeek = ew,
                         type = 0

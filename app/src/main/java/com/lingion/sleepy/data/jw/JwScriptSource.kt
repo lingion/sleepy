@@ -70,20 +70,46 @@ internal class JwScriptSource(source: String) {
     }
 
     val assignments: List<Assignment> by lazy {
-        matches(Regex("""[\w$]+(?:\.[\w$]+)*\s*(\+=|=(?!=|>))\s*""")).map { match ->
+        matches(Regex("""[\w$]+(?:\s*\.\s*[\w$]+)*\s*(\+=|=(?!=|>))\s*""")).map { match ->
             val operator = match.groupValues[1]
-            val target = match.value.substringBefore(operator).trim()
+            val target = match.value.substringBefore(operator).replace(Regex("\\s+"), "")
             val start = match.range.last + 1
             var end = start
             var depth = 0
             while (end < code.length) {
                 val c = code[end]
-                if (depth == 0 && (c == ';' || c == '\n' || c == '\r')) break
+                if (depth == 0 && (c == ';' || c == ',')) break
+                if (depth == 0 && (c == '\n' || c == '\r')) {
+                    var left = end - 1
+                    while (left >= start && code[left].isWhitespace()) left--
+                    var right = end + 1
+                    while (right < code.length && code[right].isWhitespace()) right++
+                    val previous = code.getOrNull(left)?.takeIf { left >= start }
+                    val next = code.getOrNull(right)
+                    // A line terminator after an operator or before a member/call is
+                    // part of the initializer. Completed statements may omit ';'.
+                    val continued = (previous != null && previous in "+-*/%=?:&|^!~<>") ||
+                        (next != null && next in ".([+-*/%?:&|^<>")
+                    if (!continued) break
+                }
                 if (c in "([{") depth++ else if (c in ")]}") { if (depth == 0) break; depth-- }
                 end++
             }
             Assignment(target, operator, text.substring(start, end).trim(), match.range.first)
         }.toList()
+    }
+
+    /** Bind marshal parameters to the table that actually receives activities. */
+    fun marshalArguments(): List<Int>? {
+        val binding = "[\\w$]+(?:\\s*\\.\\s*[\\w$]+)*"
+        fun compact(value: String) = value.replace(Regex("\\s+"), "")
+        val receivers = matches(Regex("($binding)\\s*\\.\\s*activities\\s*\\["))
+            .map { compact(it.groupValues[1]) }.toSet()
+        return matches(Regex("($binding)\\s*\\.\\s*marshalTable\\s*\\("))
+            .filter { receivers.isEmpty() || compact(it.groupValues[1]) in receivers }
+            .mapNotNull { match -> arguments(match.range.last)?.first?.takeIf { it.size == 3 }
+                ?.map { it.toIntOrNull() }?.takeIf { values -> values.all { it != null } }?.filterNotNull() }
+            .distinct().toList().singleOrNull()
     }
 
     fun string(expression: String): String? = expression.trim().takeIf {
