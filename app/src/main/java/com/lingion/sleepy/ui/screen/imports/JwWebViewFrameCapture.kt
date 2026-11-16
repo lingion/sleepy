@@ -41,7 +41,7 @@ data class FrameCaptureResult(
     val html: String,
     /** 该 frame 命中的锚点名, 与 ANCHORS 子集对应 */
     val matchedAnchors: List<String>,
-    /** 调用方喂 parser 后回填; 抓取层产出时恒 0 */
+    /** 真实解析得到的课程数；仅命中空容器时为 0。 */
     val courseCount: Int = 0,
     val status: FrameCaptureStatus,
     /** 跨域 frame 描述 "frameName@domain", 仅 CROSS_DOMAIN_IFRAME_BLOCKED / 诊断时非空 */
@@ -230,9 +230,11 @@ object FrameTraversalTree {
         // 既有 LOGIN_FINGERPRINTS 关键词打分<2 永远漏报, 必须先于 score≥2。
         if (JwParseDiagnostics.LOGOUT_REDIRECT.containsMatchIn(html)) return true
         val lower = html.lowercase()
+        val passwordControl = lower.contains("password") && org.jsoup.Jsoup.parse(html)
+            .select("input").any { it.attr("type").equals("password", ignoreCase = true) }
         var score = 0
         for ((kw, _) in LOGIN_FINGERPRINTS) {
-            if (lower.contains(kw)) score++
+            if (lower.contains(kw) || kw == "type=\"password\"" && passwordControl) score++
         }
         return score >= 2
     }
@@ -323,7 +325,10 @@ object FrameTraversalTree {
      *  ④ 全部可达 frame 均无锚点: 跨域 > WRONG_PAGE。
      *  ⑤ 全部 frame 不可达(顶层都跨域): blocked 非空 → CROSS_DOMAIN_IFRAME_BLOCKED, 否则 WRONG_PAGE。
      */
-    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8, declaredType: String? = null): FrameCaptureResult {
+    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8, declaredType: String? = null): FrameCaptureResult =
+        selectFrame(snapshots, maxDepth, declaredType, probeSchemas = true)
+
+    private fun selectFrame(snapshots: FrameSnapshotList, maxDepth: Int, declaredType: String?, probeSchemas: Boolean): FrameCaptureResult {
         val blocked = findBlockedFrames(snapshots)
         val reachable = snapshots.frames.filter { it.outerHTML != null && it.depth <= maxDepth }
         val maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0
@@ -350,20 +355,40 @@ object FrameTraversalTree {
         // The registry already knows supported protocols. A second type/id whitelist
         // must not discard readable data before its parser gets to inspect it.
         if (JwParserRegistry.supports(declaredType)) {
-            val declared = reachable.sortedByDescending { it.depth }.firstOrNull { frame ->
-                runCatching {
-                    JwParserRegistry.parserFor(declaredType!!, frame.outerHTML!!).generateCourseList().isNotEmpty()
-                }.getOrDefault(false)
+            for (frame in reachable.sortedByDescending { it.depth }) {
+                val count = runCatching {
+                    JwParserRegistry.parserFor(declaredType!!, frame.outerHTML!!).generateCourseList().size
+                }.getOrDefault(0)
+                if (count > 0) return FrameCaptureResult(
+                    selectedFramePath = frame.parentPath + (frame.frameName ?: ""),
+                    html = frame.outerHTML!!,
+                    matchedAnchors = listOf("declared-$declaredType") + findAnchors(frame.outerHTML!!),
+                    courseCount = count,
+                    status = FrameCaptureStatus.OK,
+                    blockedFrames = blocked,
+                    maxDepthReached = maxDepthReached,
+                    allFrames = allFrames,
+                )
             }
-            if (declared != null) return FrameCaptureResult(
-                selectedFramePath = declared.parentPath + (declared.frameName ?: ""),
-                html = declared.outerHTML!!,
-                matchedAnchors = listOf("declared-$declaredType") + findAnchors(declared.outerHTML!!),
-                status = FrameCaptureStatus.OK,
-                blockedFrames = blocked,
-                maxDepthReached = maxDepthReached,
-                allFrames = allFrames,
-            )
+        } else if (probeSchemas && declaredType.isNullOrBlank()) {
+            val candidates = rankedCandidates(snapshots, maxDepth)
+            val parsed = probeCourseFrames(snapshots, maxDepth, candidates) {
+                JwParserRegistry.selectBest(it).first
+            }
+            if (parsed != null) {
+                val (candidate, count) = parsed
+                return FrameCaptureResult(
+                    selectedFramePath = candidate.snapshot.parentPath + (candidate.snapshot.frameName ?: ""),
+                    html = candidate.snapshot.outerHTML!!,
+                    matchedAnchors = candidate.anchors,
+                    courseCount = count,
+                    status = FrameCaptureStatus.OK,
+                    blockedFrames = blocked,
+                    maxDepthReached = maxDepthReached,
+                    skippedFrames = computeSkipped(snapshots, maxDepth, candidates + candidate),
+                    allFrames = allFrames,
+                )
+            }
         }
         // ②③ 候选
         val candidates = rankedCandidates(snapshots, maxDepth)
@@ -436,6 +461,33 @@ object FrameTraversalTree {
         )
     }
 
+    private fun probeCourseFrames(
+        snapshots: FrameSnapshotList,
+        maxDepth: Int,
+        candidates: List<Candidate>,
+        parse: (String) -> List<*>,
+    ): Pair<Candidate, Int>? {
+        val probes = candidates + snapshots.frames.withIndex()
+            .filter { (_, f) -> f.outerHTML != null && f.depth <= maxDepth && candidates.none { it.snapshot == f } }
+            .sortedByDescending { it.value.depth }
+            .map { (index, frame) -> Candidate(frame, listOf("parsed-course-data"), index) }
+
+        var bestCount = 0
+        var bestCandidate: Candidate? = null
+        for (c in probes) {
+            val count = try {
+                parse(c.snapshot.outerHTML!!).size
+            } catch (t: Throwable) {
+                0
+            }
+            if (count > bestCount) {
+                bestCount = count
+                bestCandidate = c
+            }
+        }
+        return bestCandidate?.let { it to bestCount }
+    }
+
     /**
      * 解析驱动的候选回退: 把"锚点命中"升级为"锚点命中 且 parser 产出 > 0 课"。
      *
@@ -465,24 +517,9 @@ object FrameTraversalTree {
         }
         sessionExpiredResult(snapshots, maxDepth)?.let { return it }
         val candidates = rankedCandidates(snapshots, maxDepth)
-        val probes = candidates + snapshots.frames.withIndex()
-            .filter { (_, f) -> f.outerHTML != null && f.depth <= maxDepth && candidates.none { it.snapshot == f } }
-            .sortedByDescending { it.value.depth }
-            .map { (index, frame) -> Candidate(frame, listOf("parsed-course-data"), index) }
-
-        var bestCount = 0
-        var bestCandidate: Candidate? = null
-        for (c in probes) {
-            val count = try {
-                parse(c.snapshot.outerHTML!!).size
-            } catch (t: Throwable) {
-                0
-            }
-            if (count > bestCount) {
-                bestCount = count
-                bestCandidate = c
-            }
-        }
+        val parsed = probeCourseFrames(snapshots, maxDepth, candidates, parse)
+        val bestCandidate = parsed?.first
+        val bestCount = parsed?.second ?: 0
         val skipped = computeSkipped(snapshots, maxDepth, candidates + listOfNotNull(bestCandidate))
 
         val first = candidates.firstOrNull()
@@ -515,7 +552,7 @@ object FrameTraversalTree {
         }
 
         // 候选为空 → 与 selectBestFrame 一致(登录指纹 > 跨域 > WRONG_PAGE)
-        return selectBestFrame(snapshots, maxDepth)
+        return selectFrame(snapshots, maxDepth, declaredType = null, probeSchemas = false)
     }
 }
 
@@ -526,6 +563,14 @@ object RenderReadinessChecker {
             "el-table__body", "kbDataTd")
 
     enum class Readiness { READY, DELAY, GIVE_UP }
+
+    fun check(result: FrameCaptureResult, retryCount: Int): Readiness {
+        if (result.status == FrameCaptureStatus.SESSION_EXPIRED ||
+            result.status == FrameCaptureStatus.OK && result.courseCount > 0) return Readiness.READY
+        if (retryCount >= 3) return Readiness.GIVE_UP
+        if (checkBlankShell(result.html)) return Readiness.DELAY
+        return check(result.html, retryCount)
+    }
 
     /**
      * @param html 本次抓取选中的 frame HTML(不是整页拼接)
