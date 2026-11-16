@@ -963,7 +963,7 @@
 | 广西民族大学 - 研究生 | 研究生·待适配 | guangximinzudaxueyanjiusheng |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:ddb99a680faee564579a |
 | 广西民族师范学院 | 已实现配置 | guangximinzushifanxueyuan | https://www.gxnun.edu.cn/jiaowu-index.html | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; G_广西民族师范学院 |
 | 广西农业工程职业技术学院 | 待验证·可尝试 | guangxinongyegongchengzhiyejishuxueyuan | http://jw.gxngy.cn/jwapp/sys/yjsrzfwapp/dbLogin/index.do | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014764 |
-| 广西农业职业技术大学 | 已实现配置 | gxnzd / guangxinongyezhiyejishudaxue | https://jwxt.gxnzd.com.cn/jwglxt/xtgl/login_slogin.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; G_广西农业职业技术大学 |
+| 广西农业职业技术大学 | 已实现配置 | gxnzd / guangxinongyezhiyejishudaxue | https://vpn.gxnzd.com.cn | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; G_广西农业职业技术大学 |
 | 广西农业职业技术学院 | 待适配 | guangxinongyezhiyejishuxueyuan |  |  | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fc0217eb25ffdfb35412 |
 | 广西培贤国际职业学院 | 待验证·可尝试 | guangxipeixianguojizhiyexueyuan | https://course.peixianedu.com/error.html | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145014481 |
 | 广西生态工程职业技术学院 | 待验证·可尝试 | guangxishengtaigongchengzhiyejishuxueyuan | https://cas.gxstzy.cn/lyuapServer/login | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4145012344 |
