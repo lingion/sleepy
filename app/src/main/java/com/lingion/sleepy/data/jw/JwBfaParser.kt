@@ -1,13 +1,15 @@
 package com.lingion.sleepy.data.jw
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 /** BFA studentRecordTable has six explicit fields and may list separate period ranges. */
 class JwBfaParser(source: String) : JwParser(source) {
-    private val body by lazy { Jsoup.parse(source).selectFirst("#studentRecordTable tbody") }
-    override fun generateCourseList(): List<JwCourse> = buildList {
-        val root = body ?: return@buildList
-        for (row in root.children().filter { it.tagName() == "tr" }) {
+    private val document by lazy { Jsoup.parse(source) }
+    private val courses by lazy { courseTableCandidates(document, "#studentRecordTable", ::parseTable) }
+    override fun generateCourseList(): List<JwCourse> = courses
+    private fun parseTable(root: Element): List<JwCourse> = buildList {
+        for (row in root.select("tr").filter { it.closest("table") == root }) {
             val cells = row.children().filter { it.tagName() == "td" }
             if (cells.size != 6) continue
             val name = cells[0].text().trim()
@@ -20,6 +22,6 @@ class JwBfaParser(source: String) : JwParser(source) {
             }
         }
     }.distinct()
-    override fun confidence(): Int = if (body != null) 100 else 0
-    override fun matchedFeatures(): List<String> = if (body != null) listOf("studentRecordTable") else emptyList()
+    override fun confidence(): Int = if (document.selectFirst("#studentRecordTable") != null || courses.isNotEmpty()) 100 else 0
+    override fun matchedFeatures(): List<String> = if (document.selectFirst("#studentRecordTable") != null || courses.isNotEmpty()) listOf("studentRecordTable") else emptyList()
 }
