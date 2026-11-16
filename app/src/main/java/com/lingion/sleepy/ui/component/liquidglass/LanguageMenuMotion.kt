@@ -9,6 +9,8 @@ import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import kotlin.math.exp
 import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
 
 /** Actual drawing parameters, observable by explicitly enabled device captures. */
 internal data class LanguageMenuVisualState(
@@ -385,9 +387,11 @@ internal data class LanguageMenuGeometry(
     val anchor: Rect,
     val anchorContentScale: Float,
 ) {
+    // Layout places the carrier at integer pixels. Keep that same origin for
+    // local contours, and round the allocation outward so neither edge clips.
     val carrier: Rect
         get() = Rect(
-            minOf(anchor.left, material.left), minOf(anchor.top, material.top),
-            maxOf(anchor.right, material.right), maxOf(anchor.bottom, material.bottom),
+            floor(minOf(anchor.left, material.left)), floor(minOf(anchor.top, material.top)),
+            ceil(maxOf(anchor.right, material.right)), ceil(maxOf(anchor.bottom, material.bottom)),
         )
 }
