@@ -69,8 +69,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.lingion.sleepy.ui.component.liquidglass.BindGlassAndroidViewSource
-import com.lingion.sleepy.ui.component.liquidglass.glassBackdropSource
+import com.lingion.sleepy.ui.component.liquidglass.GlassNativeViewBackdrop
+import com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost
+import com.lingion.sleepy.ui.theme.LocalUiStyle
+import com.lingion.sleepy.ui.theme.UiStyle
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.jw.EAMS5_PREFIX_PLACEHOLDER
 import com.lingion.sleepy.data.jw.JwImportViewModel
@@ -145,7 +150,7 @@ fun JwWebViewLoginScreen(
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
-    BindGlassAndroidViewSource(webViewRef)
+    val nativeGlass = LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null
     var currentUrl by remember { mutableStateOf(school.url) }
     // state 版输入框 (TextFieldState) — 旧 TextFieldValue 重载走 legacy 路径,
     // 其拖拽手柄 (TextFieldSelectionState) 字节码全量零 scroll 调用, 拖光标到
@@ -457,8 +462,26 @@ fun JwWebViewLoginScreen(
     }
 
     Scaffold(
+        modifier = if (nativeGlass) Modifier.imePadding() else Modifier,
         topBar = {
-            TopAppBar(
+            if (nativeGlass) {
+                JwImportGlassToolbar(
+                    schoolName = school.name, currentUrl = currentUrl, urlDraft = urlDraft,
+                    editingUrl = editingUrl, enabled = webViewRef != null,
+                    showAdapter = sgAdapters.size > 1, desktopUa = desktopUa,
+                    onBack = { if (editingUrl) editingUrl = false else { cancelCapture(); onBack() } },
+                    onEditOrSubmit = {
+                        if (editingUrl) submitUrl() else {
+                            urlDraft.edit { replace(0, length, currentUrl) }
+                            editingUrl = true
+                        }
+                    },
+                    onSubmit = ::submitUrl,
+                    onChooseAdapter = { webViewRef?.let(::chooseSgAdapter) },
+                    onToggleUa = { cancelCapture(); desktopUa = !desktopUa; uaSwitchReload++ },
+                    onRefresh = { cancelCapture(); webViewRef?.reload() },
+                )
+            } else TopAppBar(
                 title = {
                     if (editingUrl) {
                         OutlinedTextField(
@@ -833,8 +856,9 @@ fun JwWebViewLoginScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(if (nativeGlass) PaddingValues(0.dp) else padding)
         ) {
+            GlassNativeViewBackdrop(webViewRef, Modifier.matchParentSize())
             JwWebView(
                 url = if (school.type == JwProtocol.TYPE_SG_ASSET && sgAdapters.isNotEmpty()) {
                     sgAdapterChoice?.importUrl ?: "about:blank"
@@ -872,7 +896,7 @@ fun JwWebViewLoginScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .align(Alignment.TopCenter)
-                        .padding(top = 4.dp)
+                        .padding(top = (if (nativeGlass) padding.calculateTopPadding() else 0.dp) + 4.dp)
                 ) {
                     LinearProgressIndicator(
                         progress = { progress / 100f },
@@ -922,7 +946,13 @@ private fun JwWebView(
     var lastUrl by remember { mutableStateOf(url) }
     key(recreateKey) {
         AndroidView(
-        modifier = Modifier.fillMaxSize().glassBackdropSource(0f).dbgTag("jw_webview", text = lastUrl, role = "webview", clickable = false),
+        modifier = Modifier.fillMaxSize().dbgTag("jw_webview", text = lastUrl, role = "webview", clickable = false),
+        onRelease = { webView ->
+            webView.stopLoading()
+            webView.removeJavascriptInterface("__sleepyBridge")
+            webView.removeJavascriptInterface("__sleepyNetworkBridge")
+            webView.destroy()
+        },
         factory = { context ->
             val schoolHost = lastUrl.toUri().host.orEmpty()
             WebView(context).apply {
@@ -1029,6 +1059,10 @@ private fun JwWebView(
 
 @Composable
 private fun CaptureBar(enabled: Boolean, navigationHint: String? = null, onCapture: () -> Unit) {
+    if (LocalUiStyle.current == UiStyle.LiquidGlass && LocalGlassHost.current != null) {
+        JwImportGlassCaptureBar(enabled, navigationHint, onCapture, Modifier.navigationBarsPadding())
+        return
+    }
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier

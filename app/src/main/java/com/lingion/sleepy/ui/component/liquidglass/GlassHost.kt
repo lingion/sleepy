@@ -27,12 +27,14 @@ internal val LocalGlassSourceContent = compositionLocalOf { false }
 
 /**
  * Explicit source graph: ordinary source segments may be sampled only by later consumers.
- * No whole-scene capture, readback, mutable visibility flag, or replay of live glass nodes.
+ * Native content opts out of live scene recording and supplies a bitmap-only overlay scene.
  * The owning layout must declare depth at a boundary which owns its clip and transforms.
  */
 class GlassHostState internal constructor(internal val sourceLayer: GraphicsLayer, internal val sceneLayer: GraphicsLayer) {
     internal var coordinates: LayoutCoordinates? = null
     internal var background: Color = Color.Transparent
+    // Native functors must remain in the Window display list, never in retained glass passes.
+    internal val nativeScenes = mutableStateListOf<GlassNativeWindowScene>()
     internal val sources = linkedSetOf<GlassSourceSegment>()
     internal var version by mutableIntStateOf(0)
     internal var sceneVersion by mutableIntStateOf(0)
@@ -132,7 +134,7 @@ fun GlassHost(
     ) {
         Box(modifier.onGloballyPositioned { state.coordinates = it }.drawWithContent {
             state.filterDemand
-            if (enabled) {
+            if (enabled && state.nativeScenes.isEmpty()) {
                 recordGlassLayer(state.sceneLayer) { this@drawWithContent.drawContent() }
                 drawLayer(state.sceneLayer)
                 Snapshot.withoutReadObservation { state.sceneVersion++ }
@@ -141,6 +143,14 @@ fun GlassHost(
             }
             val root = state.coordinates
             if (enabled && root?.isAttached == true) {
+                state.nativeScenes.lastOrNull()?.let { nativeScene ->
+                    // Only an already-composited bitmap enters the overlay filter graph.
+                    recordGlassLayer(state.sceneLayer) {
+                        drawRect(state.background)
+                        nativeScene.drawWindow(this, root)
+                    }
+                    Snapshot.withoutReadObservation { state.sceneVersion++ }
+                }
                 // Diagnostic export only. Consumers read their own strict prefix directly.
                 recordGlassLayer(state.sourceLayer) {
                     Snapshot.withoutReadObservation { with(state) { drawPrefix(1f, root) } }
