@@ -2,7 +2,6 @@ package com.lingion.sleepy.data.jw
 
 import org.json.JSONArray
 import org.json.JSONObject
-import org.jsoup.Jsoup
 
 /**
  * WakeUp `NewUrpSuperParser` 第二变体 (smali 类名 `o0O0o`).
@@ -109,72 +108,10 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
     /** A timetable frame may be structurally valid while the selected term has no active weeks. */
     fun hasFlatArraySchema(): Boolean = extractJsonArray(source) != null
 
-    private fun extractJsonArray(source: String): String? {
-        scanArray(source)?.let { return it }
-        // HTML attributes may contain unrelated quotes; scan script data alone.
-        if (source.contains("<script", ignoreCase = true)) {
-            for (script in Jsoup.parse(source).select("script")) {
-                scanArray(script.data())?.let { return it }
-            }
-        }
-        return null
-    }
-
-    private fun scanArray(source: String): String? {
-        // Scan balanced array candidates. Looking backward from skzc can land on
-        // '[' inside a course name or nested JSON array instead of the outer array.
-        // A real timetable has both keys; avoid scanning unrelated large HTML documents.
-        if (!source.contains("\"skzc\"") || !source.contains("\"kcm\"")) return null
-        val kcm = IntArray(source.length + 1)
-        val skzc = IntArray(source.length + 1)
-        val id = IntArray(source.length + 1)
-        for (i in source.indices) {
-            kcm[i + 1] = kcm[i] + if (source.startsWith("kcm", i)) 1 else 0
-            skzc[i + 1] = skzc[i] + if (source.startsWith("skzc", i)) 1 else 0
-            id[i + 1] = id[i] + if (source.startsWith("id", i)) 1 else 0
-        }
-        val starts = ArrayDeque<Int>()
-        var maxDepth = 0
-        var parsedChars = 0L
-        var inString = false
-        var escaped = false
-        for (end in source.indices) {
-            val ch = source[end]
-            if (inString) {
-                if (escaped) escaped = false
-                else if (ch == '\\') escaped = true
-                else if (ch == '"') inString = false
-                continue
-            }
-            when (ch) {
-                '"' -> inString = true
-                '[' -> {
-                    if (starts.isEmpty()) { parsedChars = 0L; maxDepth = 0 }
-                    starts.addLast(end)
-                    maxDepth = maxOf(maxDepth, starts.size)
-                }
-                ']' -> if (starts.isNotEmpty()) {
-                    val start = starts.removeLast()
-                    // Wait for the outer array; returning an inner array silently loses later groups.
-                    // Skip hostile nesting before invoking the JSON library recursively.
-                    if (starts.isNotEmpty() || maxDepth > 64) continue
-                    if (kcm[end + 1] == kcm[start] || skzc[end + 1] == skzc[start] ||
-                        id[end + 1] == id[start]) continue
-                    val length = end - start + 1
-                    // A valid large array gets its first parse. Repeated nested
-                    // candidates are bounded by aggregate input scanned by JSON.
-                    if (parsedChars + length > source.length.toLong() * 3) continue
-                    parsedChars += length
-                    val candidate = source.substring(start, end + 1)
-                    val array = runCatching { JSONArray(candidate) }.getOrNull()
-                    if (array != null && courseRows(array).any { item ->
-                            item.has("kcm") && item.optJSONObject("id")?.has("skzc") == true
-                        }) return candidate
-                }
-            }
-        }
-        return null
-    }
+    private fun extractJsonArray(source: String): String? = JwScriptJson.find(source) { literal ->
+        val array = literal.value as? JSONArray ?: return@find false
+        courseRows(array).any { row -> row.has("kcm") && row.optJSONObject("id")?.has("skzc") == true }
+    }?.json
 
     private fun parseWeekBits(s: String): List<Int> {
         if (s.isEmpty() || s.length > EXPLICIT_SCHEDULE_RESOURCE_BOUND || s.any { it != '0' && it != '1' }) return emptyList()
