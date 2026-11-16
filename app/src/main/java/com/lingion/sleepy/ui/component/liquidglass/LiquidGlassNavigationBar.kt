@@ -110,29 +110,6 @@ internal val DockBackdropLuma = SemanticsPropertyKey<Float>("DockBackdropLuma")
 internal val DockOrdinaryTint = SemanticsPropertyKey<Color>("DockOrdinaryTint")
 /** Experimental until retained-source notifications and native optical calibration are complete. */
 internal val LocalDockBackdropAppearanceEnabled = androidx.compose.runtime.compositionLocalOf { false }
-internal val LocalDockLumaObserver = androidx.compose.runtime.compositionLocalOf<((BackdropLumaSample) -> Unit)?> { null }
-
-/** Explicit fixture interventions; null preserves the product material and draw order. */
-internal data class DockBaseMaterialProbe(
-    val drawBorder: Boolean = true,
-    val hairline: Double? = null,
-    /** RGB-only intervention; the material factory retains its exact alpha. */
-    val tintRgb: Color? = null,
-    val refractionProfilePower: Double? = null,
-    /** Body/bright-rim response and raw-edge removal are explicit interventions. */
-    val toneResponse: DockToneResponse? = null,
-    /** Disables the independent border and both raw-backdrop hairline strengths. */
-    val disableRawEdges: Boolean = false,
-    /** Independent blur/tone controls for explicit fixture jobs; null keeps the factory. */
-    val haze: Double? = null,
-    val hazeBlur: Double? = null,
-    val contrast: Double? = null,
-    val saturation: Double? = null,
-    val brightness: Double? = null,
-    /** Independent legacy white-rim profile; null keeps the actual base material. */
-    val baseRimCubicShoulderBlend: Double? = null,
-)
-internal val LocalDockBaseMaterialProbe = androidx.compose.runtime.compositionLocalOf<DockBaseMaterialProbe?> { null }
 
 /**
  * Production four-tab sizing uses the SwiftUI TabView parent reference, whose
@@ -175,7 +152,6 @@ fun LiquidGlassNavigationBar(
     val density = LocalDensity.current
     val layoutDirection = LocalLayoutDirection.current
     val colorScheme = MaterialTheme.colorScheme
-    val baseMaterialProbe = LocalDockBaseMaterialProbe.current
     val selectionColors = colorScheme.selectionColors()
     val platterShape = remember { DockPlatterShape() }
     // 主题实时订阅: LocalDarkTheme 用 compositionLocalOf 提供(见 Theme.kt),
@@ -197,7 +173,6 @@ fun LiquidGlassNavigationBar(
     var materialDark by remember(backdrop, dark, colorScheme, backdropAppearanceEnabled) { mutableStateOf(dark) }
     val ordinaryTint = if (sampledLuma == null) selectionColors.unselectedContent
         else if (materialDark) Color.White else Color.Black
-    val lumaObserver by rememberUpdatedState(LocalDockLumaObserver.current)
     // Retain only the actual sibling backing. The raised lens must include
     // its haze, continuous corners, border and fading selection, not a second
     // approximation of the platter. Glyphs and the lens are separate siblings.
@@ -588,7 +563,6 @@ fun LiquidGlassNavigationBar(
                             onSample = { sample ->
                                 sampledLuma = sample.meanLuma
                                 materialDark = appearance.accept(sample.meanLuma)
-                                lumaObserver?.invoke(sample)
                             },
                         )
                     } else Modifier)
@@ -604,11 +578,11 @@ fun LiquidGlassNavigationBar(
                         color = colorScheme.surfaceContainer.copy(alpha = if (dark) 0.72f else 0.88f),
                         shape = platterShape,
                     )
-                    .then(if (baseMaterialProbe?.drawBorder != false && baseMaterialProbe?.disableRawEdges != true) Modifier.border(
+                    .border(
                         width = 1.dp,
                         color = if (dark) Color.White.copy(alpha = 0.12f) else Color(0x1F000000),
                         shape = platterShape,
-                    ) else Modifier)
+                    )
                     .then(
                         if (backdrop != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                             Modifier.drawPlainBackdrop(
@@ -617,24 +591,9 @@ fun LiquidGlassNavigationBar(
                                 effects = {
                                     val opticalProfile = platterShape.opticalProfile(size, layoutDirection, this)
                                     val material = LiquidGlassStyle.pill(colorScheme, materialDark)
-                                    val probedMaterial = baseMaterialProbe?.let { probe ->
-                                        material.copy(
-                                            hairline = if (probe.disableRawEdges) 0.0 else probe.hairline ?: material.hairline,
-                                            hairlineSide = if (probe.disableRawEdges) 0.0 else material.hairlineSide,
-                                            tint = probe.tintRgb?.copy(alpha = material.tint.alpha) ?: material.tint,
-                                            refractionProfilePower = probe.refractionProfilePower ?: material.refractionProfilePower,
-                                            dockToneResponse = probe.toneResponse,
-                                            dockBaseRimCubicShoulderBlend = probe.baseRimCubicShoulderBlend ?: material.dockBaseRimCubicShoulderBlend,
-                                            haze = probe.haze ?: material.haze,
-                                            hazeBlur = probe.hazeBlur ?: material.hazeBlur,
-                                            contrast = probe.contrast ?: material.contrast,
-                                            saturation = probe.saturation ?: material.saturation,
-                                            brightness = probe.brightness ?: material.brightness,
-                                        )
-                                    } ?: material
                                     liquidGlass(
                                         context = context,
-                                        style = probedMaterial,
+                                        style = material,
                                         glow = touchGlow,
                                         outline = opticalProfile?.path,
                                         cachedOutlineProfile = opticalProfile,
