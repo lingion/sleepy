@@ -49,6 +49,12 @@ object XiaoaiPresetData {
     const val XIAOAI_H5_URL = "https://i.ai.mi.com/h5/precache/ai-schedule/"
     private const val SOURCE = "sleepy"
 
+    /** A course references a period whose clock time has not been configured. */
+    class MissingPeriodTimeException(
+        val courseName: String,
+        val period: Int,
+    ) : IllegalArgumentException("Missing time for period $period used by $courseName")
+
     /** 唤起小爱的完整 deep link。presetData 已做 URL-encode, url 参数同样 encode。 */
     fun deepLink(presetData: String): String =
         "voiceassist://aiweb/?source=sleepy&flag=268468224" +
@@ -110,8 +116,12 @@ object XiaoaiPresetData {
             require(course.startWeek in 1..30 && course.endWeek in course.startWeek..30)
             require(expandWeeks(course).isNotEmpty())
             val normalized = course.normalizeNode(canonicalTimeJson(timeJson))
-            require(normalized.startNode in 1..sections.size && normalized.step in 1..sections.size)
-            require(normalized.startNode.toLong() + normalized.step - 1 <= sections.size)
+            require(normalized.startNode >= 1 && normalized.step >= 1)
+            val endNode = normalized.startNode.toLong() + normalized.step - 1
+            require(endNode <= Int.MAX_VALUE)
+            if (endNode > sections.size) {
+                throw MissingPeriodTimeException(course.courseName, maxOf(normalized.startNode, sections.size + 1))
+            }
         }
     }
 

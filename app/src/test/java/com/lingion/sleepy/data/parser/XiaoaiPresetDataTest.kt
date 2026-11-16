@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data.parser
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
@@ -240,6 +241,101 @@ class XiaoaiPresetDataTest {
         assertThrows(IllegalArgumentException::class.java) {
             XiaoaiPresetData.build(table().copy(startDate = "bad-date"), listOf(course()))
         }
+    }
+
+    // Reported schedule: 19 weeks, 13 declared periods, but only 12 clock rows.
+    private val reportedTimes = """
+        [{"node":1,"start":"08:30","end":"09:15"},
+         {"node":2,"start":"09:20","end":"10:05"},
+         {"node":3,"start":"10:25","end":"11:10"},
+         {"node":4,"start":"11:15","end":"12:00"},
+         {"node":5,"start":"13:50","end":"14:35"},
+         {"node":6,"start":"14:40","end":"15:25"},
+         {"node":7,"start":"15:30","end":"16:15"},
+         {"node":8,"start":"16:30","end":"17:15"},
+         {"node":9,"start":"17:20","end":"18:05"},
+         {"node":10,"start":"18:30","end":"19:15"},
+         {"node":11,"start":"19:20","end":"20:05"},
+         {"node":12,"start":"20:10","end":"20:55"}]
+    """.trimIndent()
+
+    private fun reportedTable() = table().copy(
+        startDate = "2026-08-31", maxWeek = 19, nodesPerDay = 13, timeJson = reportedTimes,
+    )
+
+    private fun reportedCourse() = course(
+        name = "模拟电子技术实验", day = 2, startNode = 10, step = 4,
+        startWeek = 13, endWeek = 16,
+    )
+
+    @Test
+    fun missingThirteenthPeriod_reportsAffectedCourseAndMissingPeriod() {
+        val error = assertThrows(IllegalArgumentException::class.java) {
+            XiaoaiPresetData.build(reportedTable(), listOf(reportedCourse()))
+        }
+        assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("模拟电子技术实验"))
+        assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("13"))
+    }
+
+    @Test
+    fun completeThirteenPeriodSchedule_exportsAllFourLabPeriods() {
+        // Synthetic clock time tests export coverage; it is not the user's actual period 13.
+        val completeTimes = reportedTimes.dropLast(1) +
+            """,{"node":13,"start":"21:00","end":"21:45"}]"""
+        val data = parseImportData(XiaoaiPresetData.build(
+            reportedTable().copy(timeJson = completeTimes), listOf(reportedCourse()),
+        ))
+        val sections = data["parserRes"]!!.jsonObject["courseInfos"]!!.jsonArray[0]
+            .jsonObject["sections"]!!.jsonArray.map { it.jsonPrimitive.content.toInt() }
+        assertEquals(listOf(10, 11, 12, 13), sections)
+        assertEquals(13, data["timerRes"]!!.jsonObject["sections"]!!.jsonArray.size)
+    }
+
+    @Test
+    fun missingTimeInBoundPeriodTable_isReportedEvenWhenOwnTimesCoverCourse() {
+        val bound = PeriodTableEntity(name = "Bound", nodesPerDay = 12, timeJson = reportedTimes)
+        val ownTimes = reportedTimes.dropLast(1) +
+            """,{"node":13,"start":"21:00","end":"21:45"}]"""
+        val error = assertThrows(IllegalArgumentException::class.java) {
+            XiaoaiPresetData.build(
+                reportedTable().copy(timeJson = ownTimes), listOf(reportedCourse()), bound,
+            )
+        }
+        assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("模拟电子技术实验"))
+        assertTrue(error.message.orEmpty(), error.message.orEmpty().contains("13"))
+    }
+
+    @Test
+    fun courseStartingAfterLastClockRow_reportsItsFirstMissingPeriod() {
+        val error = assertThrows(XiaoaiPresetData.MissingPeriodTimeException::class.java) {
+            XiaoaiPresetData.build(
+                reportedTable(), listOf(reportedCourse().copy(startNode = 14, step = 2)),
+            )
+        }
+        assertEquals("模拟电子技术实验", error.courseName)
+        assertEquals(14, error.period)
+    }
+
+    @Test
+    fun completeBoundPeriodTable_exportsWithoutUsingIncompleteOwnTimes() {
+        val completeTimes = reportedTimes.dropLast(1) +
+            """,{"node":13,"start":"21:00","end":"21:45"}]"""
+        val bound = PeriodTableEntity(name = "Bound", nodesPerDay = 13, timeJson = completeTimes)
+        val data = parseImportData(XiaoaiPresetData.build(
+            reportedTable(), listOf(reportedCourse()), bound,
+        ))
+        assertEquals(13, data["timerRes"]!!.jsonObject["sections"]!!.jsonArray.size)
+    }
+
+    @Test
+    fun unusedDeclaredThirteenthPeriod_doesNotRequireClockTimeForExport() {
+        val data = parseImportData(XiaoaiPresetData.build(
+            reportedTable(), listOf(reportedCourse().copy(step = 3)),
+        ))
+        assertEquals(12, data["timerRes"]!!.jsonObject["sections"]!!.jsonArray.size)
+        val sections = data["parserRes"]!!.jsonObject["courseInfos"]!!.jsonArray[0]
+            .jsonObject["sections"]!!.jsonArray.map { it.jsonPrimitive.content.toInt() }
+        assertEquals(listOf(10, 11, 12), sections)
     }
 
     @Test

@@ -773,6 +773,7 @@
     <string name="export_xiaoai_title">XiaoAI Schedule</string>
     <string name="export_xiaoai_subtitle">Prepare locally, then open XiaoAI to preview and import</string>
     <string name="export_xiaoai_invalid">Unsupported schedule or invalid period times. Check weeks, dates and period settings.</string>
+    <string name="export_xiaoai_missing_period_time">%1$s uses period %2$d, but its time is missing from the period timetable. Add the missing time or check the course periods, then try again.</string>
     <string name="export_xiaoai_empty">No courses in this table to export</string>
     <string name="export_xiaoai_not_installed">XiaoAI not found; install the XiaoAI app (with XiaoAI Schedule) first</string>
     <string name="export_xiaoai_launched">Opened XiaoAI Schedule; confirm the import on the preview page</string>
