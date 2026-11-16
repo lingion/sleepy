@@ -26,18 +26,13 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
-import androidx.test.platform.app.InstrumentationRegistry
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.lingion.sleepy.ui.component.liquidglass.BackdropForegroundResponse
 import com.lingion.sleepy.ui.component.liquidglass.backdropAwareForeground
-import java.io.File
 import kotlin.math.abs
 import kotlin.math.roundToInt
-import org.json.JSONArray
-import org.json.JSONObject
-import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -54,8 +49,6 @@ class BackdropAwareForegroundRenderTest {
     @get:Rule val compose = createComposeRule()
     private lateinit var surface: OpticalCaptureWindow
     private var density = 1f
-    private val observations = JSONArray()
-    private var caseName = "unstarted"
 
     private val response = BackdropForegroundResponse(
         lowBackground = Color.Red,
@@ -98,7 +91,6 @@ class BackdropAwareForegroundRenderTest {
     }
 
     @Test fun localSceneAlphaMaskAndAccentStayIndependentOnTheRealGpu() {
-        caseName = "source-mask-accent"
         var source by mutableIntStateOf(0)
         compose.setContent {
             ObserveWindow()
@@ -138,7 +130,6 @@ class BackdropAwareForegroundRenderTest {
     }
 
     @Test fun consumerMovementResizeAndReattachmentRefreshTheSourceCoordinates() {
-        caseName = "movement-resize-detach"
         var x by mutableIntStateOf(16)
         var width by mutableIntStateOf(96)
         var height by mutableIntStateOf(72)
@@ -197,11 +188,7 @@ class BackdropAwareForegroundRenderTest {
         val height = bounds.height.roundToInt()
         assertTrue("$name crop fits the actual window", x >= 0 && y >= 0 && x + width <= bitmap.width && y + height <= bitmap.height)
         val crop = Bitmap.createBitmap(bitmap, x, y, width, height)
-        crop.saveOpticalPng(File(artifactDirectory(), "$name.png"))
         if (crop !== bitmap) bitmap.recycle()
-        observations.put(JSONObject().put("capture", name).put("crop_tag", tag)
-            .put("window_crop_px", JSONArray(listOf(x, y, width, height))).put("density", density)
-            .put("capture_policy", "One OpticalCaptureWindow HWUI commit + PixelCopy; no retries or compositor-first-frame claim"))
         return crop
     }
 
@@ -219,23 +206,9 @@ class BackdropAwareForegroundRenderTest {
         assertTrue("$label probe lies inside capture", x in 0 until bitmap.width && y in 0 until bitmap.height)
         val pixel = bitmap.getPixel(x, y)
         val actual = intArrayOf(android.graphics.Color.red(pixel), android.graphics.Color.green(pixel), android.graphics.Color.blue(pixel))
-        observations.put(JSONObject().put("probe", label).put("local_dp", JSONArray(listOf(xDp, yDp)))
-            .put("actual_rgb", JSONArray(actual.toList())).put("expected_rgb", JSONArray(expected.toList()))
-            .put("tolerance_per_channel", 3))
         assertTrue("$label at ($xDp,$yDp): expected=${expected.toList()}, actual=${actual.toList()}",
             actual.indices.all { abs(actual[it] - expected[it]) <= 3 })
     }
 
-    private fun artifactDirectory() = File(
-        InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),
-        "backdrop-aware-foreground",
-    ).apply { mkdirs() }
 
-    private fun writeMetrics(name: String) {
-        File(artifactDirectory(), "$name-metrics.json").writeText(JSONObject()
-            .put("scope", "Generic GPU composition and lifecycle; not iOS material or motion parity")
-            .put("observations", observations).toString(2))
-    }
-
-    @After fun preserveMetricsEvenOnFailure() = writeMetrics(caseName)
 }

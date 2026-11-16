@@ -43,13 +43,9 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.File
-import java.security.MessageDigest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -77,9 +73,7 @@ class LiquidGlassGenericGeometryRenderTest {
         val heightPx: Int,
         val radius: Float,
         val dual: Boolean = false,
-    ) {
-        var geometry: JSONObject? = null
-    }
+    )
 
     @Test
     fun realGenericContoursHaveFiniteGeometryAtExactCenterAndAdjacentPixels() {
@@ -87,94 +81,61 @@ class LiquidGlassGenericGeometryRenderTest {
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Enable explicitly with glassGenericCheck=true",
             arguments.getString("glassGenericCheck") == "true")
-        val runId = (arguments.getString("glassGenericRunId") ?: System.currentTimeMillis().toString())
-            .replace(Regex("[^A-Za-z0-9_.-]"), "_")
-        val directory = File(instrumentation.targetContext.getExternalFilesDir(null),
-            "glass-generic-geometry/$runId").apply { check(mkdirs() || isDirectory) }
-        val report = JSONObject().put("status", "running")
-            .put("diagnostic", "complete production AGSL; final return encodes valid geometry green, invalid red")
-            .put("scope", "hardware Canvas geometry only; not RenderEffect, native appearance, backdrop, or material alpha")
-            .put("density_contract", "density=1; dp equals physical px to hit an exact odd-size pixel center")
-        val reportFile = File(directory, "result.json")
-        reportFile.writeText(report.toString(2))
-        try {
-            val source = LiquidGlassShader.shaderSource(instrumentation.targetContext)
-            val finalReturn = "return half4(min(glass, float3(coverage)), coverage);"
-            check(source.indexOf(finalReturn) >= 0 && source.indexOf(finalReturn) == source.lastIndexOf(finalReturn))
-            // Comparisons reject both infinity and NaN; the bound is far beyond any fixture.
-            // A unit-normal check also rejects a silently zeroed invalid vector.
-            val diagnostic = source.replace(finalReturn, """
-                float diagnosticNorm2 = dot(normal, normal);
-                bool diagnosticValid = inset >= 0.0 && inset < 1000000.0
-                    && normal.x >= -1.01 && normal.x <= 1.01
-                    && normal.y >= -1.01 && normal.y <= 1.01
-                    && diagnosticNorm2 > 0.99 && diagnosticNorm2 < 1.01;
-                return diagnosticValid ? half4(0.0, 1.0, 0.0, 1.0) : half4(1.0, 0.0, 0.0, 1.0);
-            """.trimIndent())
-            report.put("production_shader_sha256", MessageDigest.getInstance("SHA-256")
-                .digest(source.toByteArray()).joinToString("") { "%02x".format(it.toInt() and 0xff) })
-            val samples = listOf(
-                Sample("menu24-single", 251, 147, 24f),
-                Sample("alert34-single", 321, 173, 34f),
-                Sample("menu24-dual-control", 251, 147, 24f, dual = true),
-            )
-            compose.setContent {
-                RememberWindow()
-                CompositionLocalProvider(LocalDensity provides Density(1f)) {
-                    Column(Modifier.background(Color.Black).padding(8.dp)) {
-                        samples.forEach { sample ->
-                            DiagnosticPane(sample, diagnostic)
-                            Spacer(Modifier.height(8.dp))
-                        }
+        val source = LiquidGlassShader.shaderSource(instrumentation.targetContext)
+        val finalReturn = "return half4(min(glass, float3(coverage)), coverage);"
+        check(source.indexOf(finalReturn) >= 0 && source.indexOf(finalReturn) == source.lastIndexOf(finalReturn))
+        // Comparisons reject both infinity and NaN; the bound is far beyond any fixture.
+        // A unit-normal check also rejects a silently zeroed invalid vector.
+        val diagnostic = source.replace(finalReturn, """
+            float diagnosticNorm2 = dot(normal, normal);
+            bool diagnosticValid = inset >= 0.0 && inset < 1000000.0
+                && normal.x >= -1.01 && normal.x <= 1.01
+                && normal.y >= -1.01 && normal.y <= 1.01
+                && diagnosticNorm2 > 0.99 && diagnosticNorm2 < 1.01;
+            return diagnosticValid ? half4(0.0, 1.0, 0.0, 1.0) : half4(1.0, 0.0, 0.0, 1.0);
+        """.trimIndent())
+        val samples = listOf(
+            Sample("menu24-single", 251, 147, 24f),
+            Sample("alert34-single", 321, 173, 34f),
+            Sample("menu24-dual-control", 251, 147, 24f, dual = true),
+        )
+        compose.setContent {
+            RememberWindow()
+            CompositionLocalProvider(LocalDensity provides Density(1f)) {
+                Column(Modifier.background(Color.Black).padding(8.dp)) {
+                    samples.forEach { sample ->
+                        DiagnosticPane(sample, diagnostic)
+                        Spacer(Modifier.height(8.dp))
                     }
                 }
             }
-            compose.waitForIdle()
-            assertTrue("The diagnostic requires a hardware-accelerated window", contentView.isHardwareAccelerated)
-            val results = JSONArray()
-            val failures = mutableListOf<String>()
-            samples.forEach { sample ->
-                val bitmap = capture(sample.name, directory)
-                try {
-                    File(directory, "${sample.name}.png").outputStream().use {
-                        check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
-                    }
-                    assertEquals(sample.widthPx, bitmap.width)
-                    assertEquals(sample.heightPx, bitmap.height)
-                    assertTrue(bitmap.width % 2 == 1 && bitmap.height % 2 == 1)
-                    val points = JSONArray()
-                    listOf(0 to 0, -1 to 0, 1 to 0, 0 to -1, 0 to 1).forEach { (dx, dy) ->
-                        val x = bitmap.width / 2 + dx
-                        val y = bitmap.height / 2 + dy
-                        val pixel = bitmap.getPixel(x, y)
-                        val r = android.graphics.Color.red(pixel)
-                        val g = android.graphics.Color.green(pixel)
-                        val b = android.graphics.Color.blue(pixel)
-                        val a = android.graphics.Color.alpha(pixel)
-                        val valid = r < 16 && g > 239 && b < 16 && a == 255
-                        points.put(JSONObject().put("x_px", x).put("y_px", y)
-                            .put("local_pixel_center", JSONArray(listOf(x + .5, y + .5)))
-                            .put("center_offset_px", JSONArray(listOf(dx, dy)))
-                            .put("rgba", JSONArray(listOf(r, g, b, a))).put("valid", valid))
-                        if (!valid) failures += "${sample.name} offset=($dx,$dy), rgba=($r,$g,$b,$a)"
-                    }
-                    results.put(JSONObject().put("name", sample.name)
-                        .put("actual_geometry", compose.runOnIdle { checkNotNull(sample.geometry) })
-                        .put("points", points))
-                } finally {
-                    bitmap.recycle()
-                }
-            }
-            report.put("samples", results).put("failures", JSONArray(failures))
-                .put("status", if (failures.isEmpty()) "passed" else "failed")
-            reportFile.writeText(report.toString(2))
-            assertTrue("Production Generic geometry was invalid: ${failures.joinToString()}; artifacts=$directory",
-                failures.isEmpty())
-        } catch (failure: Throwable) {
-            report.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
-            reportFile.writeText(report.toString(2))
-            throw failure
         }
+        compose.waitForIdle()
+        assertTrue("The diagnostic requires a hardware-accelerated window", contentView.isHardwareAccelerated)
+        val failures = mutableListOf<String>()
+        samples.forEach { sample ->
+            val bitmap = capture(sample.name)
+            try {
+                assertEquals(sample.widthPx, bitmap.width)
+                assertEquals(sample.heightPx, bitmap.height)
+                assertTrue(bitmap.width % 2 == 1 && bitmap.height % 2 == 1)
+                listOf(0 to 0, -1 to 0, 1 to 0, 0 to -1, 0 to 1).forEach { (dx, dy) ->
+                    val x = bitmap.width / 2 + dx
+                    val y = bitmap.height / 2 + dy
+                    val pixel = bitmap.getPixel(x, y)
+                    val r = android.graphics.Color.red(pixel)
+                    val g = android.graphics.Color.green(pixel)
+                    val b = android.graphics.Color.blue(pixel)
+                    val a = android.graphics.Color.alpha(pixel)
+                    val valid = r < 16 && g > 239 && b < 16 && a == 255
+                    if (!valid) failures += "${sample.name} offset=($dx,$dy), rgba=($r,$g,$b,$a)"
+                }
+            } finally {
+                bitmap.recycle()
+            }
+        }
+        assertTrue("Production Generic geometry was invalid: ${failures.joinToString()}",
+            failures.isEmpty())
     }
 
     @Composable
@@ -225,18 +186,13 @@ class LiquidGlassGenericGeometryRenderTest {
                 dualContours = if (sample.dual) outline.path to outline.path else null,
             )
             check(uniforms.getValue("uOutlined")[0] == if (sample.dual) 3f else 1f)
-            sample.geometry = JSONObject().put("size_px", JSONArray(listOf(size.width, size.height)))
-                .put("density", density.density).put("outline", "actual FlClashGlassShape / Outline.Generic")
-                .put("uOutlined", uniforms.getValue("uOutlined")[0])
-                .put("uFrame", JSONArray(uniforms.getValue("uFrame").toList()))
-                .put("pixel_center_in_pane", JSONArray(listOf(size.width / 2f, size.height / 2f)))
             uniforms.forEach { (name, values) -> shader.setFloatUniform(name, values) }
             paint.shader = shader
             canvas.drawRect(0f, 0f, size.width, size.height, paint)
         }
     }
 
-    private fun capture(tag: String, directory: File): Bitmap {
+    private fun capture(tag: String): Bitmap {
         compose.waitForIdle()
         val committed = CountDownLatch(1)
         compose.runOnUiThread {
@@ -254,14 +210,6 @@ class LiquidGlassGenericGeometryRenderTest {
         val origin = IntArray(2)
         compose.runOnUiThread { contentView.getLocationInWindow(origin) }
         val bounds = compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
-        File(directory, "$tag-full-window.png").outputStream().use {
-            check(full.compress(Bitmap.CompressFormat.PNG, 100, it))
-        }
-        File(directory, "$tag-crop.json").writeText(JSONObject()
-            .put("root_size_px", JSONArray(listOf(root.width, root.height)))
-            .put("view_window_origin_px", JSONArray(origin.toList()))
-            .put("bounds_in_root_px", JSONArray(listOf(bounds.left, bounds.top, bounds.right, bounds.bottom)))
-            .toString(2))
         assertEquals(bounds.left.roundToInt().toFloat(), bounds.left, .01f)
         assertEquals(bounds.top.roundToInt().toFloat(), bounds.top, .01f)
         return try {

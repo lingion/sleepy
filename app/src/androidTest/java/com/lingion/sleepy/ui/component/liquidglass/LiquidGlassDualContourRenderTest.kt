@@ -29,15 +29,12 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.junit.rules.TestName
-import java.io.File
 
 /** Actual AGSL execution requires a hardware canvas; software Bitmap Canvas cannot run RuntimeShader. */
 @RunWith(AndroidJUnit4::class)
 @SdkSuppress(minSdkVersion = 33)
 class LiquidGlassDualContourRenderTest {
     @get:Rule val compose = createComposeRule()
-    @get:Rule val testName = TestName()
 
     @Test fun separatedContoursKeepMaterialOnBothSidesAndPreserveTheGap() {
         val image = geometry(path(Rect(20.5f, 20.5f, 100.5f, 60.5f), 8f) to
@@ -128,11 +125,7 @@ class LiquidGlassDualContourRenderTest {
             }
         }
         compose.waitForIdle()
-        return compose.onNodeWithTag("dual-contour-geometry").captureToImage().asAndroidBitmap().also { image ->
-            val directory = File(InstrumentationRegistry.getInstrumentation().targetContext.getExternalFilesDir(null),
-                "glass-dual-contour-geometry").apply { mkdirs() }
-            File(directory, "${testName.methodName}.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        }
+        return compose.onNodeWithTag("dual-contour-geometry").captureToImage().asAndroidBitmap()
     }
 
     private fun depth(image: Bitmap, x: Int, y: Int): Int = android.graphics.Color.blue(image.getPixel(x, y))

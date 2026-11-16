@@ -36,8 +36,6 @@ import com.kyant.backdrop.BackdropEffectScope
 import com.kyant.backdrop.BackdropRenderOptions
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.drawPlainBackdrop
-import java.io.File
-import java.security.MessageDigest
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -47,8 +45,6 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -71,18 +67,12 @@ class LiquidGlassDynamicShapeRenderTest {
     @Test fun retainedConsumerReplacesShapeProviderAtFixedSizeForEffectsAndGpuCorners() {
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Enable explicitly with glassDynamicShapeCheck=true", arguments.getString("glassDynamicShapeCheck") == "true")
-        val runId = (arguments.getString("glassDynamicShapeRunId") ?: System.currentTimeMillis().toString())
-            .replace(Regex("[^A-Za-z0-9_.-]"), "_")
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val directory = File(context.getExternalFilesDir(null), "liquid-glass-dynamic-shape/$runId")
-            .apply { check(mkdirs() || isDirectory) }
         val phase = mutableStateOf(0)
         val narrow: Shape = AbsoluteRoundedCornerShape(4.dp)
         val rounded: Shape = AbsoluteRoundedCornerShape(40.dp)
         val observations = CopyOnWriteArrayList<EffectObservation>()
         val sourceDraws = CopyOnWriteArrayList<SourceObservation>()
         val failures = mutableListOf<String>()
-        val captures = JSONArray()
         var physicalDensity = 0f
 
         compose.setContent {
@@ -125,53 +115,27 @@ class LiquidGlassDynamicShapeRenderTest {
             }
         }
 
-        try {
-            for (index in 0..2) {
-                compose.runOnIdle { phase.value = index }
-                val bitmap = capture()
-                try {
-                    val file = File(directory, "phase-$index-${if (index == 1) "radius40" else "radius4"}.png")
-                    file.outputStream().use { check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
-                    val observed = observations.filter { it.phase == index }
-                    if (observed.isEmpty()) failures += "phase$index: no measured effects observation"
-                    if (observed.any { it.actual !== it.expected }) failures += "phase$index: effects.scope.shape is not the current Shape instance"
-                    val draws = sourceDraws.filter { it.phase == index }
-                    if (draws.isEmpty()) failures += "phase$index: source was not recorded"
-                    if (draws.any { !it.hardware }) failures += "phase$index: source was not hardware accelerated"
-                    val probes = inspectPixels(bitmap, physicalDensity, index, failures)
-                    captures.put(JSONObject().put("phase", index).put("expected_radius_dp", if (index == 1) 40 else 4)
-                        .put("size_px", JSONArray(listOf(bitmap.width, bitmap.height))).put("density", physicalDensity)
-                        .put("png", file.name).put("png_sha256", sha(file.readBytes()))
-                        .put("measured_effect_observations", observed.size).put("source_records", draws.size).put("probes", probes))
-                } finally { bitmap.recycle() }
-            }
-            val receiver = observations.firstOrNull()?.receiver
-            if (receiver == null || observations.any { it.receiver !== receiver }) failures += "consumer's effects receiver changed; same-node lifetime not established"
-            val measuredSize = observations.firstOrNull()?.size
-            if (observations.any { it.size != measuredSize }) failures += "effect layout dimensions changed between shapes"
-        } finally {
-            val observedJson = JSONArray(observations.map {
-                JSONObject().put("phase", it.phase).put("expected_shape_id", System.identityHashCode(it.expected))
-                    .put("actual_shape_id", System.identityHashCode(it.actual)).put("shape_is_current", it.actual === it.expected)
-                    .put("effect_scope_id", System.identityHashCode(it.receiver)).put("size_px", JSONArray(listOf(it.size.width, it.size.height)))
-                    .put("density", it.density)
-            })
-            val sourceJson = JSONArray(sourceDraws.map {
-                JSONObject().put("phase", it.phase).put("size_px", JSONArray(listOf(it.size.width, it.size.height))).put("hardware", it.hardware)
-            })
-            val report = JSONObject().put("scope", "retained drawPlainBackdrop consumer replaces shape provider at fixed size; measured effects identity and production liquidGlass GPU circular corners")
-                .put("placement_layer", false).put("external_clip", false).put("phases", "radius4 -> radius40 -> same radius4 instance; one consumer, no key")
-                .put("thresholds", "white: each RGB>=240; black: each RGB<=16; probe signed circular distance must have at least3dp margin")
-                .put("threshold_reason", "Opaque white production tint over RGB primary source; black parent. Seven-dp corner offsets are inside radius4 and more than6dp outside radius40, away from AA; tolerance allows15/16 8-bit levels.")
-                .put("production_shader_sha256", sha(LiquidGlassShader.shaderSource(context).toByteArray()))
-                .put("captures", captures).put("effects_observations", observedJson).put("source_records", sourceJson)
-                .put("failures", JSONArray(failures)).put("status", if (failures.isEmpty() && captures.length() == 3) "passed" else "failed")
-            File(directory, "result.json").writeText(report.toString(2))
+        for (index in 0..2) {
+            compose.runOnIdle { phase.value = index }
+            val bitmap = capture()
+            try {
+                val observed = observations.filter { it.phase == index }
+                if (observed.isEmpty()) failures += "phase$index: no measured effects observation"
+                if (observed.any { it.actual !== it.expected }) failures += "phase$index: effects.scope.shape is not the current Shape instance"
+                val draws = sourceDraws.filter { it.phase == index }
+                if (draws.isEmpty()) failures += "phase$index: source was not recorded"
+                if (draws.any { !it.hardware }) failures += "phase$index: source was not hardware accelerated"
+                inspectPixels(bitmap, physicalDensity, index, failures)
+            } finally { bitmap.recycle() }
         }
-        assertTrue("Retained backdrop shape mismatch: ${failures.joinToString()}; artifacts=$directory", failures.isEmpty())
+        val receiver = observations.firstOrNull()?.receiver
+        if (receiver == null || observations.any { it.receiver !== receiver }) failures += "consumer's effects receiver changed; same-node lifetime not established"
+        val measuredSize = observations.firstOrNull()?.size
+        if (observations.any { it.size != measuredSize }) failures += "effect layout dimensions changed between shapes"
+        assertTrue("Retained backdrop shape mismatch: ${failures.joinToString()}", failures.isEmpty())
     }
 
-    private fun inspectPixels(bitmap: Bitmap, density: Float, phase: Int, failures: MutableList<String>): JSONArray {
+    private fun inspectPixels(bitmap: Bitmap, density: Float, phase: Int, failures: MutableList<String>) {
         val near = floor(7f * density).toInt()
         val right = bitmap.width - 1 - near
         val bottom = bitmap.height - 1 - near
@@ -180,7 +144,6 @@ class LiquidGlassDynamicShapeRenderTest {
             "center" to (bitmap.width / 2 to bitmap.height / 2),
             "top-middle" to (bitmap.width / 2 to near), "right-middle" to (right to bitmap.height / 2),
             "bottom-middle" to (bitmap.width / 2 to bottom), "left-middle" to (near to bitmap.height / 2))
-        val result = JSONArray()
         points.forEachIndexed { index, (name, point) ->
             val (x, y) = point
             val expectedWhite = phase != 1 || index >= 4
@@ -196,11 +159,7 @@ class LiquidGlassDynamicShapeRenderTest {
                 android.graphics.Color.blue(pixel), android.graphics.Color.alpha(pixel))
             val rgbValid = rgba.take(3).all { if (expectedWhite) it >= 240 else it <= 16 }
             if (!marginValid || !rgbValid) failures += "phase$phase $name: expectedWhite=$expectedWhite rgba=$rgba analyticInsetDp=$signedInside"
-            result.put(JSONObject().put("name", name).put("pixel", JSONArray(listOf(x, y))).put("rgba", JSONArray(rgba))
-                .put("expected_white", expectedWhite).put("analytic_circular_signed_inset_dp", signedInside)
-                .put("margin_valid", marginValid).put("rgb_valid", rgbValid))
         }
-        return result
     }
 
     private fun capture(): Bitmap {
@@ -228,6 +187,5 @@ class LiquidGlassDynamicShapeRenderTest {
             bounds.width.roundToInt(), bounds.height.roundToInt()) } finally { full.recycle() }
     }
 
-    private fun sha(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes)
-        .joinToString("") { "%02x".format(it.toInt() and 0xff) }
+
 }

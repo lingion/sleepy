@@ -22,14 +22,12 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.ui.component.liquidglass.GlassBackground
 import com.lingion.sleepy.ui.component.liquidglass.GlassHost
 import com.lingion.sleepy.ui.screen.schedule.TopBar
 import com.lingion.sleepy.ui.theme.LocalUiStyle
 import com.lingion.sleepy.ui.theme.UiStyle
-import java.io.File
 import kotlin.math.abs
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -53,7 +51,7 @@ class ScheduleToolbarSamplingRenderTest {
         val backing = mutableStateOf(Color.Blue.copy(alpha = .5f))
         val pattern = mutableStateOf(2)
         show(backing, pattern)
-        val image = capture("translucent-blue-over-red")
+        val image = capture()
         val paddingPixel = image.getPixel(image.width / 2, 1)
         assertTrue("the visible toolbar fill composites once: ${hex(paddingPixel)}",
             abs(android.graphics.Color.red(paddingPixel) - android.graphics.Color.blue(paddingPixel)) <= 2 &&
@@ -70,11 +68,11 @@ class ScheduleToolbarSamplingRenderTest {
         val pattern = mutableStateOf(0)
         show(backing, pattern, style = UiStyle.Classic)
         val first = actionImages()
-        capture("material-white-rgb-stripes")
+        compose.waitForIdle()
         compose.runOnIdle { pattern.value = 1 }
         val second = actionImages()
         first.zip(second).forEach { (a, b) -> assertSamePixels(a, b) }
-        capture("material-white-black-white")
+        compose.waitForIdle()
     }
 
     @Test fun actualToolbarDoesNotExportItsIconsIntoTheSiblingMaterials() {
@@ -85,14 +83,14 @@ class ScheduleToolbarSamplingRenderTest {
         show(backing, pattern, foreground = foreground)
         val first = actionImages()
         val firstMaterial = actionPixels()
-        capture("foreground-green")
+        compose.waitForIdle()
         compose.runOnIdle { foreground.value = Color.Yellow }
         val second = actionImages()
         assertTrue("the actual icon foreground must visibly change during this test",
             first.zip(second).any { (a, b) -> maximumDifference(a, b) > 20 })
         assertEquals("changing the real icon foreground cannot change sibling optical input",
             firstMaterial, actionPixels())
-        capture("foreground-yellow")
+        compose.waitForIdle()
     }
 
     private fun verifyOpaque(busy: Boolean) {
@@ -101,18 +99,18 @@ class ScheduleToolbarSamplingRenderTest {
         val pattern = mutableStateOf(0)
         show(backing, pattern, busy = busy)
         val first = actionImages()
-        capture("${if (busy) "busy" else "full"}-white-rgb-stripes")
+        compose.waitForIdle()
         compose.runOnIdle { pattern.value = 1 }
         val second = actionImages()
         first.zip(second).forEach { (a, b) -> assertSamePixels(a, b) }
-        capture("${if (busy) "busy" else "full"}-white-black-white")
+        compose.waitForIdle()
         compose.runOnIdle { backing.value = Color.Blue }
         actionPixels().forEach { pixel ->
             assertTrue("a retained real action must see the new blue toolbar backing: ${hex(pixel)}",
                 android.graphics.Color.blue(pixel) > android.graphics.Color.red(pixel) + 25 &&
                     android.graphics.Color.blue(pixel) > android.graphics.Color.green(pixel) + 25)
         }
-        capture("${if (busy) "busy" else "full"}-blue-black-white")
+        compose.waitForIdle()
     }
 
     private fun show(
@@ -190,13 +188,9 @@ class ScheduleToolbarSamplingRenderTest {
         return maximum
     }
 
-    private fun capture(name: String): Bitmap {
+    private fun capture(): Bitmap {
         compose.waitForIdle()
-        val image = compose.onNodeWithTag("real-toolbar-host").captureToImage().asAndroidBitmap()
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val directory = File(context.getExternalFilesDir(null), "schedule-toolbar-sampling").apply { mkdirs() }
-        File(directory, "$name.png").outputStream().use { image.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        return image
+        return compose.onNodeWithTag("real-toolbar-host").captureToImage().asAndroidBitmap()
     }
 
     private fun hex(pixel: Int) = pixel.toUInt().toString(16)

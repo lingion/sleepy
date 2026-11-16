@@ -36,15 +36,12 @@ import com.lingion.sleepy.ui.component.liquidglass.BackdropContentSignal
 import com.lingion.sleepy.ui.component.liquidglass.notifyBackdropDraw
 import com.lingion.sleepy.ui.component.liquidglass.withContentSignal
 import com.lingion.sleepy.ui.component.liquidglass.sampleBackdropLuma
-import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.math.abs
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -56,22 +53,8 @@ import org.junit.runner.RunWith
 class BackdropLumaReadbackRenderTest {
     @Test fun realActivityReadsExternalPixelsAndFollowsTheConsumerCoordinates() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val directory = File(context.getExternalFilesDir(null), "dock-appearance-94").apply { check(isDirectory || mkdirs()) }
         val samples = ConcurrentLinkedQueue<BackdropLumaSample>()
-        val progress = AtomicReference("before-launch")
         val sourceDraws = AtomicInteger()
-        val watchdog = Thread {
-            try {
-                Thread.sleep(8_000)
-                File(directory, "real-activity-watchdog.json").writeText(JSONObject()
-                    .put("stage", progress.get()).put("source_draws", sourceDraws.get())
-                    .put("samples", JSONArray(samples.map(::sampleJson)))
-                    .put("threads", Thread.getAllStackTraces().entries.joinToString("\n\n") {
-                        (thread, stack) -> "${thread.name} ${thread.state}\n${stack.joinToString("\n")}"
-                    }).toString(2))
-            } catch (_: InterruptedException) { }
-        }.apply { isDaemon = true; name = "LumaReadbackWatchdog"; start() }
-        val stages = JSONArray()
         val expectedLuma = AtomicReference(64f / 255)
         val gate = AtomicReference(CountDownLatch(1))
         var sourceGray by mutableIntStateOf(64)
@@ -81,9 +64,7 @@ class BackdropLumaReadbackRenderTest {
         var sourceIdentity by mutableIntStateOf(0)
         var fallback by mutableStateOf(Color.White)
         ActivityScenario.launch<ComponentActivity>(Intent(context, ComponentActivity::class.java)).use { scenario ->
-            progress.set("before-initial-onActivity")
             scenario.onActivity { activity ->
-                progress.set("initial-onActivity")
                 activity.setContent {
                     val source = key(sourceIdentity) { rememberLayerBackdrop() }
                     Box(Modifier.requiredSize(300.dp, 210.dp).background(Color.Magenta)) {
@@ -109,20 +90,13 @@ class BackdropLumaReadbackRenderTest {
             }
             fun awaitStage(name: String) {
                 val arrived = gate.get().await(5, TimeUnit.SECONDS)
-                stages.put(JSONObject().put("name", name).put("arrived", arrived)
-                    .put("expected", expectedLuma.get()).put("observed", samples.lastOrNull()?.meanLuma))
-                File(directory, "real-activity-samples.json").writeText(JSONObject().put("status", "running")
-                    .put("stages", stages).put("samples", JSONArray(samples.map(::sampleJson))).toString(2))
                 assertTrue("$name source sample must arrive on the real Activity dispatcher", arrived)
             }
-            progress.set("after-initial-onActivity")
             awaitStage("opaque64")
             fun update(name: String, expected: Float, block: () -> Unit) {
                 expectedLuma.set(expected)
                 gate.set(CountDownLatch(1))
-                progress.set("before-update-$name")
-                scenario.onActivity { progress.set("inside-update-$name"); block() }
-                progress.set("after-update-$name")
+                scenario.onActivity { block() }
                 awaitStage(name)
             }
             update("opaque230", 230f / 255) { sourceGray = 230 }
@@ -145,26 +119,17 @@ class BackdropLumaReadbackRenderTest {
             SystemClock.sleep(250)
             assertEquals("An unchanged source must not keep polling itself", quietSamples, samples.size)
             assertEquals("Sampling must not redraw the sibling producer", quietDraws, sourceDraws.get())
-            stages.put(JSONObject().put("name", "unchanged-source-idle").put("duration_ms", 250)
-                .put("samples_before", quietSamples).put("samples_after", samples.size)
-                .put("source_draws_before", quietDraws).put("source_draws_after", sourceDraws.get()))
         }
-        watchdog.interrupt()
-        File(directory, "real-activity-samples.json").writeText(JSONObject().put("status", "passed")
-            .put("scope", "Real Activity source/transparency/translation and timing; not a native material or jank verdict")
-            .put("stages", stages).put("samples", JSONArray(samples.map(::sampleJson))).toString(2))
     }
 
     @Test fun explicitSignalFollowsAnIndependentlyRetainedSourceWithoutPolling() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val directory = File(context.getExternalFilesDir(null), "dock-appearance-94").apply { check(isDirectory || mkdirs()) }
         var gray by mutableIntStateOf(26)
         var source: LayerBackdrop? = null
         val samples = ConcurrentLinkedQueue<BackdropLumaSample>()
         val gate = AtomicReference(CountDownLatch(1))
         val expected = AtomicReference(26f / 255)
         val draws = AtomicInteger()
-        val stages = JSONArray()
         ActivityScenario.launch<ComponentActivity>(Intent(context, ComponentActivity::class.java)).use { scenario ->
             scenario.onActivity { activity ->
                 activity.setContent {
@@ -190,11 +155,6 @@ class BackdropLumaReadbackRenderTest {
             }
             fun awaitStage(name: String) {
                 val arrived = gate.get().await(5, TimeUnit.SECONDS)
-                stages.put(JSONObject().put("name", name).put("arrived", arrived)
-                    .put("expected", expected.get()).put("observed", samples.lastOrNull()?.meanLuma)
-                    .put("parent_recording_revision", source?.recordingRevision).put("leaf_draws", draws.get()))
-                File(directory, "explicit-source-samples.json").writeText(JSONObject().put("status", "running")
-                    .put("stages", stages).put("samples", JSONArray(samples.map(::sampleJson))).toString(2))
                 assertTrue("$name retained source must notify the sampler", arrived)
             }
             awaitStage("initial26")
@@ -217,22 +177,6 @@ class BackdropLumaReadbackRenderTest {
             SystemClock.sleep(250)
             assertEquals("Explicit notifications must stop when the source is unchanged", quietSamples, samples.size)
             assertEquals("A consumer notification must not redraw the source leaf", quietDraws, draws.get())
-            stages.put(JSONObject().put("name", "unchanged-retained-source-idle").put("duration_ms", 250)
-                .put("samples_before", quietSamples).put("samples_after", samples.size)
-                .put("source_draws_before", quietDraws).put("source_draws_after", draws.get()))
         }
-        File(directory, "explicit-source-samples.json").writeText(JSONObject().put("status", "passed")
-            .put("scope", "Caller-notified retained leaf draw changes; not arbitrary subtree or layer-property detection")
-            .put("stages", stages).put("samples", JSONArray(samples.map(::sampleJson))).toString(2))
     }
-
-    private fun sampleJson(s: BackdropLumaSample) = JSONObject().put("luma", s.meanLuma)
-        .put("sequence", s.requestSequence).put("generation", s.generation)
-        .put("started_at_ns", s.startedAtNanos).put("completed_at_ns", s.completedAtNanos)
-        .put("snapshot_completed_ns", s.snapshotCompletedAtNanos).put("end_to_end_ns", s.endToEndNanos)
-        .put("snapshot_main_ns", s.snapshotMainNanos).put("readback_ns", s.readbackNanos)
-        .put("source_dirty_while_busy", s.sourceDirtyWhileBusy).put("accepted_count", s.acceptedCount)
-        .put("discarded_count", s.discardedCount).put("failed_count", s.failedCount)
-        .put("source_revision", s.sourceRevision).put("callback_thread", "main-asserted")
-        .put("argb", JSONArray(s.sampledArgb))
 }

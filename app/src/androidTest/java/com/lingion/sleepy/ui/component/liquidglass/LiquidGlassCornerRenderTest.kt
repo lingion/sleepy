@@ -42,16 +42,12 @@ import androidx.compose.ui.unit.dp
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SdkSuppress
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.File
-import java.security.MessageDigest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.roundToInt
-import org.json.JSONArray
-import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -77,73 +73,47 @@ class LiquidGlassCornerRenderTest {
         var geometry: Geometry? = null
     }
 
-    private data class Geometry(val sizePx: Size, val density: Float, val corners: LiquidGlassCornerRadii)
+    private data class Geometry(val sizePx: Size, val density: Float)
 
     @Test
     fun circularCpuCornersAndShaderEdgesAgreeAtEveryShoulder() {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val arguments = InstrumentationRegistry.getArguments()
         assumeTrue("Enable explicitly with glassCornerCheck=true", arguments.getString("glassCornerCheck") == "true")
-        val runId = (arguments.getString("glassCornerRunId") ?: System.currentTimeMillis().toString())
-            .replace(Regex("[^A-Za-z0-9_.-]"), "_")
-        val directory = File(instrumentation.targetContext.getExternalFilesDir(null), "glass-corner-geometry/$runId")
-            .apply { check(mkdirs() || isDirectory) }
-        val report = JSONObject().put("status", "running")
-            .put("diagnostic", "production AGSL edge encoded as opaque RGB(edge / 4); not native appearance or alpha")
-            .put("backend", "hardware nativeCanvas Paint(RuntimeShader), not RenderEffect or production material alpha")
-            .put("tolerance_dp", .05)
-        val reportFile = File(directory, "result.json")
-        reportFile.writeText(report.toString(2))
-
-        try {
-            val source = LiquidGlassShader.shaderSource(instrumentation.targetContext)
-            val finalReturn = "return half4(min(glass, float3(coverage)), coverage);"
-            check(source.indexOf(finalReturn) >= 0 && source.indexOf(finalReturn) == source.lastIndexOf(finalReturn)) {
-                "The production shader must have exactly one known final return"
-            }
-            val diagnostic = source.replace(finalReturn,
-                "return half4(float3(clamp(edge / 4.0, 0.0, 1.0)), 1.0);")
-            report.put("production_shader_sha256", MessageDigest.getInstance("SHA-256")
-                .digest(source.toByteArray()).joinToString("") { "%02x".format(it.toInt() and 0xff) })
-            val samples = listOf(Sample("toggle-rest", 37f, 24f),
-                Sample("toggle-held", 58f, 115f / 3f), Sample("dock-held", 94f, 54f))
-            compose.setContent {
-                RememberWindow()
-                Column(Modifier.background(Color.Black).padding(16.dp)) {
-                    samples.forEach { sample ->
-                        DiagnosticPane(sample, diagnostic)
-                        Spacer(Modifier.height(12.dp))
-                    }
-                }
-            }
-            compose.waitForIdle()
-            assertTrue("The diagnostic requires a real hardware-accelerated window", contentView.isHardwareAccelerated)
-
-            val results = JSONArray()
-            val failures = mutableListOf<String>()
-            samples.forEach { sample ->
-                val bitmap = capture(sample.name, directory)
-                try {
-                    File(directory, "${sample.name}.png").outputStream().use {
-                        check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))
-                    }
-                    val geometry = compose.runOnIdle { checkNotNull(sample.geometry) }
-                    val result = compare(sample, geometry, bitmap)
-                    results.put(result)
-                    if (!result.getBoolean("passed")) failures += "${sample.name}: ${result.getString("failure")}"
-                } finally {
-                    bitmap.recycle()
-                }
-            }
-            report.put("samples", results).put("status", if (failures.isEmpty()) "passed" else "failed")
-            reportFile.writeText(report.toString(2))
-            assertTrue("CPU circular arc and production GPU edge diverged: ${failures.joinToString()}; artifacts=$directory",
-                failures.isEmpty())
-        } catch (failure: Throwable) {
-            report.put("status", "failed").put("exception", "${failure.javaClass.name}: ${failure.message}")
-            reportFile.writeText(report.toString(2))
-            throw failure
+        val source = LiquidGlassShader.shaderSource(instrumentation.targetContext)
+        val finalReturn = "return half4(min(glass, float3(coverage)), coverage);"
+        check(source.indexOf(finalReturn) >= 0 && source.indexOf(finalReturn) == source.lastIndexOf(finalReturn)) {
+            "The production shader must have exactly one known final return"
         }
+        val diagnostic = source.replace(finalReturn,
+            "return half4(float3(clamp(edge / 4.0, 0.0, 1.0)), 1.0);")
+        val samples = listOf(Sample("toggle-rest", 37f, 24f),
+            Sample("toggle-held", 58f, 115f / 3f), Sample("dock-held", 94f, 54f))
+        compose.setContent {
+            RememberWindow()
+            Column(Modifier.background(Color.Black).padding(16.dp)) {
+                samples.forEach { sample ->
+                    DiagnosticPane(sample, diagnostic)
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
+        }
+        compose.waitForIdle()
+        assertTrue("The diagnostic requires a real hardware-accelerated window", contentView.isHardwareAccelerated)
+
+        val failures = mutableListOf<String>()
+        samples.forEach { sample ->
+            val bitmap = capture(sample.name)
+            try {
+                val geometry = compose.runOnIdle { checkNotNull(sample.geometry) }
+                val failure = compare(geometry, bitmap)
+                if (failure.isNotEmpty()) failures += "${sample.name}: $failure"
+            } finally {
+                bitmap.recycle()
+            }
+        }
+        assertTrue("CPU circular arc and production GPU edge diverged: ${failures.joinToString()}",
+            failures.isEmpty())
     }
 
     @Composable
@@ -182,7 +152,7 @@ class LiquidGlassCornerRenderTest {
             val corners = checkNotNull(circularGlassCornerRadii(outline, density.density)) {
                 "The production classifier must recognize the actual RoundedCornerShape(50)"
             }
-            sample.geometry = Geometry(size, density.density, corners)
+            sample.geometry = Geometry(size, density.density)
             LiquidGlassShader.build(
                 size = Size(size.width / density.density, size.height / density.density),
                 corners = corners,
@@ -200,14 +170,13 @@ class LiquidGlassCornerRenderTest {
         }
     }
 
-    private fun compare(sample: Sample, geometry: Geometry, bitmap: Bitmap): JSONObject {
+    private fun compare(geometry: Geometry, bitmap: Bitmap): String {
         assertEquals(geometry.sizePx.width.roundToInt(), bitmap.width)
         assertEquals(geometry.sizePx.height.roundToInt(), bitmap.height)
         val width = geometry.sizePx.width / geometry.density
         val height = geometry.sizePx.height / geometry.density
         val radius = minOf(width, height) / 2.0
         val capCenterFromMiddle = width / 2.0 - radius
-        val points = JSONArray()
         val counts = IntArray(4)
         val errors = DoubleArray(4)
         var opaque = true
@@ -233,25 +202,16 @@ class LiquidGlassCornerRenderTest {
             counts[corner]++
             errors[corner] = maxOf(errors[corner], error)
             opaque = opaque && android.graphics.Color.alpha(pixel) == 255
-            points.put(JSONObject().put("x_px", x).put("y_px", y).put("corner", corner)
-                .put("expected_dp", expected).put("measured_dp", measured).put("error_dp", error))
         }
         val failure = buildList {
             if (!opaque) add("diagnostic output was not opaque")
             if (counts.any { it == 0 }) add("all four shoulders must contain interior sample pixels")
             if (errors.any { it > .05 }) add("per-corner maximum error exceeds .05 dp")
         }.joinToString("; ")
-        return JSONObject().put("name", sample.name).put("passed", failure.isEmpty()).put("failure", failure)
-            .put("requested_size_dp", JSONArray(listOf(sample.widthDp, sample.heightDp)))
-            .put("actual_size_dp", JSONArray(listOf(width, height))).put("density", geometry.density)
-            .put("cpu_outline", "RoundedCornerShape(50) / actual Outline.Rounded")
-            .put("classified_radii_dp", JSONArray(listOf(geometry.corners.topLeft, geometry.corners.topRight,
-                geometry.corners.bottomRight, geometry.corners.bottomLeft)))
-            .put("corner_counts_tl_tr_bl_br", JSONArray(counts.toList()))
-            .put("corner_max_error_dp_tl_tr_bl_br", JSONArray(errors.toList())).put("pixels", points)
+        return failure
     }
 
-    private fun capture(tag: String, directory: File): Bitmap {
+    private fun capture(tag: String): Bitmap {
         compose.waitForIdle()
         val committed = CountDownLatch(1)
         compose.runOnUiThread {
@@ -269,17 +229,6 @@ class LiquidGlassCornerRenderTest {
         val origin = IntArray(2)
         compose.runOnUiThread { contentView.getLocationInWindow(origin) }
         val bounds = compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
-        val screenOrigin = IntArray(2)
-        compose.runOnUiThread { contentView.getLocationOnScreen(screenOrigin) }
-        File(directory, "$tag-crop.json").writeText(JSONObject()
-            .put("root_size_px", JSONArray(listOf(root.width, root.height)))
-            .put("view_window_origin_px", JSONArray(origin.toList()))
-            .put("view_screen_origin_px", JSONArray(screenOrigin.toList()))
-            .put("bounds_in_root_px", JSONArray(listOf(bounds.left, bounds.top, bounds.right, bounds.bottom)))
-            .toString(2))
-        File(directory, "$tag-full-window.png").outputStream().use {
-            check(full.compress(Bitmap.CompressFormat.PNG, 100, it))
-        }
         assertEquals("The diagnostic must start on an actual window pixel", bounds.left.roundToInt().toFloat(), bounds.left, .01f)
         assertEquals("The diagnostic must start on an actual window pixel", bounds.top.roundToInt().toFloat(), bounds.top, .01f)
         return try {
