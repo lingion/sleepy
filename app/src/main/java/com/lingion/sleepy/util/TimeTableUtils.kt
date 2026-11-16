@@ -11,6 +11,7 @@ import org.json.JSONObject
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
 import java.util.Collections
+import java.util.TreeMap
 
 /** 作息字符串就是版本键；编辑后自然失效。限制条数和键长度，避免导入数据撑大常驻内存。 */
 private class ParsedTimetableCache<T : Any> {
@@ -502,8 +503,9 @@ object TimeTableUtils {
     /**
      * v7.10.16k 无损合并 — "哪个大用哪个"(用户 2026-09-03):
      * 双方作息逐节合并, 结果 = max(两边节次数, requiredNodeCount), 任何一方不得把另一方压小。
-     * 同一节次: 导入源非空时间优先(空串视为没声明), 否则原表, 都没有用 smart 默认。
-     * 超出双方声明的节次(requiredNodeCount=导入课程实际到达的最大节)用 smart 默认铺底,
+     * 同一节次: 导入源非空时间优先(空串视为没声明), 否则原表。
+     * 缺失节次优先用逐节默认时间；有冲突或超出默认表时按前节顺延，且不得撞上后续源时间。
+     * 缺省时间仅供导入确认页编辑，当天排不下时留空，不回绕或重叠。
      * 保证课程到达 13 节时课表就是 13 节 — 源数据识别到多少节, 结果就多少节。
      */
     fun mergeMostComplete(currentJson: String, incomingJson: String, requiredNodeCount: Int = 0): String {
@@ -519,16 +521,59 @@ object TimeTableUtils {
         )
         if (declared == 0 && requiredNodeCount <= 0) return DEFAULT_TIME_JSON
         val count = maxOf(declared, requiredNodeCount).coerceAtLeast(1)
-        val rows = (1..count).map { node ->
+        val defaultRows = parseTimeSlotRows(DEFAULT_TIME_JSON).associateBy { it.node }
+        val sourceStarts = TreeMap<Int, LocalTime>()
+        (cur.keys + inc.keys).forEach { node ->
+            val raw = inc[node]?.start?.takeIf { it.isNotBlank() } ?: cur[node]?.start.orEmpty()
+            parsePeriodClock(raw)?.let { sourceStarts[node] = it }
+        }
+        val rows = mutableListOf<TimeSlotRow>()
+        for (node in 1..count) {
             val i = inc[node]
             val c = cur[node]
-            TimeSlotRow(
+            val start = i?.start?.takeIf { it.isNotBlank() } ?: c?.start?.takeIf { it.isNotBlank() }
+            val end = i?.end?.takeIf { it.isNotBlank() } ?: c?.end?.takeIf { it.isNotBlank() }
+            val previous = rows.lastOrNull()
+            val nextStart = sourceStarts.higherEntry(node)?.value
+            val fallback = importedDefault(node, previous, defaultRows[node], nextStart)
+            val candidate = TimeSlotRow(
                 node = node,
-                start = i?.start?.takeIf { it.isNotBlank() } ?: c?.start?.takeIf { it.isNotBlank() } ?: smartStartDefault(node),
-                end = i?.end?.takeIf { it.isNotBlank() } ?: c?.end?.takeIf { it.isNotBlank() } ?: smartEndDefault(node)
+                start = start ?: fallback.start,
+                end = end ?: fallback.end
             )
+            // Preserve explicit source clocks, including errors for the confirmation validator.
+            // A generated field must not turn a partial source row into an impossible interval.
+            rows += if ((start != null && end != null) || fitsImportedGap(candidate, previous, nextStart)) {
+                candidate
+            } else TimeSlotRow(node, start.orEmpty(), end.orEmpty())
         }
         return buildTimeJsonFromRows(rows)
+    }
+
+    private fun importedDefault(
+        node: Int, previous: TimeSlotRow?, standard: TimeSlotRow?, nextStart: LocalTime?
+    ): TimeSlotRow {
+        val blank = TimeSlotRow(node, "", "")
+        if (standard != null && fitsImportedGap(standard, previous, nextStart)) return standard
+        val previousEnd = previous?.end?.let(::parsePeriodClock) ?: return blank
+        val startMinute = previousEnd.toSecondOfDay() / 60 + 10
+        val endMinute = startMinute + 45
+        if (endMinute >= 24 * 60) return blank
+        val generated = TimeSlotRow(
+            node,
+            LocalTime.ofSecondOfDay(startMinute * 60L).toString(),
+            LocalTime.ofSecondOfDay(endMinute * 60L).toString()
+        )
+        return generated.takeIf { fitsImportedGap(it, previous, nextStart) } ?: blank
+    }
+
+    private fun fitsImportedGap(row: TimeSlotRow, previous: TimeSlotRow?, nextStart: LocalTime?): Boolean {
+        val start = parsePeriodClock(row.start) ?: return false
+        val end = parsePeriodClock(row.end) ?: return false
+        if (end <= start || (nextStart != null && end > nextStart)) return false
+        if (previous == null) return true
+        val previousEnd = parsePeriodClock(previous.end) ?: return false
+        return start >= previousEnd
     }
 
     /**
