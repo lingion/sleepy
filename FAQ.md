@@ -1,6 +1,6 @@
 # Sleepy · 轻课表 FAQ
 
-> 已发布版本基线为 Android v1.0.64，发布于 2026-11-09 UTC（北京时间 2026-11-10）。内容核对日期：2026-11-14。除明确标记“当前 main”的内容外，功能以[已发布源码](https://github.com/lingion/sleepy/tree/v1.0.64)和该版本 APK 为准；当前 main 的 WebDAV 说明尚未进入 v1.0.64。更多说明见[项目 Wiki](https://github.com/lingion/sleepy/wiki)。
+> 已发布版本基线为 Android v1.0.64，发布于 2026-11-09 UTC（北京时间 2026-11-10）。内容核对日期：2026-11-14。除明确标记“Android v1.0.65”的 WebDAV 说明外，功能以[v1.0.64 发布源码](https://github.com/lingion/sleepy/tree/v1.0.64)和该版本 APK 为准。WebDAV 已包含在[v1.0.65 发布源码](https://github.com/lingion/sleepy/tree/3a7cbed352f4f8e1144e2e532840b9bea93b25d3)中，该部分补充核对日期为 2026-11-16。更多说明见[项目 Wiki](https://github.com/lingion/sleepy/wiki)。
 
 ## 项目是什么
 
@@ -14,7 +14,7 @@
 不需要注册 Sleepy 账号，也不用向 Sleepy 提供邮箱或手机号；可直接手动建表、导入本地文件。教务直连仍可能要求学校账号、学号、密码或验证码，由你在学校页面登录。学校登录与 Sleepy 账号不是一回事。
 
 ### 会收集或上传数据吗？
-课表和设置默认存储在本机，不要求登录项目云端账号，也未集成 Firebase Analytics、Crashlytics、Sentry、Bugsnag、AppCenter、Bugly 等分析或崩溃上报 SDK。普通查看、编辑课表可离线完成。当前 main 提供可选 WebDAV 全量备份：只有你配置服务器并手动确认上传时，完整 `.sleepybackup` 才会直接发送到所填地址，不经过 Sleepy 的中转服务。
+课表和设置默认存储在本机，不要求登录项目云端账号，也未集成 Firebase Analytics、Crashlytics、Sentry、Bugsnag、AppCenter、Bugly 等分析或崩溃上报 SDK。普通查看、编辑课表可离线完成。Android v1.0.65 提供可选 WebDAV 全量备份：只有你配置服务器并手动确认上传时，完整 `.sleepybackup` 才会直接发送到所填地址，不经过 Sleepy 的中转服务。
 
 联网操作包括教务导入访问学校站点、WakeUP 分享口令解析访问第三方 `api.wakeup.fun`、节假日数据刷新，以及通过 GitHub 或项目镜像检查版本、下载更新。WebDAV 备份通过 HTTPS 访问你指定的服务器，用户名与密码用于该服务器认证；密码使用 Android Keystore 加密保存在本机。上传文件本身未加密，服务器管理员可能读取内容，且移除本机配置不会删除远端备份。使用系统日历、系统分享或手动导出后，数据去向由所选应用和操作决定。“本地存储”不等于所有操作都不联网。关于页提供隐私政策链接。
 
@@ -29,8 +29,8 @@
 ### 支持什么 Android 版本？
 最低 Android 8.0（API 26），target 和 compile SDK 为 37。正式包名是 `com.lingion.sleepy`，当前源码的 debug 包名是 `com.lingion.sleepy.debug`，数据分别保存。最低系统要求不代表所有图形效果和厂商实况通知都能在旧系统上工作。
 
-### 当前版本是多少？
-本页描述 v1.0.64，versionCode 为 10064。该正式版发布于 2026-11-09 UTC；已安装版本可在应用“关于”页查看。下载以 [v1.0.64 发布页](https://github.com/lingion/sleepy/releases/tag/v1.0.64)为准；之后的源码提交和 debug 包不自动算作此正式版已有功能。
+### 本 FAQ 以哪个版本为基线？最新正式版在哪里下载？
+本页功能说明的核对基线是 Android v1.0.64（versionCode 10064），发布于 2026-11-09 UTC，历史版本见 [v1.0.64 发布页](https://github.com/lingion/sleepy/releases/tag/v1.0.64)。最新 Android 正式版请查看[官网下载页](https://sleepy.is-my.app/download/)或 [GitHub 最新正式发布](https://github.com/lingion/sleepy/releases/latest)，已安装版本可在应用“关于”页查看。本页另外标明的 Android v1.0.65 WebDAV 功能已按对应发布源码核对；其他版本的功能请查看各自更新说明。
 
 ### 提供哪些 APK ABI？
 正式发布提供四种 APK：
@@ -108,7 +108,7 @@ Android 10 及以上将相应文件写到 `Download/Sleepy/`，Android 8 至 9 �
 ### 如何完整备份或换机？
 在“我的”的备份恢复入口导出 `.sleepybackup`，包含课表、作息表、偏好、自定义主题、小组件配置和导入草稿。恢复可选合并或覆盖；合并保留本机课表并追加，同名偏好键采用备份值，但保留本机默认课表和提醒名单，导入课表不会自动加入提醒。覆盖保留备份中的提醒选择，只替换备份包含的模块，缺少的偏好文件保留本机值。来源元数据随完整备份恢复。恢复前保管好原备份，单表 JSON 或 ICS 不是全量备份。
 
-**当前 main 的 WebDAV 备份：**在备份页填写 HTTPS WebDAV 地址、目录和可选账号，测试连接后保存。测试可能创建目录。上传由你手动确认，每次生成带时间戳的备份；恢复时可从远端列表选择文件，再按原流程合并或覆盖。没有自动同步或应用内远端删除。备份文件本身未加密，远端服务器管理员可能读取，请使用可信服务器。移除本机配置不影响服务器上的文件。
+**Android v1.0.65 的 WebDAV 备份：**在备份页填写 HTTPS WebDAV 地址、目录和可选账号，测试连接后保存。测试可能创建目录。上传由你手动确认，每次生成带时间戳的备份；恢复时可从远端列表选择文件，再按原流程合并或覆盖。没有自动同步或应用内远端删除。备份文件本身未加密，远端服务器管理员可能读取，请使用可信服务器。移除本机配置不影响服务器上的文件。
 
 ### 需要哪些权限？
 常见可选权限包括：点学校定位时的前台位置、开启提醒时的通知、导出到系统日历时的日历读写、更新安装时的未知来源安装。精确闹钟、电池优化和勿扰访问通过相关系统设置配置。后台服务和开机恢复还受系统权限及省电策略约束。普通离线查看课表不要求授予所有这些权限；这不是完整 Manifest 权限清单。

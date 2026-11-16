@@ -5,8 +5,8 @@
 <h1 align="center">Sleepy · Lightweight Timetable</h1>
 
 <p align="center">
-  A clean, open-source timetable app for Android and iOS — both native. This repo builds the Android version with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
-  Multi-view · Direct JW system import · Single-session adjustments · Home-screen widgets · Liquid Glass
+  Sleepy is a free, ad-free, open-source university timetable app with native Android and iOS versions.<br>
+  Timetable viewing and editing work offline; school import and optional backup connect to your chosen services. This repository contains the Android app, built with Kotlin + Jetpack Compose.
 </p>
 
 <p align="center">
@@ -25,10 +25,6 @@
 <p align="center">
   <a href="README.md">中文</a> · <a href="https://sleepy.is-my.app">Website</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki</a> · <a href="https://github.com/lingion/sleepy/releases/latest#assets">Download</a> · <a href="docs/adapt-kit/README.md">Add your university</a> · <a href="https://sleepy.is-my.app/preview">Try Online</a> · <a href="sponsor.md">Sponsor</a>
 </p>
-
----
-
-> **Keywords (SEO):** Android schedule app, iOS schedule app, iPhone timetable, SwiftUI, WidgetKit, iOS home screen widget, App Store timetable, cross-platform timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, home screen widget, HSV color picker, open source timetable
 
 ---
 
@@ -733,8 +729,9 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 ## Documentation
 
 - **[Official Website](https://sleepy.is-my.app)** — product overview, school catalog, downloads, FAQ
+- **[Official User Guides](https://sleepy.is-my.app/en/guides/)** — WakeUp migration, backup and restore, and manual WebDAV; each guide states its reviewed release and source evidence
 - **[Try Online](https://sleepy.is-my.app/preview)** — Web timetable, opens in the browser with no install; supports multi-format import (WakeUp share text / ICS / CSV / Excel), data stays local
-- **[iOS Repository](https://github.com/lingion/sleepy-ios)** — Sleepy iOS port, SwiftUI + WidgetKit, iOS 16.0+, feature-aligned with the Android releases
+- **[iOS Repository](https://github.com/lingion/sleepy-ios)** — Sleepy’s independent native iOS app, built with SwiftUI + WidgetKit; install through App Store or TestFlight, with requirements and features determined by that channel’s release
 - **[Wiki](https://github.com/lingion/sleepy/wiki)** — per-screen guides, all import/export formats, widget families, reminder internals, architecture and codebase map, all cross-linked from the sidebar
 - **[Operation Guide](https://blog.qdp.qzz.io/docs/sleepy/overview)** — step-by-step user manual covering installation, import, widgets, themes, and troubleshooting
 - **[Technical Write-up](https://blog.qdp.qzz.io/sleepy-material-you-schedule)** — architecture deep-dive: schedule parser engine, gold-angle HSL, Wisedu reverse-engineering, widget rendering pipeline
