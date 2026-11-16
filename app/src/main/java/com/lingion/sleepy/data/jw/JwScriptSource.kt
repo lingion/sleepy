@@ -70,9 +70,9 @@ internal class JwScriptSource(source: String) {
     }
 
     val assignments: List<Assignment> by lazy {
-        matches(Regex("""[\w$]+(?:\.[\w$]+)*\s*(\+=|=(?!=|>))\s*""")).map { match ->
+        matches(Regex("""[\w$]+(?:\s*\.\s*[\w$]+)*\s*(\+=|=(?!=|>))\s*""")).map { match ->
             val operator = match.groupValues[1]
-            val target = match.value.substringBefore(operator).trim()
+            val target = match.value.substringBefore(operator).replace(Regex("\\s+"), "")
             val start = match.range.last + 1
             var end = start
             var depth = 0
