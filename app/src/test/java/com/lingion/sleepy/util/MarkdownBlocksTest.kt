@@ -67,6 +67,31 @@ class MarkdownBlocksTest {
         assertEquals(listOf("a", "b"), list?.items)
     }
 
+    @Test
+    fun htmlAnchorMetadataIsIgnoredInsteadOfRenderedAsText() {
+        val blocks = MarkdownBlocks.parse("<a id=\"zh-glass-menu\"></a>\n\n- visible fix")
+
+        assertEquals(
+            listOf(MarkdownBlocks.Block.Bullet(listOf("visible fix"))),
+            blocks
+        )
+    }
+
+    @Test
+    fun inlineHtmlTagsAreIgnoredWhileTextAndCodeRemain() {
+        val spans = MarkdownBlocks.parseInline("<span>visible</span> text and `<tag>`")
+        val rendered = spans.joinToString("") {
+            when (it) {
+                is MarkdownBlocks.Inline.Text -> it.text
+                is MarkdownBlocks.Inline.Bold -> it.text
+                is MarkdownBlocks.Inline.Code -> it.text
+                is MarkdownBlocks.Inline.Link -> it.text
+            }
+        }
+
+        assertEquals("visible text and <tag>", rendered)
+    }
+
     // ==== 探针: 覆盖 release notes 会出现的冷门/畸形 Markdown ====
 
     /** 模拟即将发出的 v1.0.41 探针 release body, 与 /tmp/probe-notes.md 保持一致 */
