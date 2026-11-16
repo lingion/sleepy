@@ -18,7 +18,7 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
          * 允许空白/换行在参数间 (WakeUp smali 调用常跨多行)
          */
         val RE_COURSE_TABLE: Regex = Regex(
-            """new CourseTable\(\s*'([-\d]+?)'\s*,\s*\[([\d\[\],\s]+)]\s*\)""",
+            """new\s+CourseTable\s*\(\s*['"]([-\d]+?)['"]\s*,\s*\[([\d\[\],\s]+)]\s*\)""",
             RegexOption.DOT_MATCHES_ALL,
         )
 
@@ -38,13 +38,14 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
             }.orEmpty()
 
         private data class ScriptSource(val semester: java.time.LocalDate,
-            val periods: List<Pair<Int, Int>>, val script: String)
+            val periods: List<Pair<Int, Int>>, val script: JwScriptSource)
 
         private fun declaredSource(source: String): ScriptSource? {
-            val table = RE_COURSE_TABLE.find(source) ?: return null
+            if (!source.trimStart().startsWith('<')) return null
+            val script = org.jsoup.Jsoup.parse(source).select("script").asSequence()
+                .map { JwScriptSource(it.data()) }.firstOrNull { it.matches(RE_COURSE_TABLE).any() } ?: return null
+            val table = script.matches(RE_COURSE_TABLE).firstOrNull() ?: return null
             val semester = runCatching { java.time.LocalDate.parse(table.groupValues[1]) }.getOrNull() ?: return null
-            val script = org.jsoup.Jsoup.parse(source).select("script").asSequence().map { it.data() }
-                .firstOrNull { it.contains(table.value) } ?: return null
             val rows = runCatching { org.json.JSONArray("[${table.groupValues[2]}]") }.getOrNull() ?: return null
             if (rows.length() == 0) return null
             val periods = (0 until rows.length()).map { index ->
@@ -69,36 +70,45 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
         // 协议族验证
         val declared = declaredSource(source) ?: return out
         val (semester, periods, script) = declared
-        val activity = RE_NEW_ACTIVITY_8
-        val slot = Regex("""addActivityByTime\(\s*activity\s*,\s*(\d)\s*,\s*(\d+)\s*,\s*(\d+)\s*\);""")
-        val starts = Regex("""newActivity\s*\(""").findAll(script).map { it.range.first }.toList()
+        val call = Regex("""\bnewActivity\s*\(""")
+        val starts = script.matches(call).toList()
         val details = ecuplDetails(source)
-        for ((i, start) in starts.withIndex()) {
-            val end = starts.getOrNull(i + 1) ?: script.length
-            val segment = script.substring(start, end)
-            val m = activity.find(segment) ?: continue
-            if (m.range.first != 0) continue
-            val date = runCatching { java.time.LocalDate.parse(m.groupValues[4]) }.getOrNull() ?: continue
-            val bitmap = m.groupValues[5].toLongOrNull() ?: continue
+        for ((i, match) in starts.withIndex()) {
+            val start = match.range.first
+            val end = starts.getOrNull(i + 1)?.range?.first ?: script.text.length
+            val (args, closing) = script.arguments(match.range.last) ?: continue
+            if (args.size != 8) continue
+            val teacherValue = script.string(args[1]) ?: continue
+            val nameValue = script.string(args[3]) ?: continue
+            val roomValue = script.string(args[5]) ?: continue
+            val dateValue = script.string(args[6]) ?: continue
+            val bound = script.assignments.lastOrNull { assignment ->
+                assignment.start < start && Regex("""[\w$.]+\s*=\s*(?:[\w$.]+\.)?""")
+                    .matches(script.text.substring(assignment.start, start))
+            }?.target ?: script.matches(Regex("""(?:var|let|const)\s+([\w$]+)\s*;"""))
+                .lastOrNull { it.range.first < start }?.groupValues?.get(1) ?: "activity"
+            val slot = Regex("""\baddActivityByTime\s*\(\s*${Regex.escape(bound)}\s*,\s*(\d)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*;?""")
+            val date = runCatching { java.time.LocalDate.parse(dateValue) }.getOrNull() ?: continue
+            val bitmap = args[7].toLongOrNull() ?: continue
             val offset = Math.floorDiv(java.time.temporal.ChronoUnit.DAYS.between(semester, date), 7).toInt()
             val weeks = (0 until 64).filter { bitmap and (1L shl it) != 0L }
                 .map { it + offset }
             if (weeks.isEmpty() || weeks.any { it !in 1..64 }) continue
-            val rawName = m.groupValues[2].trim()
+            val rawName = nameValue.trim()
             val code = rawName.substringAfterLast('(', "").removeSuffix(")")
             val detail = details[code]
             val name = detail?.name ?: if (rawName.endsWith(')') && code.matches(Regex("""[A-Za-z0-9_.-]*\d[A-Za-z0-9_.-]*""")))
                 rawName.substringBeforeLast('(').trim() else rawName
-            val rawTeacher = m.groupValues[1].trim()
+            val rawTeacher = teacherValue.trim()
             val teacher = when {
                 detail == null || detail.teacher.isBlank() || rawTeacher == detail.teacher -> rawTeacher
                 rawTeacher.isBlank() -> detail.teacher
                 else -> "$rawTeacher (${detail.teacher})"
             }
             val locationNote = detail?.note?.takeIf { it.contains("地点") }
-            val room = m.groupValues[3].trim() + (locationNote?.let { " ($it)" } ?: "")
+            val room = roomValue.trim() + (locationNote?.let { " ($it)" } ?: "")
             if (name.isBlank()) continue
-            for (slotMatch in slot.findAll(segment.substring(m.range.last + 1))) {
+            for (slotMatch in script.matches(slot).filter { it.range.first in (closing + 1) until end }) {
                 val day = slotMatch.groupValues[1].toInt()
                 val startMinute = slotMatch.groupValues[2].toIntOrNull() ?: continue
                 val endMinute = slotMatch.groupValues[3].toIntOrNull() ?: continue

@@ -1,6 +1,6 @@
 package com.lingion.sleepy.data.jw
 
-import org.json.JSONTokener
+import org.json.JSONArray
 
 /**
  * 经典金智/树维 EAMS (`courseTableForStd!courseTable.action` 系列) 课表解析器。
@@ -40,6 +40,9 @@ class JwClassicEamsParser(
     private val transformWeekBitmap: (String) -> String = { it },
 ) : JwParser(source) {
 
+    private val script by lazy { JwScriptSource(source) }
+    private val taskPattern = Regex("""new\s+TaskActivity\s*\(""")
+
     /** 一条 TaskActivity 记录 (块级, 尚未按 index/位图展开) */
     private data class Task(
         val teacher: String,
@@ -69,8 +72,8 @@ class JwClassicEamsParser(
     }
 
     override fun generateCourseList(): List<JwCourse> {
-        if (!Regex("""new\s+TaskActivity\(""").containsMatchIn(source) &&
-            source.contains("newActivity(") && source.contains("addActivityByTime(")) {
+        if (script.matches(taskPattern).none() &&
+            script.matches(Regex("""newActivity\s*\(""")).any() && script.matches(Regex("""addActivityByTime\s*\(""")).any()) {
             return timeActivities()
         }
         val out = mutableListOf<JwCourse>()
@@ -99,9 +102,16 @@ class JwClassicEamsParser(
     private fun timeActivities(): List<JwCourse> =
         JwEcuplScriptParser(source).generateCourseList()
 
-    /** 页面 var unitCount = N; — 拿不到返回 null (硬失败, 别猜默认值) */
-    private fun unitCountFromPage(): Int? =
-        Regex("""\bvar\s+unitCount\s*=\s*(\d+)\s*;""").find(source)?.groupValues?.get(1)?.toIntOrNull()
+    /** Resolve the stride actually referenced by coordinate arithmetic. */
+    private fun unitCountFromPage(): Int? {
+        val referenced = script.matches(Regex("""[\w$]+\s*=\s*\d+\s*\*\s*([\w$]+)\s*\+"""))
+            .map { it.groupValues[1] }.toSet()
+        val counts = script.assignments.filter { it.target in referenced && it.operator == "=" }
+            .mapNotNull { it.expression.toIntOrNull()?.takeIf { n -> n > 0 } }.distinct()
+        if (counts.size == 1) return counts.single()
+        // The legacy linear-index form has no arithmetic reference to its stride.
+        return script.assignments.lastOrNull { it.target == "unitCount" }?.expression?.toIntOrNull()
+    }
 
     /**
      * 切出每课块并解析 TaskActivity 参数 + 后随 index 赋值。
@@ -110,12 +120,11 @@ class JwClassicEamsParser(
      */
     private fun blocks(unitCount: Int): List<Pair<Task, List<Pair<Int, Int>>>> {
         val result = mutableListOf<Pair<Task, List<Pair<Int, Int>>>>()
-        val actRe = Regex("""new\s+TaskActivity\(""")
-        val matches = actRe.findAll(source).toList()
+        val matches = script.matches(taskPattern).toList()
 
         for ((i, m) in matches.withIndex()) {
             val argStart = m.range.last + 1
-            val (args, closingParen) = splitArgs(source, argStart)
+            val (args, closingParen) = script.arguments(argStart - 1) ?: continue
             if (args.size < 7 || closingParen < 0) continue
 
             // 教师: 老版 args[1] 是字面姓名串; 新版 args[0]/args[1] 是 actTeacher*.join 表达式,
@@ -123,7 +132,7 @@ class JwClassicEamsParser(
             val nameArgRaw = args[1].trim()
             val teacher = if (nameArgRaw.startsWith("\"") || nameArgRaw.startsWith("'")) {
                 unquote(nameArgRaw)
-            } else if (nameArgRaw.contains("join(")) {
+            } else if (Regex("""\.join\s*\(""").containsMatchIn(nameArgRaw)) {
                 resolveTeachersFromActTeachers(m.range.first)
             } else {
                 unquote(nameArgRaw)
@@ -144,99 +153,58 @@ class JwClassicEamsParser(
             )
 
             // 本块的 index 段: TaskActivity(...) 之后到下一个块声明 (或 marshalTable) 之间
-            val blockEnd = if (i + 1 < matches.size) matches[i + 1].range.first else source.length
-            val tail = source.substring(m.range.last + 1, blockEnd)
+            val blockEnd = matches.getOrNull(i + 1)?.range?.first ?: script.text.length
+            val tail = script.code.substring(closingParen + 1, blockEnd)
+            val referencedIndices = Regex("""\.activities\s*\[\s*([\w$]+)\s*]""")
+                .findAll(tail).map { it.groupValues[1] }.toSet()
             val indexPairs = mutableListOf<Pair<Int, Int>>()
-            // 兼容: index =D*unitCount+P; / index=D*12+P; / index =42; 三种形态
-            val idxRe = Regex("""index\s*=\s*(?:(\d+)\s*\*\s*(unitCount|\d+)\s*\+\s*(\d+)|(\d+))\s*;""")
-            for (im in idxRe.findAll(tail)) {
-                val d = im.groupValues[1]
-                val multiplier = im.groupValues[2]
-                val p = im.groupValues[3]
-                if (d.isNotEmpty() && p.isNotEmpty()) {
-                    val day = d.toIntOrNull() ?: continue
-                    val node = p.toIntOrNull() ?: continue
-                    if (multiplier == "unitCount") {
-                        if (day in 0..6 && node in 0 until unitCount) indexPairs += day to node
-                    } else {
-                        val stride = multiplier.toIntOrNull()?.takeIf { it > 0 } ?: continue
-                        val linear = day.toLong() * stride + node
-                        if (linear in 0 until 7L * unitCount) indexPairs += (linear / unitCount).toInt() to (linear % unitCount).toInt()
+            val formula = Regex("""(\d+)\s*\*\s*([\w$]+|\d+)\s*\+\s*(\d+)""")
+            for (assignment in script.assignments.filter { it.start in (closingParen + 1) until blockEnd }) {
+                if (referencedIndices.isNotEmpty() && assignment.target !in referencedIndices) continue
+                val expression = assignment.expression
+                val coordinate = formula.matchEntire(expression)
+                val linear = if (coordinate != null) {
+                    val day = coordinate.groupValues[1].toLongOrNull() ?: continue
+                    val multiplier = coordinate.groupValues[2]
+                    val node = coordinate.groupValues[3].toLongOrNull() ?: continue
+                    val declaration = script.assignments.lastOrNull {
+                        it.target == multiplier && it.start < assignment.start
                     }
-                } else if (im.groupValues[4].isNotEmpty()) {
-                    val linear = im.groupValues[4].toLongOrNull() ?: continue
-                    if (linear in 0 until 7L * unitCount) indexPairs += (linear / unitCount).toInt() to (linear % unitCount).toInt()
+                    // Some declared protocols supply the stride in an external script.
+                    // Keep the caller's protocol default only when no declaration exists.
+                    val stride = multiplier.toLongOrNull() ?: if (declaration == null) unitCount.toLong()
+                        else declaration.expression.toLongOrNull() ?: continue
+                    if (stride <= 0) continue
+                    if (multiplier.toLongOrNull() == null && (day !in 0..6 || node !in 0 until stride)) continue
+                    runCatching { Math.addExact(Math.multiplyExact(day, stride), node) }.getOrNull() ?: continue
+                } else {
+                    if (referencedIndices.isEmpty() && assignment.target != "index") continue
+                    expression.toLongOrNull() ?: continue
                 }
+                if (linear in 0 until 7L * unitCount) indexPairs +=
+                    (linear / unitCount).toInt() to (linear % unitCount).toInt()
             }
             if (indexPairs.isNotEmpty()) result += task to indexPairs
         }
         return result
     }
 
-    /**
-     * 带引号/括号深度状态的参数切分 (hunnu.js splitArgs 形态)。
-     * 返回 (参数列表, 闭括号位置)。参数内逗号 (引号中/括号内) 不切分。
-     */
-    private fun splitArgs(src: String, start: Int): Pair<List<String>, Int> {
-        val args = mutableListOf<String>()
-        val cur = StringBuilder()
-        var quote: Char? = null
-        var depth = 0
-        var i = start
-        var closed = -1
-        while (i < src.length) {
-            val ch = src[i]
-            when {
-                quote != null -> {
-                    if (ch == quote && !isEscaped(src, i)) quote = null
-                    cur.append(ch)
-                }
-                ch == '"' || ch == '\'' -> { quote = ch; cur.append(ch) }
-                ch == '(' -> { depth++; cur.append(ch) }
-                ch == ')' -> {
-                    if (depth == 0) { closed = i; break }
-                    depth--; cur.append(ch)
-                }
-                ch == ',' && depth == 0 -> { args += cur.toString().trim(); cur.clear() }
-                else -> cur.append(ch)
-            }
-            i++
-        }
-        if (cur.isNotBlank() || args.isNotEmpty()) args += cur.toString().trim()
-        return args to closed
-    }
+    /** Closest schema-bearing teacher array before this activity. */
+    private fun resolveTeachersFromActTeachers(blockStart: Int): String = script.assignments
+        .asSequence().filter { it.start < blockStart }.mapNotNull { assignment ->
+            val rows = runCatching { JSONArray(assignment.expression) }.getOrNull() ?: return@mapNotNull null
+            if (rows.length() == 0 || (0 until rows.length()).any { rows.optJSONObject(it)?.has("name") != true })
+                return@mapNotNull null
+            (0 until rows.length()).map { rows.getJSONObject(it).optString("name").trim() }
+                .filter(String::isNotBlank).joinToString("/")
+        }.lastOrNull().orEmpty()
 
-    private fun isEscaped(src: String, i: Int): Boolean {
-        var back = 0
-        var j = i - 1
-        while (j >= 0 && src[j] == '\\') { back++; j-- }
-        return back % 2 == 1
-    }
-
-    /** Resolve the closest declared teacher array without an arbitrary character cutoff. */
-    private fun resolveTeachersFromActTeachers(blockStart: Int): String {
-        val seg = source.substring(0, blockStart)
-        val arrayRe = Regex("""var\s+actTeachers\s*=\s*\[([^\]]*)\]\s*;""")
-        val arr = arrayRe.findAll(seg).lastOrNull()?.groupValues?.get(1) ?: return ""
-        val nameRe = Regex("""(?:["']name["']|\bname)\s*:\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')""")
-        return nameRe.findAll(arr).map { unquote(it.groupValues[1]) }
-            .filter { it.isNotBlank() }
-            .joinToString("/")
-    }
-
-    /** 上财形态: 第 4 参 = this.courseNameLessonNo → 块后反查 var courseNameLessonNo = ".."; */
     private fun resolveCourseName(task: Task): String {
-        // verbatim: 课程名整体入库, 不做任何清洗/剥离
-        // 历史误伤: cleanCourseName("大学物理Ⅱ(D1200440.18)") → "大学物理Ⅱ" 丢了课程编码
-        task.name.takeIf { it.isNotBlank() }?.let { return it }
-        val expr = task.nameExpr ?: return ""
-        if (!expr.contains("courseNameLessonNo")) return ""
-        val re = Regex("""var\s+courseNameLessonNo\s*=\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')\s*;""")
-        val preceding = re.findAll(source.substring(0, task.blockStart)).lastOrNull()
-        if (preceding != null) return unquote(preceding.groupValues[1])
-        val nextTask = Regex("""new\s+TaskActivity\(""").find(source, task.blockStart + 1)?.range?.first
-            ?: source.length
-        return re.find(source.substring(task.blockStart, nextTask))?.groupValues?.get(1)?.let(::unquote).orEmpty()
+        task.name.takeIf(String::isNotBlank)?.let { return it }
+        val expression = task.nameExpr ?: return ""
+        val nextTask = script.matches(taskPattern).firstOrNull { it.range.first > task.blockStart }
+            ?.range?.first ?: script.text.length
+        return script.resolveString(expression, task.blockStart, nextTask).orEmpty()
     }
 
     /**
@@ -270,22 +238,16 @@ class JwClassicEamsParser(
     private fun isQuoted(value: String): Boolean = value.length >= 2 &&
         (value.first() == '"' || value.first() == '\'') && value.last() == value.first()
 
-    private fun unquote(arg: String): String {
-        val t = arg.trim()
-        if (isQuoted(t)) {
-            return runCatching { JSONTokener(t).nextValue() as? String }.getOrNull().orEmpty()
-        }
-        return t
-    }
+    private fun unquote(arg: String): String = script.string(arg) ?: arg.trim()
 
     /** 三锚齐中 95 (manualArrangeCourseTable + TaskActivity + unitCount); 仅 TaskActivity 50..79 */
     override fun confidence(): Int = when {
         source.contains("manualArrangeCourseTable") &&
-            source.contains("new TaskActivity(") &&
-            Regex("""\bvar\s+unitCount\s*=\s*\d+\s*;""").containsMatchIn(source) -> 95
-        source.contains("manualArrangeCourseTable") && source.contains("new TaskActivity(") -> 90
-        source.contains("new TaskActivity(") -> when {
-            Regex("""\bvar\s+unitCount\s*=\s*\d+\s*;""").containsMatchIn(source) -> 70
+            script.matches(taskPattern).any() &&
+            (unitCountFromPage() != null) -> 95
+        source.contains("manualArrangeCourseTable") && script.matches(taskPattern).any() -> 90
+        script.matches(taskPattern).any() -> when {
+            (unitCountFromPage() != null) -> 70
             else -> 55
         }
         else -> 0
@@ -293,8 +255,8 @@ class JwClassicEamsParser(
 
     override fun matchedFeatures(): List<String> = buildList {
         if (source.contains("manualArrangeCourseTable")) add("table#manualArrangeCourseTable")
-        if (source.contains("new TaskActivity(")) add("new TaskActivity(...)")
-        if (Regex("""\bvar\s+unitCount\s*=\s*\d+\s*;""").containsMatchIn(source)) add("var unitCount = N")
+        if (script.matches(taskPattern).any()) add("new TaskActivity(...)")
+        if ((unitCountFromPage() != null)) add("var unitCount = N")
         if (source.contains("marshalTable")) add("table0.marshalTable")
         if (source.contains("courseTableForStd")) add("courseTableForStd")
     }
