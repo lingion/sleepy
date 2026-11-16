@@ -1144,7 +1144,7 @@ class JwImportActivity : ComponentActivity() {
                                     lastCaptureResult = result
                                     statusMsg = null
                                 },
-                                onBack = { requestExit() },
+                                onBack = { stage = Stage.SelectSchool },
                                 onWebViewReady = { wv -> webViewForDump = wv }
                             )
                         } // end SaveableStateProvider("WebViewLogin") (school != null)
