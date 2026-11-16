@@ -133,7 +133,7 @@ class JwClassicEamsParser(
             val teacher = if (nameArgRaw.startsWith("\"") || nameArgRaw.startsWith("'")) {
                 unquote(nameArgRaw)
             } else if (Regex("""\.join\s*\(""").containsMatchIn(nameArgRaw)) {
-                resolveTeachersFromActTeachers(m.range.first)
+                resolveTeachers(nameArgRaw, m.range.first)
             } else {
                 unquote(nameArgRaw)
             }
@@ -189,15 +189,38 @@ class JwClassicEamsParser(
         return result
     }
 
-    /** Closest schema-bearing teacher array before this activity. */
-    private fun resolveTeachersFromActTeachers(blockStart: Int): String = script.assignments
-        .asSequence().filter { it.start < blockStart }.mapNotNull { assignment ->
-            val rows = runCatching { JSONArray(assignment.expression) }.getOrNull() ?: return@mapNotNull null
-            if (rows.length() == 0 || (0 until rows.length()).any { rows.optJSONObject(it)?.has("name") != true })
-                return@mapNotNull null
-            (0 until rows.length()).map { rows.getJSONObject(it).optString("name").trim() }
-                .filter(String::isNotBlank).joinToString("/")
-        }.lastOrNull().orEmpty()
+    /** Follow the joined binding and its actual name projection, without executing scripts. */
+    private fun resolveTeachers(expression: String, before: Int): String {
+        val binding = "[\\w$]+(?:\\.[\\w$]+)*"
+        fun names(raw: String, objects: Boolean): String? {
+            val rows = runCatching { JSONArray(raw) }.getOrNull() ?: return null
+            if (rows.length() == 0) return null
+            val values = (0 until rows.length()).map { index ->
+                if (objects) rows.optJSONObject(index)?.opt("name") as? String else rows.opt(index) as? String
+            }
+            if (values.any { it == null }) return null
+            return values.filterNotNull().map(String::trim).filter(String::isNotBlank).joinToString("/")
+        }
+        fun value(target: String): String? = script.assignments.lastOrNull {
+            it.target == target && it.start < before
+        }?.expression
+        val joined = Regex("^($binding)\\s*\\.\\s*join\\s*\\(").find(expression)?.groupValues?.get(1)
+        if (joined != null) {
+            value(joined)?.let { names(it, false) }?.let { return it }
+            val push = Regex("${Regex.escape(joined)}\\s*\\.\\s*push\\s*\\(\\s*($binding)\\s*\\[\\s*[\\w$]+\\s*]\\s*\\.\\s*name\\s*\\)")
+            val reset = script.assignments.lastOrNull { it.target == joined && it.start < before }?.start ?: 0
+            val recordBinding = script.matches(push).filter { it.range.first in reset until before }
+                .lastOrNull()?.groupValues?.get(1)
+            if (recordBinding != null) return value(recordBinding)?.let { names(it, true) }.orEmpty()
+        }
+        val mapped = Regex("^($binding)\\s*\\.\\s*map\\s*\\(\\s*([\\w$]+)\\s*=>\\s*\\2\\s*\\.\\s*name\\s*\\)\\s*\\.\\s*join\\s*\\(")
+            .find(expression)?.groupValues?.get(1)
+        if (mapped != null) return value(mapped)?.let { names(it, true) }.orEmpty()
+        // Older simplified captures omit the projection loop. Preserve their
+        // established nearest-schema fallback only when no actual reference exists.
+        return script.assignments.asSequence().filter { it.start < before }
+            .mapNotNull { names(it.expression, true) }.lastOrNull().orEmpty()
+    }
 
     private fun resolveCourseName(task: Task): String {
         task.name.takeIf(String::isNotBlank)?.let { return it }
