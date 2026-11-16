@@ -39,9 +39,11 @@ class JwZjuParser(source: String) : JwParser(source) {
                 else -> 0
             }
             val djj = obj.str("djj").toIntOrNull() ?: continue
-            val skcd = obj.str("skcd").toIntOrNull() ?: 1
+            val skcd = if ("skcd" in obj) obj.str("skcd").toIntOrNull() ?: continue else 1
+            val endNode = explicitScheduleEnd(djj, skcd) ?: continue
+            if (xqj !in 1..7) continue
             val rawKcb = obj.str("kcb")
-            val kcb = rawKcb.split("zwf")[0].split("<br>")
+            val kcb = rawKcb.split("zwf")[0].split(Regex("""<br\s*/?>""", RegexOption.IGNORE_CASE))
             if (kcb.isEmpty()) continue
             val name = kcb.getOrNull(0)?.replace("(", "（")?.replace(")", "）")?.trim() ?: continue
             val timeString = kcb.getOrNull(1)?.trim().orEmpty()
@@ -56,7 +58,7 @@ class JwZjuParser(source: String) : JwParser(source) {
                     teacher = teacher,
                     day = xqj,
                     startNode = djj,
-                    endNode = djj + skcd - 1,
+                    endNode = endNode,
                     startWeek = sw,
                     endWeek = ew,
                     type = typeInt,

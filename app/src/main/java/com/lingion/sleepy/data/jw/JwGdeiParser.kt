@@ -1,17 +1,20 @@
 package com.lingion.sleepy.data.jw
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 /** GDEI row periods are defaults only for that row; each course may override them. */
 class JwGdeiParser(source: String) : JwParser(source) {
-    private val body by lazy { Jsoup.parse(source).selectFirst("tbody") }
+    private val document by lazy { Jsoup.parse(source) }
+    private val courses by lazy { courseTableCandidates(document, null, ::parseTable) }
+    override fun generateCourseList(): List<JwCourse> = courses
     private fun periods(text: String, rowLabel: Boolean = false): List<Pair<Int, Int>> {
         val pattern = if (rowLabel) Regex("""第(.+?)节(?:[（(][^()（）]*[）)])?""") else Regex("""第(.+?)节""")
         val match = pattern.matchEntire(text.trim()) ?: return emptyList()
         return schoolNodeRanges(match.groupValues[1])
     }
-    override fun generateCourseList(): List<JwCourse> = buildList {
-        for (row in body?.children().orEmpty().filter { it.tagName() == "tr" }) {
+    private fun parseTable(root: Element): List<JwCourse> = buildList {
+        for (row in root.select("tr").filter { it.closest("table") == root }) {
             val cells = row.children().filter { it.tagName() == "td" }
             if (cells.size < 2) continue
             val defaults = periods(cells[0].text(), rowLabel = true)
@@ -35,6 +38,6 @@ class JwGdeiParser(source: String) : JwParser(source) {
             }
         }
     }.distinct()
-    override fun confidence(): Int = if (body != null) 80 else 0
-    override fun matchedFeatures(): List<String> = if (body != null) listOf("declared-gdei-tbody") else emptyList()
+    override fun confidence(): Int = if (document.selectFirst("tbody") != null || courses.isNotEmpty()) 80 else 0
+    override fun matchedFeatures(): List<String> = if (document.selectFirst("tbody") != null || courses.isNotEmpty()) listOf("declared-gdei-tbody") else emptyList()
 }

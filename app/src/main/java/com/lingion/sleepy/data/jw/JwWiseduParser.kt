@@ -1,6 +1,9 @@
 package com.lingion.sleepy.data.jw
 
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -42,18 +45,18 @@ open class JwWiseduParser(source: String) : JwParser(source) {
     protected open fun mapSection(dm: Int): Int = dm
 
     override fun generateCourseList(): List<JwCourse> {
-        val root = json.parseToJsonElement(source).jsonObject
-        val rows = root["datas"]?.jsonObject
+        val root = runCatching { json.parseToJsonElement(source) as? JsonObject }.getOrNull() ?: return emptyList()
+        val rows = (root["datas"] as? JsonObject)
             ?.let { datas ->
-                moduleNames.firstNotNullOfOrNull { datas[it]?.jsonObject }
+                moduleNames.firstNotNullOfOrNull { datas[it] as? JsonObject }
             }
-            ?.get("rows")?.jsonArray
+            ?.get("rows") as? JsonArray
             ?: return emptyList()
 
         val result = mutableListOf<JwCourse>()
         for (el in rows) {
-            val o = el.jsonObject
-            fun str(k: String): String = o[k]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
+            val o = el as? JsonObject ?: continue
+            fun str(k: String): String = (o[k] as? JsonPrimitive)?.contentOrNull?.trim().orEmpty()
             fun int(k: String): Int? = str(k).toIntOrNull()
 
             val name = str("KCM")
@@ -62,7 +65,8 @@ open class JwWiseduParser(source: String) : JwParser(source) {
             val room = str("JASMC")
             val day = int("SKXQ") ?: continue
             val startNode = int("KSJC")?.let { mapSection(it) } ?: continue
-            val endNode = int("JSJC")?.let { mapSection(it) } ?: startNode
+            val endNode = if ("JSJC" in o) int("JSJC")?.let { mapSection(it) } ?: continue else startNode
+            if (day !in 1..7 || startNode !in 1..EXPLICIT_SCHEDULE_RESOURCE_BOUND || endNode !in startNode..EXPLICIT_SCHEDULE_RESOURCE_BOUND) continue
             val skzc = str("SKZC")
 
             for ((sw, ew, type) in weekRuns(skzc)) {
@@ -70,9 +74,9 @@ open class JwWiseduParser(source: String) : JwParser(source) {
                     name = name,
                     room = room,
                     teacher = teacher,
-                    day = day.coerceIn(1, 7),
-                    startNode = startNode.coerceAtLeast(1),
-                    endNode = endNode.coerceAtLeast(startNode),
+                    day = day,
+                    startNode = startNode,
+                    endNode = endNode,
                     startWeek = sw,
                     endWeek = ew,
                     type = type

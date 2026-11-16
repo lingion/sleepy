@@ -2911,14 +2911,7 @@ private fun captureOnce(wv: WebView, declaredType: String?, onResult: (FrameCapt
 /** 带重试的抓取: 空壳 iframe / 延迟渲染容器按 1500ms 间隔重试, 至多 3 次。 */
 private fun captureWithRetry(wv: WebView, retryCount: Int, declaredType: String?, onResult: (FrameCaptureResult) -> Unit) {
     captureOnce(wv, declaredType) { first ->
-        // ① 空壳 iframe: 先于 Readiness 判定(about:blank 壳不属于"容器空")
-        val shell = first.html.isBlank() || RenderReadinessChecker.checkBlankShell(first.html)
-        // ② readiness 只看选中 frame 的 html
-        val readiness = when {
-            retryCount >= 3 -> RenderReadinessChecker.Readiness.GIVE_UP
-            shell -> RenderReadinessChecker.Readiness.DELAY   // 空壳 → 等导航
-            else -> RenderReadinessChecker.check(first.html, retryCount)
-        }
+        val readiness = RenderReadinessChecker.check(first, retryCount)
         when (readiness) {
             RenderReadinessChecker.Readiness.READY -> onResult(first)
             RenderReadinessChecker.Readiness.DELAY -> {
