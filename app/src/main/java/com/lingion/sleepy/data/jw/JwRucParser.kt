@@ -1,22 +1,14 @@
 package com.lingion.sleepy.data.jw
 
 import org.json.JSONObject
-import org.json.JSONTokener
-import org.jsoup.Jsoup
 
-/** RUC's declared var data object: quittingTime is a duration, schoolHours is indexed by period. */
+/** RUC's course/schoolHours object: quittingTime is a duration, schoolHours is indexed by period. */
 class JwRucParser(source: String) : JwParser(source) {
     private val data: JSONObject? by lazy {
-        fun read(text: String): JSONObject? = runCatching { JSONTokener(text).nextValue() as? JSONObject }
-            .getOrNull()?.takeIf { it.optJSONArray("course") != null && it.optJSONArray("schoolHours") != null }
-        if (source.trimStart().startsWith('{')) read(source) else {
-            val scripts = Jsoup.parse(source).select("script").map { it.data() }
-            scripts.asSequence().flatMap { script ->
-                Regex("""\bvar\s+data\s*=\s*""").findAll(script).mapNotNull { assignment ->
-                    read(script.substring(assignment.range.last + 1))
-                }
-            }.firstOrNull()
-        }
+        JwScriptJson.find(source) {
+            val root = it.value as? JSONObject
+            root?.optJSONArray("course") != null && root.optJSONArray("schoolHours") != null
+        }?.value as? JSONObject
     }
 
     override fun generateCourseList(): List<JwCourse> = buildList {
