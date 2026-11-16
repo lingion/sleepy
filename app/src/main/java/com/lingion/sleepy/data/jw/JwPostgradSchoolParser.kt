@@ -8,9 +8,13 @@ import org.json.JSONTokener
 
 /** Declared school layouts from the fixed 6.6.2 baseline. */
 class JwPostgradSchoolParser(source: String, private val protocol: String) : JwParser(source) {
-    private val document by lazy { Jsoup.parse(source) }
+    private val document by lazy { Jsoup.parse(source).also { it.outputSettings().prettyPrint(false) } }
+    private val htmlTypes = setOf("xjtu_post", "uestc_post", "bfa_post", "gdbyxy", "cupl_post", "ysu_post", "whu_post", "hrbeu_post", "shtu_post", "ustc_post", "zju_post")
 
-    override fun generateCourseList(): List<JwCourse> = when (protocol) {
+    override fun generateCourseList(): List<JwCourse> = courses
+    private val courses: List<JwCourse> by lazy { readCourses() }
+
+    private fun readCourses(): List<JwCourse> = when (protocol) {
         "xjtu_post" -> xjtu()
         "uestc_post" -> uestc()
         "bfa_post" -> bfa()
@@ -28,7 +32,7 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         else -> emptyList()
     }.distinct()
 
-    override fun confidence(): Int = when (protocol) {
+    override fun confidence(): Int = if (protocol in htmlTypes && generateCourseList().isNotEmpty()) 100 else when (protocol) {
         "xjtu_post" -> if (document.select("#tbl td[id]").any { "课程" in it.text() }) 100 else 0
         "uestc_post" -> if (document.select("#tbl td").any { it.text().count { c -> c == '/' } >= 7 }) 100 else 0
         "bfa_post" -> if (document.select("#table .pages-sec-student-scheme-pages-student-timetable-query-timetable-index-tableContent td[_nk]").isNotEmpty()) 100 else 0
@@ -48,8 +52,10 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
 
     override fun matchedFeatures(): List<String> = if (confidence() > 0) listOf("postgrad/$protocol") else emptyList()
 
-    private fun xjtu(): List<JwCourse> = buildList {
-        for (cell in document.select("#tbl td[id]")) {
+    private fun xjtu(): List<JwCourse> = courseTableCandidates(document, "#tbl", ::xjtuTable)
+
+    private fun xjtuTable(table: Element): List<JwCourse> = buildList {
+        for (cell in table.select("td[id]").filter { it.closest("table") == table }) {
             val day = cell.id().getOrNull(3)?.digitToIntOrNull()?.takeIf { it in 1..7 } ?: continue
             for (block in blocks(cell.html())) {
                 val fields = lines(block).dropWhile(String::isBlank)
@@ -61,8 +67,10 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         }
     }
 
-    private fun uestc(): List<JwCourse> = buildList {
-        for (row in document.select("#tbl tr").drop(1)) {
+    private fun uestc(): List<JwCourse> = courseTableCandidates(document, "#tbl", ::uestcTable)
+
+    private fun uestcTable(table: Element): List<JwCourse> = buildList {
+        for (row in table.select("tr").filter { it.closest("table") == table }) {
             for ((day, cell) in row.children().filter { it.tagName() == "td" }.withIndex()) {
                 if (day !in 1..7) continue
                 for (entry in cell.text().split(Regex("，\\s*"))) {
@@ -75,8 +83,10 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         }
     }
 
-    private fun bfa(): List<JwCourse> = buildList {
-        for (row in document.select("#table .pages-sec-student-scheme-pages-student-timetable-query-timetable-index-tableContent tr")) {
+    private fun bfa(): List<JwCourse> = courseTableCandidates(document, "#table .pages-sec-student-scheme-pages-student-timetable-query-timetable-index-tableContent", ::bfaTable)
+
+    private fun bfaTable(table: Element): List<JwCourse> = buildList {
+        for (row in table.select("tr").filter { it.closest("table") == table }) {
             // Empty _nk cells occupy a weekday too. Filtering them first shifts later courses.
             val cells = row.children().filter { it.tagName() == "td" && it.hasAttr("_nk") }
             for ((column, cell) in cells.withIndex()) {
@@ -111,41 +121,49 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
     }
 
     private fun gdbyxy(): List<JwCourse> {
-        // Captures may concatenate full documents. The baseline uses the last nested table in pageRpt.
         for (fragment in source.split(Regex("(?i)</?head[^>]*>"))) {
-            val table = Jsoup.parse(fragment).getElementById("pageRpt")?.getElementsByTag("table")?.lastOrNull() ?: continue
-            val result = buildList {
-                for (cell in table.getElementsByTag("td")) {
-                    val fields = lines(cell.html())
-                    for (index in fields.indices) {
-                        val title = Regex("^\\[[A-Z][0-9]+](.+)$").matchEntire(fields[index]) ?: continue
-                        val timing = fields.getOrNull(index + 2)?.let {
-                            Regex("^\\[(.+)周]([一二三四五六日天])\\[(.+)节]([单双]?)$").matchEntire(it)
-                        } ?: continue
-                        val roomPart = fields.getOrNull(index + 3).orEmpty()
-                        val room = when {
-                            roomPart.isBlank() -> ""
-                            '_' in roomPart -> roomPart.split('_').take(2).joinToString("-")
-                            else -> roomPart + fields.getOrNull(index + 4).orEmpty()
-                        }
-                        addSlots(title.groupValues[1], room, fields.getOrNull(index + 1).orEmpty(),
-                            chineseDay(timing.groupValues[2]), timing.groupValues[3],
-                            timing.groupValues[1] + timing.groupValues[4])
-                    }
-                }
+            val doc = Jsoup.parse(fragment)
+            // The declared layout explicitly uses its final report table.
+            val last = doc.getElementById("pageRpt")?.select("table")?.lastOrNull()
+            val result = courseTableCandidates(doc, null) { table ->
+                if (last != null && table != last) emptyList() else gdbyxyTable(table)
             }
             if (result.isNotEmpty()) return result
         }
         return emptyList()
     }
 
-    private fun cupl(): List<JwCourse> = buildList {
-        val table = document.getElementById("tabCT") ?: return@buildList
+    private fun gdbyxyTable(table: Element): List<JwCourse> = buildList {
+        for (cell in table.select("td").filter { it.closest("table") == table }) {
+            val fields = lines(cell.html())
+            for (index in fields.indices) {
+                val title = Regex("^\\[[A-Z][0-9]+](.+)$").matchEntire(fields[index]) ?: continue
+                val timing = fields.getOrNull(index + 2)?.let {
+                    Regex("^\\[(.+)周]([一二三四五六日天])\\[(.+)节]([单双]?)$").matchEntire(it)
+                } ?: continue
+                val roomPart = fields.getOrNull(index + 3).orEmpty()
+                val room = when {
+                    roomPart.isBlank() -> ""
+                    '_' in roomPart -> roomPart.split('_').take(2).joinToString("-")
+                    else -> roomPart + fields.getOrNull(index + 4).orEmpty()
+                }
+                addSlots(title.groupValues[1], room, fields.getOrNull(index + 1).orEmpty(),
+                    chineseDay(timing.groupValues[2]), timing.groupValues[3],
+                    timing.groupValues[1] + timing.groupValues[4])
+            }
+        }
+    }
+
+    private fun cupl(): List<JwCourse> = courseTableCandidates(document, "#tabCT", ::cuplTable)
+
+    private fun cuplTable(table: Element): List<JwCourse> = buildList {
         val grid = grid(table) ?: return@buildList
         val days = headerDays(grid)
+        val rows = periodRows(grid)
         for (item in grid) {
             val cell = item.cell
-            if (item.row == 0 || item.width != 1 || cell.tagName() != "td") continue
+            if (item.width != 1 || cell.tagName() != "td") continue
+            val node = rows[item.row] ?: continue
             val day = days[item.column] ?: item.column
             for (block in cell.html().split(Regex("(?i)<b(?:\\s[^>]*)?>"))) {
                 val fields = lines(block)
@@ -155,7 +173,7 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
                     val campus = fields.getOrNull(index + 1)?.startsWith("校区") == true
                     val room = fields.getOrNull(index + if (campus) 2 else 1).orEmpty().removePrefix("教室：")
                     val teacher = fields.getOrNull(index + if (campus) 3 else 2).orEmpty().removePrefix("教师：")
-                    addSlots(name, room, teacher, day, "${item.row}-${item.row + item.height - 1}", line.removePrefix("周次："))
+                    addSlots(name, room, teacher, day, "$node-${node + item.height - 1}", line.removePrefix("周次："))
                 }
             }
         }
@@ -163,39 +181,40 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
 
     private fun ysu(): List<JwCourse> {
         for (fragment in source.split(Regex("(?i)</?head[^>]*>"))) {
-            val doc = Jsoup.parse(fragment)
-            val table = doc.selectFirst("#DataGrid1, #MainWork_DataGrid1") ?: continue
-            val grid = grid(table) ?: continue
-            val days = headerDays(grid)
-            val rows = grid.map { it.row }.distinct().filter { index ->
-                grid.firstOrNull { it.row == index }?.cell?.parent()?.attr("align")?.equals("center", true) != true
-            }
-            val nodeAtRow = rows.withIndex().associate { it.value to it.index + 1 }
-            val result = buildList {
-                for (item in grid) {
-                    if (item.width != 1 || item.cell.tagName() != "td" || item.cell.attr("align").equals("center", true)) continue
-                    val node = nodeAtRow[item.row] ?: continue
-                    val day = days[item.column] ?: item.column
-                    for (block in blocks(item.cell.html())) {
-                        val fields = lines(block)
-                        for ((index, line) in fields.withIndex()) {
-                            val token = Regex("\\[([^]]+)周]").find(line) ?: continue
-                            val name = fields.getOrNull(index - 1).orEmpty()
-                            val room = Regex("教室[:：]([^)]*)").find(line)?.groupValues?.get(1).orEmpty()
-                            val teacher = Regex("教师[:：]([^)]*)").find(line)?.groupValues?.get(1).orEmpty()
-                            addSlots(name, room, teacher, day, "$node-${node + item.height - 1}", token.groupValues[1].replace("单双", ""))
-                        }
-                    }
-                }
-            }
+            val result = courseTableCandidates(Jsoup.parse(fragment), "#DataGrid1, #MainWork_DataGrid1", ::ysuTable)
             if (result.isNotEmpty()) return result
         }
         return emptyList()
     }
 
-    private fun whu(): List<JwCourse> = buildList {
-        val container = document.selectFirst(".table_con") ?: return@buildList
-        val table = if (container.tagName() == "table") container else container.selectFirst("table") ?: return@buildList
+    private fun ysuTable(table: Element): List<JwCourse> {
+        val grid = grid(table) ?: return emptyList()
+        val days = headerDays(grid)
+        val nodeAtRow = periodRows(grid).keys.filter { index ->
+            grid.firstOrNull { it.row == index }?.cell?.parent()?.attr("align")?.equals("center", true) != true
+        }.withIndex().associate { it.value to it.index + 1 }
+        return buildList {
+            for (item in grid) {
+                if (item.width != 1 || item.cell.tagName() != "td" || item.cell.attr("align").equals("center", true)) continue
+                val node = nodeAtRow[item.row] ?: continue
+                val day = days[item.column] ?: item.column
+                for (block in blocks(item.cell.html())) {
+                    val fields = lines(block)
+                    for ((index, line) in fields.withIndex()) {
+                        val token = Regex("\\[([^]]+)周]").find(line) ?: continue
+                        val name = fields.getOrNull(index - 1).orEmpty()
+                        val room = Regex("教室[:：]([^)]*)").find(line)?.groupValues?.get(1).orEmpty()
+                        val teacher = Regex("教师[:：]([^)]*)").find(line)?.groupValues?.get(1).orEmpty()
+                        addSlots(name, room, teacher, day, "$node-${node + item.height - 1}", token.groupValues[1].replace("单双", ""))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun whu(): List<JwCourse> = courseTableCandidates(document, ".table_con", ::whuTable)
+
+    private fun whuTable(table: Element): List<JwCourse> = buildList {
         for (item in grid(table).orEmpty()) {
             if (item.width != 1 || item.cell.tagName() != "td") continue
             val day = item.column - 1
@@ -212,17 +231,18 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         }
     }
 
-    private fun hrbeu(): List<JwCourse> = buildList {
-        document.outputSettings().prettyPrint(false)
-        val container = document.selectFirst("#StuCul_TimetableQry_TimeTable .WtbodyZlistS") ?: return@buildList
+    private fun hrbeu(): List<JwCourse> = courseTableCandidates(document, "#StuCul_TimetableQry_TimeTable .WtbodyZlistS", ::hrbeuTable)
+
+    private fun hrbeuTable(table: Element): List<JwCourse> = buildList {
         val englishDays = listOf("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday")
-        for (row in container.select("tr")) {
+        for (row in table.select("tr").filter { it.closest("table") == table }) {
             val cells = row.children().filter { it.tagName() == "td" }
             for ((column, cell) in cells.withIndex()) {
                 if (column == 0) continue
                 val explicit = englishDays.indexOf(cell.attr("field").lowercase()) + 1
                 val day = if (explicit > 0) explicit else column
-                for (block in blocks(cell.html().replace(Regex("\\n\\s*\\n"), "<br><br>"))) {
+                val html = cell.html().replace(Regex("(?i)[ \\t\\r\\n]*(<br\\s*/?>)[ \\t\\r\\n]*"), "$1")
+                for (block in blocks(html.replace(Regex("\\n\\s*\\n"), "<br><br>"))) {
                     val original = lines(block.replace("\n", "<br>")).dropWhile(String::isBlank).dropLastWhile(String::isBlank)
                     if (original.size < 5) continue
                     val fields = original.map(::afterLabel)
@@ -244,11 +264,14 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         }
     }
 
-    private fun shtu(): List<JwCourse> = buildList {
-        val container = document.getElementById("div-table") ?: return@buildList
-        val table = if (container.tagName() == "table") container else container.selectFirst("table") ?: return@buildList
-        for (item in grid(table).orEmpty()) {
-            if (item.row !in 1..13 || item.column !in 1..7 || item.width != 1 || item.cell.tagName() != "td") continue
+    private fun shtu(): List<JwCourse> = courseTableCandidates(document, "#div-table", ::shtuTable)
+
+    private fun shtuTable(table: Element): List<JwCourse> = buildList {
+        val grid = grid(table).orEmpty()
+        val rows = periodRows(grid)
+        for (item in grid) {
+            val node = rows[item.row] ?: continue
+            if (node !in 1..13 || item.column !in 1..7 || item.width != 1 || item.cell.tagName() != "td") continue
             val fields = lines(item.cell.html())
             for (index in 0 until fields.size / 4) {
                 val offset = index * 4
@@ -266,16 +289,18 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
                     expandedWeeks(ranges).toSet()
                 } else emptySet()
                 for (week in expandedWeeks(weeks(included)).filterNot { it in excluded }) {
-                    addSlots(name, room, teacher, item.column, "${item.row}-${item.row + item.height - 1}", week.toString())
+                    addSlots(name, room, teacher, item.column, "$node-${node + item.height - 1}", week.toString())
                 }
             }
         }
     }
 
-    private fun ustc(): List<JwCourse> = buildList {
+    private fun ustc(): List<JwCourse> = courseTableCandidates(document, "#tablexskbcx-index-table", ::ustcTable)
+
+    private fun ustcTable(table: Element): List<JwCourse> = buildList {
         val starts = listOf("07:50", "08:40", "09:45", "10:35", "11:25", "14:00", "14:50", "15:55", "16:45", "17:35", "19:30", "20:20", "21:10")
         val periods = starts.map { minute(it)!! to minute(it)!! + 45 }
-        for (row in document.select("#tablexskbcx-index-table tr")) {
+        for (row in table.select("tr").filter { it.closest("table") == table }) {
             val fields = row.children().filter { it.tagName() == "td" }.map { it.selectFirst("span")?.text() ?: it.text() }
             if (fields.size < 9) continue
             val weekGroups = fields[6].split(';')
@@ -338,38 +363,42 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         val pages = runCatching { JSONArray(source) }.getOrNull() ?: return@buildList
         for (pageIndex in 0 until pages.length()) {
             val html = pages.opt(pageIndex) as? String ?: continue
-            val form = Jsoup.parse(html).getElementById("kcbForm") ?: continue
-            val table = form.parent()?.getElementsByTag("table")?.firstOrNull() ?: continue
-            val occupiedUntil = IntArray(7)
-            for ((rowIndex, row) in table.getElementsByTag("tr").withIndex()) {
-                if (rowIndex == 0) continue
-                var column = 0
-                for (cell in row.children().filter { it.tagName() == "td" && it.ownText().isBlank() }) {
-                    while (column < 7 && occupiedUntil[column] > rowIndex) column++
-                    if (column >= 7) break
-                    val height = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull() else 1
-                    val endNode = height?.let { explicitScheduleEnd(rowIndex, it) } ?: return@buildList
-                    occupiedUntil[column] = endNode + 1
-                    for (anchor in cell.getElementsByTag("a")) {
-                        val name = anchor.selectFirst("strong")?.text().orEmpty()
-                        val tail = anchor.html().split(Regex("(?i)<br\\s*/?>\\s*<br\\s*/?>")).last()
-                        val fields = lines(tail)
-                        val teacherIndex = if (fields.size == 4) 2 else 3
-                        if (fields.size <= teacherIndex + 1) continue
-                        val token = Regex("\\(([^()]*)周\\)").find(fields.getOrNull(1).orEmpty().substringAfter("||"))?.groupValues?.get(1) ?: continue
-                        val weekText = token.split(',', '，').map { part ->
-                            val trimmed = part.trim()
-                            when {
-                                trimmed == "每" -> "1-20"
-                                trimmed.startsWith("前") -> chineseNumber(trimmed.removePrefix("前"))?.let { "1-$it" } ?: trimmed
-                                else -> chineseNumber(trimmed)?.toString() ?: trimmed
-                            }
-                        }.joinToString(",")
-                        addSlots(name, fields[teacherIndex + 1], fields[teacherIndex], column + 1,
-                            "$rowIndex-$endNode", weekText)
-                    }
-                    column++
+            addAll(courseTableCandidates(Jsoup.parse(html), "*:has(> #kcbForm)", ::zjuTable))
+        }
+    }
+
+    private fun zjuTable(table: Element): List<JwCourse> = buildList {
+        val occupiedUntil = IntArray(7)
+        var rowIndex = 0
+        for (row in table.select("tr").filter { it.closest("table") == table }) {
+            if (row.children().any { it.tagName() == "th" } && row.children().none { it.tagName() == "td" }) continue
+            rowIndex++
+            var column = 0
+            for (cell in row.children().filter { it.tagName() == "td" && it.ownText().isBlank() }) {
+                while (column < 7 && occupiedUntil[column] > rowIndex) column++
+                if (column >= 7) break
+                val height = if (cell.hasAttr("rowspan")) cell.attr("rowspan").toIntOrNull() else 1
+                val endNode = height?.let { explicitScheduleEnd(rowIndex, it) } ?: return@buildList
+                occupiedUntil[column] = endNode + 1
+                for (anchor in cell.getElementsByTag("a")) {
+                    val name = anchor.selectFirst("strong")?.text().orEmpty()
+                    val tail = anchor.html().split(Regex("(?i)<br\\s*/?>\\s*<br\\s*/?>")).last()
+                    val fields = lines(tail)
+                    val teacherIndex = if (fields.size == 4) 2 else 3
+                    if (fields.size <= teacherIndex + 1) continue
+                    val token = Regex("\\(([^()]*)周\\)").find(fields.getOrNull(1).orEmpty().substringAfter("||"))?.groupValues?.get(1) ?: continue
+                    val weekText = token.split(',', '，').map { part ->
+                        val trimmed = part.trim()
+                        when {
+                            trimmed == "每" -> "1-20"
+                            trimmed.startsWith("前") -> chineseNumber(trimmed.removePrefix("前"))?.let { "1-$it" } ?: trimmed
+                            else -> chineseNumber(trimmed)?.toString() ?: trimmed
+                        }
+                    }.joinToString(",")
+                    addSlots(name, fields[teacherIndex + 1], fields[teacherIndex], column + 1,
+                        "$rowIndex-$endNode", weekText)
                 }
+                column++
             }
         }
     }
@@ -528,6 +557,12 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         }
         return result
     }
+
+    private fun periodRows(grid: List<GridCell>): Map<Int, Int> = grid.groupBy { it.row }.filterValues { cells ->
+        cells.any { it.cell.tagName() == "td" } && cells.none {
+            Regex("^(?:星期|周)[一二三四五六日天]$").matches(it.cell.text().trim())
+        }
+    }.keys.withIndex().associate { it.value to it.index + 1 }
 
     private fun headerDays(grid: List<GridCell>): Map<Int, Int> = grid.filter { it.cell.tagName() == "th" || it.cell.parent()?.attr("align").equals("center", true) }
         .mapNotNull { item -> chineseDay(item.cell.text()).takeIf { it in 1..7 }?.let { item.column to it } }.toMap()
