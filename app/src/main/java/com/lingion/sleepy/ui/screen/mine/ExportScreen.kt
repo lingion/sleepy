@@ -716,7 +716,7 @@ internal suspend fun launchXiaoaiImport(
     val presetData = try {
         XiaoaiPresetData.build(table, courses, boundPeriodTable)
     } catch (e: IllegalArgumentException) {
-        onResult(ctx.getString(R.string.export_xiaoai_invalid))
+        onResult(xiaoaiExportErrorMessage(ctx, e))
         return
     }
     val link = XiaoaiPresetData.deepLink(presetData)
@@ -741,3 +741,11 @@ internal suspend fun launchXiaoaiImport(
     }
     onResult(ctx.getString(R.string.export_xiaoai_launched))
 }
+
+internal fun xiaoaiExportErrorMessage(ctx: android.content.Context, error: IllegalArgumentException): String =
+    when (error) {
+        is XiaoaiPresetData.MissingPeriodTimeException -> ctx.getString(
+            R.string.export_xiaoai_missing_period_time, error.courseName, error.period,
+        )
+        else -> ctx.getString(R.string.export_xiaoai_invalid)
+    }

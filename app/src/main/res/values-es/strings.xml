@@ -759,6 +759,7 @@
     <string name="export_xiaoai_title">Horario XiaoAI</string>
     <string name="export_xiaoai_subtitle">Prepara el horario localmente y abre XiaoAI para revisarlo e importarlo</string>
     <string name="export_xiaoai_invalid">Horario no compatible o períodos no válidos. Revisa semanas, fechas y períodos.</string>
+    <string name="export_xiaoai_missing_period_time">%1$s usa el período %2$d, pero falta su hora en la tabla de períodos. Añade la hora o revisa los períodos de la clase e inténtalo de nuevo.</string>
     <string name="export_xiaoai_empty">Esta tabla no tiene cursos para exportar</string>
     <string name="export_xiaoai_not_installed">No se encontró XiaoAI; instala la app XiaoAI (con Horario XiaoAI) primero</string>
     <string name="export_xiaoai_launched">Se abrió Horario XiaoAI; confirma la importación en la vista previa</string>
