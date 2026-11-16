@@ -1507,8 +1507,6 @@ private fun ImportConfirmDialog(
     val fieldColors = SleepyTheme.fieldColors()
     val startDateRequiredMessage = stringResource(R.string.import_start_date_required)
     val startDateFormatMessage = stringResource(R.string.start_date_format)
-    val slotTimeRequiredFormat = stringResource(R.string.slot_time_required)
-    val slotTimeInvalidFormat = stringResource(R.string.slot_time_invalid)
     var rows by remember(timeJson) {
         mutableStateOf(TimeTableUtils.parseTimeSlotRows(timeJson))
     }
@@ -1549,23 +1547,9 @@ private fun ImportConfirmDialog(
                     bindId = selectedPeriodTableId,
                     tables = periodTableTimeJsonById.map { it.key to it.value }
                 )
-                val missingNode = TimeTableUtils.firstMissingCourseNode(parseResult.courses, effectiveRows)
-                if (missingNode != null) {
-                    errorMsg = slotTimeRequiredFormat.format(missingNode)
-                    return@DialogActionButtons
-                }
-                val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
-                if (emptyRows.isNotEmpty()) {
-                    errorMsg = slotTimeRequiredFormat.format(emptyRows.first().node)
-                    return@DialogActionButtons
-                }
-                val timeRegex = Regex("""^\d{2}:\d{2}$""")
-                val invalidRows = effectiveRows.filter {
-                    !timeRegex.matches(it.start) || !timeRegex.matches(it.end) ||
-                    it.start >= it.end
-                }
-                if (invalidRows.isNotEmpty()) {
-                    errorMsg = slotTimeInvalidFormat.format(invalidRows.first().node)
+                val timeError = importPeriodValidationError(context, parseResult.courses, effectiveRows)
+                if (timeError != null) {
+                    errorMsg = timeError
                     return@DialogActionButtons
                 }
                 errorMsg = null
