@@ -5,8 +5,8 @@
 <h1 align="center">Sleepy · 轻课表</h1>
 
 <p align="center">
-  A clean, open-source timetable app for Android and iOS — both native. This repo builds the Android version with Kotlin + Jetpack Compose, Material 3 Expressive motion, and optional Liquid Glass.<br>
-  纯净开源课程表,Android 与 iOS 均为原生实现 — 本仓库是 Android 版,Material You / Material 3 Expressive 设计,多视图 · 教务导入 · 单次调课 · 桌面小组件 · 液态玻璃
+  Sleepy is a free, ad-free, open-source university timetable app with native Android and iOS versions.<br>
+  Sleepy 轻课表是一款免费、无广告的开源大学生课程表，Android 与 iOS 均为原生实现。日常查看和编辑课表可离线使用；教务导入和可选备份按所选服务联网。本仓库提供 Kotlin + Jetpack Compose 实现的 Android 版。
 </p>
 
 <p align="center">
@@ -25,10 +25,6 @@
 <p align="center">
   <a href="README_EN.md">English</a> · <a href="https://sleepy.is-my.app">官网</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki 手册</a> · <a href="https://github.com/lingion/sleepy/releases/latest#assets">下载</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a> · <a href="https://sleepy.is-my.app/preview">在线体验</a> · <a href="sponsor.md">赞助</a>
 </p>
-
----
-
-> **Keywords (SEO):** Android schedule app, iOS schedule app, iPhone 课程表, 开源 iPhone 课表, SwiftUI, WidgetKit, iOS 桌面小组件, App Store 课表, 课程表, 课表, timetable, university schedule, cross-platform timetable, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, AI 课表截图转换, 截图转课表, class timetable, school timetable, university timetable, course schedule
 
 ---
 
@@ -748,8 +744,9 @@ Bug 反馈和新学校适配请提交到 [Issues](https://github.com/lingion/sle
 ## 文档
 
 - **[官网](https://sleepy.is-my.app)** — 项目主页：功能介绍、学校名录、下载中心、常见问答
+- **[官网使用指南](https://sleepy.is-my.app/guides/)** — WakeUp 课表迁移、备份恢复与手动 WebDAV；每篇注明适用版本、核验日期与发布源码依据
 - **[在线体验](https://sleepy.is-my.app/preview)** — Web 版课表，浏览器打开即用，无需安装；支持多格式导入（WakeUp 分享文本 / ICS / CSV / Excel），数据仅存本地
-- **[iOS 版仓库](https://github.com/lingion/sleepy-ios)** — Sleepy 课程表 iOS 移植版，SwiftUI + WidgetKit，iOS 16.0 起，与 Android 版功能对齐
+- **[iOS 版仓库](https://github.com/lingion/sleepy-ios)** — Sleepy 的独立 iOS 原生实现，SwiftUI + WidgetKit；通过 App Store 或 TestFlight 安装，系统要求和功能以所选渠道版本为准
 - **[Wiki](https://github.com/lingion/sleepy/wiki)** — 各页面说明、导入/导出格式、小组件类型、提醒实现、架构与代码地图，可通过侧栏导航
 - **[使用指南](https://blog.qdp.qzz.io/docs/sleepy/overview)** — 涵盖安装、导入、小组件、主题和故障排查的分步说明
 - **[技术解析](https://blog.qdp.qzz.io/sleepy-material-you-schedule)** — 课表解析引擎、黄金角 HSL 配色、金智教务协议分析与小组件渲染流程
