@@ -120,48 +120,12 @@ class JwNewUrpParser(source: String) : JwParser(source) {
      */
     fun extractJsonForTest(html: String): String? = extractJsonFromHtml(html)
 
-    private fun extractJsonFromHtml(html: String): String? {
-        if (html.trimStart().startsWith("{")) {
-            runCatching { JSONObject(html) }.getOrNull()?.takeIf { it.optJSONArray("dateList") != null }?.let { return html.trim() }
+    private fun extractJsonFromHtml(html: String): String? = JwScriptJson.find(html) { literal ->
+        val dates = (literal.value as? JSONObject)?.optJSONArray("dateList") ?: return@find false
+        dates.length() == 0 || (0 until dates.length()).any {
+            dates.optJSONObject(it)?.optJSONArray("selectCourseList") != null
         }
-        if (html.contains("<script", ignoreCase = true)) {
-            for (script in org.jsoup.Jsoup.parse(html).select("script")) {
-                extractScriptJson(script.data())?.let { return it }
-            }
-        }
-        return extractScriptJson(html)
-    }
-
-    private fun extractScriptJson(html: String): String? {
-        // 找包含 "dateList" 那一段
-        val marker = "\"dateList\""
-        val idx = html.indexOf(marker)
-        if (idx < 0) return null
-
-        // 往前找最近的 '{'（JSON 开始）
-        var start = idx
-        while (start > 0 && html[start] != '{') start--
-        if (html[start] != '{') return null
-
-        // 往后数括号配对，找配对的 '}'
-        var depth = 0
-        var inString = false
-        var escape = false
-        var end = start
-        for (i in start until html.length) {
-            val c = html[i]
-            if (escape) { escape = false; continue }
-            if (c == '\\') { escape = true; continue }
-            if (c == '"' && !escape) { inString = !inString; continue }
-            if (inString) continue
-            when (c) {
-                '{' -> depth++
-                '}' -> { depth--; if (depth == 0) { end = i; break } }
-            }
-        }
-        if (depth != 0) return null
-        return html.substring(start, end + 1)
-    }
+    }?.json
 
     private fun parseWeekBits(s: String): List<Int> {
         if (s.isEmpty() || s.length > EXPLICIT_SCHEDULE_RESOURCE_BOUND || s.any { it != '0' && it != '1' }) return emptyList()

@@ -109,6 +109,7 @@ class JwThuparser(source: String) : JwParser(JwThuCapturePayload.htmlOrOriginal(
     }
 
     override fun confidence(): Int {
+        if (JwThuScriptParser(source).hasCoordinateSchema()) return 95
         var hits = 0
         if (RE_SEMESTER.containsMatchIn(source)) hits++
         if (RE_SET_INIT_VALUE.containsMatchIn(source)) hits++
@@ -129,6 +130,7 @@ class JwThuparser(source: String) : JwParser(JwThuCapturePayload.htmlOrOriginal(
 
     override fun matchedFeatures(): List<String> {
         val out = mutableListOf<String>()
+        if (JwThuScriptParser(source).hasCoordinateSchema()) out += "thu:coordinate-schema"
         if (skippedCourseCount > 0) out += "thu:skipped-unsupported=$skippedCourseCount"
         if (source.contains("zhjwxk") || source.contains("cic.tsinghua")) out += "thu:login-or-sso-marker"
         if (RE_SEMESTER.containsMatchIn(source)) out += "thu:p_xnxq-form"

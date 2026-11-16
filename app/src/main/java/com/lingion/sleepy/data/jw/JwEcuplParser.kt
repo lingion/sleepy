@@ -9,6 +9,12 @@ package com.lingion.sleepy.data.jw
  */
 class JwEcuplParser(source: String) : JwParser(source) {
 
+    private val script by lazy { JwScriptSource(source) }
+    private val hasAnnualData by lazy {
+        script.matches(Regex("""new\s+TaskActivity\s*\(""")).any() &&
+            script.matches(Regex("""[\w$]+\.marshalTable\s*\(""")).any()
+    }
+
     companion object {
         // ---- 协议指纹 10 件套 ----
 
@@ -38,14 +44,13 @@ class JwEcuplParser(source: String) : JwParser(source) {
      */
     override fun generateCourseList(): List<JwCourse> {
         // Coordinates still come from TaskActivity/index; metadata never creates a slot.
-        if (!source.contains("new TaskActivity(") ||
-            !source.contains("table0.marshalTable") ||
+        if (!hasAnnualData ||
             !RE_LIST_TABLE.containsMatchIn(source)) return JwEcuplScriptParser(source).generateCourseList()
-        val marshal = Regex("""table0\.marshalTable\s*\(\s*(\d+)\s*,\s*\d+\s*,\s*(\d+)\s*\)""").find(source)
+        val marshal = script.matches(Regex("""[\w$]+\.marshalTable\s*\(\s*(\d+)\s*,\s*\d+\s*,\s*(\d+)\s*\)""")).firstOrNull()
             ?: return emptyList()
         val origin = marshal.groupValues[1].toIntOrNull()?.takeIf { it in 2..54 } ?: return emptyList()
         val weekCount = marshal.groupValues[2].toIntOrNull()?.takeIf { it in 1..64 } ?: return emptyList()
-        val year = Regex("""new CourseTable\(\s*(\d{4})\s*,\s*\d+\s*\)""").find(source)
+        val year = script.matches(Regex("""new\s+CourseTable\s*\(\s*(\d{4})\s*,\s*\d+\s*\)""")).firstOrNull()
             ?.groupValues?.get(1)?.toIntOrNull() ?: return emptyList()
         // 6.6.2 ECUPLParser.OooOOo0 has a distinct year-wrap branch. The helper
         // returns ISO weekday numbers, so the extra week condition is Saturday (6).
@@ -67,9 +72,8 @@ class JwEcuplParser(source: String) : JwParser(source) {
     }
 
     override fun confidence(): Int {
-        if (RE_LIST_TABLE.containsMatchIn(source) && source.contains("table0.marshalTable") &&
-            source.contains("new TaskActivity(") &&
-            Regex("""new CourseTable\(\s*\d{4}\s*,\s*\d+\s*\)""").containsMatchIn(source)) return 100
+        if (RE_LIST_TABLE.containsMatchIn(source) && hasAnnualData &&
+            script.matches(Regex("""new\s+CourseTable\s*\(\s*\d{4}\s*,\s*\d+\s*\)""")).any()) return 100
         var hits = 0
         // R1: 主表锚点
         if (RE_LIST_TABLE.containsMatchIn(source)) hits += 3
@@ -89,7 +93,7 @@ class JwEcuplParser(source: String) : JwParser(source) {
     }
 
     override fun matchedFeatures(): List<String> = buildList {
-        if (source.contains("table0.marshalTable") && source.contains("new TaskActivity(")) add("ecupl:annual-week-origin")
+        if (hasAnnualData) add("ecupl:annual-week-origin")
         if (RE_LIST_TABLE.containsMatchIn(source)) add("ecupl:r1-listTable")
         if (RE_COURSE_NAME.containsMatchIn(source)) add("ecupl:r3-courseName")
         if (RE_TEACHER.containsMatchIn(source)) add("ecupl:r4-teacher")

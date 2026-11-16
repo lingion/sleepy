@@ -23,74 +23,99 @@ class JwThuScriptParser(source:String, private val semesterDataJson:String?=null
         "双创必","双创选","新生必","新生选","学科必修","学科选修","通识必修","通识选修","公共基础","第二课堂","学科实践",
         "专业实践","专业必修","辅修","专业选修","外语","方向","专业必修课","全选","专业","学必","学选")
 
-    override fun confidence():Int = if("function setInitValue" in source && "getElementById" in source) 100 else 0
+    private val coordinate = Regex("""(?:document\s*\.\s*)?getElementById\s*\(\s*['"]a([1-6])_([1-7])['"]\s*\)\s*\.\s*innerHTML\s*\+=\s*([\w$]+(?:\.[\w$]+)*)\b""")
+    private val scripts by lazy {
+        if (source.trimStart().startsWith('<')) Jsoup.parse(source).select("script").map { JwScriptSource(it.data()) }
+        else listOf(JwScriptSource(source))
+    }
+    internal fun hasCoordinateSchema(): Boolean = scripts.any { it.matches(coordinate).any() }
+    override fun confidence():Int = if (hasCoordinateSchema()) 100 else 0
 
     override fun generateCourseList():List<JwCourse> {
         skippedCourseCount = 0
         val semester=semester() ?: return emptyList()
-        val scripts=Jsoup.parse(source).select("script")
-        val script=withoutComments(if(scripts.isEmpty()) source else scripts.joinToString("\n") { it.data() })
-        val metadata=metadata(script)
-        val start=Regex("function\\s+setInitValue\\s*\\(\\s*\\)").find(script)?.range?.first ?: return emptyList()
-        val block=script.substring(start,Regex("Event\\.observe").find(script,start)?.range?.first ?: script.length)
-        val token=Regex("""(strHTML1|strHTML)\s*(\+=|=)\s*("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')|(?:document\.)?getElementById\(\s*['"]a([1-6])_([1-7])['"]\s*\)\.innerHTML\s*\+=\s*strHTML""")
+        val metadata=metadata()
         val result=mutableListOf<JwCourse>()
-        val found=mutableMapOf<String,Pending>()
-        var pending=Pending()
-        var active=false
-        var inherited=false
-        for(match in token.findAll(block)) {
-            if(match.groupValues[4].isNotEmpty()) {
+        for (script in scripts) {
+            val found=mutableMapOf<String,Pending>()
+            var from=0
+            for (sink in script.matches(coordinate)) {
+                val main=sink.groupValues[3]
+                val operations=script.assignments.filter { it.start in from until sink.range.first }
+                from=sink.range.last+1
+                val detailGroups=operations.filter { it.target!=main && decode(it.expression)?.let { value ->
+                    value.trimStart().startsWith('；') || value.trimStart().startsWith(';')
+                }==true }.groupBy { it.target }
+                val referenced=operations.filter { it.target==main }.map { it.expression.trim() }.toSet()
+                val withWeeks=detailGroups.filterValues { values -> values.any { item ->
+                    decode(item.expression)?.let { knownWeeks(text(it).trimStart('；',';').trim(),semester.weeks)!=null }==true
+                } }.keys
+                val detail=(detailGroups.keys.intersect(referenced).singleOrNull()
+                    ?: withWeeks.singleOrNull() ?: detailGroups.keys.singleOrNull())
+                var pending=Pending()
+                var active=false
+                var inherited=false
+                for (item in operations) {
+                    val value=decode(item.expression) ?: continue
+                    if(item.target==detail) {
+                        if(pending.name.isNotBlank()) {
+                            if(inherited) { pending.params.clear(); inherited=false }
+                            pending.params += text(value).trimStart('；',';').trim()
+                        }
+                        continue
+                    }
+                    if(item.target!=main) continue
+                    if("blue_red_none" in value) {
+                        if(active) skippedCourseCount++
+                        pending=Pending(id=identifier(value),special=true)
+                        active=true; inherited=false
+                        val fonts=Jsoup.parseBodyFragment(value).select("font[color=blue]")
+                        pending.name=fonts.getOrNull(0)?.text().orEmpty()
+                        val detail=fonts.getOrNull(1)?.text().orEmpty().replace('（','(').replace('）',')')
+                        if('(' !in detail || !detail.endsWith(')')) continue
+                        val prefix=detail.substringBefore('(').trim()
+                        val pieces=detail.substringAfter('(').dropLast(1).split('；',';').map(String::trim)
+                        val rooms=mutableListOf<String>()
+                        for(piece in pieces) when {
+                            "周" in piece -> pending.weeks=piece
+                            piece.startsWith("时间：") || piece.startsWith("时间:") -> pending.time=piece.drop(3)
+                            piece.isNotBlank() -> rooms+=piece
+                        }
+                        pending.room=rooms.joinToString("；")+if(prefix.isNotBlank()) "($prefix)" else ""
+                    } else if("<a " in value) {
+                        if(active) skippedCourseCount++
+                        val id=identifier(value)
+                        pending=found[id]?.copy(params=found.getValue(id).params.toMutableList()) ?: Pending(id=id)
+                        active=true; inherited=found.containsKey(id)
+                    } else if("<b>" in value) {
+                        pending.name=Jsoup.parseBodyFragment(value).selectFirst("b")?.text().orEmpty()
+                    } else if(item.operator=="=" && value.isBlank()) {
+                        if(active) skippedCourseCount++
+                        pending=Pending(); active=false
+                    }
+                }
                 if(active) {
-                    val emitted=emit(pending,match.groupValues[4].toInt(),match.groupValues[5].toInt(),metadata,semester)
+                    val emitted=emit(pending,sink.groupValues[1].toInt(),sink.groupValues[2].toInt(),metadata,semester)
                     if(emitted==null) skippedCourseCount++ else {
                         result += emitted
                         if(pending.id.isNotBlank()) found[pending.id]=pending.copy(params=pending.params.toMutableList())
                     }
                 }
-                pending=Pending()
-                active=false; inherited=false
-                continue
             }
-            val target=match.groupValues[1]
-            val value=decode(match.groupValues[3]) ?: continue
-            if(target=="strHTML1") {
-                if(pending.name.isNotBlank()) {
-                    if(inherited) { pending.params.clear(); inherited=false }
-                    pending.params += text(value).trimStart('；',';').trim()
+            val mains=script.matches(coordinate).map { it.groupValues[3] }.toSet()
+            var truncated=false
+            for (item in script.assignments.filter { it.start>=from && it.target in mains }) {
+                val value=decode(item.expression) ?: continue
+                if ("<a " in value) {
+                    if (truncated) skippedCourseCount++
+                    truncated=true
+                } else if (item.operator=="=" && value.isBlank()) {
+                    if (truncated) skippedCourseCount++
+                    truncated=false
                 }
-                continue
             }
-            if("blue_red_none" in value) {
-                if(active) skippedCourseCount++
-                pending=Pending(id=identifier(value),special=true)
-                active=true; inherited=false
-                val fonts=Jsoup.parseBodyFragment(value).select("font[color=blue]")
-                pending.name=fonts.getOrNull(0)?.text().orEmpty()
-                val detail=fonts.getOrNull(1)?.text().orEmpty().replace('（','(').replace('）',')')
-                if('(' !in detail || !detail.endsWith(')')) continue
-                val prefix=detail.substringBefore('(').trim()
-                val pieces=detail.substringAfter('(').dropLast(1).split('；',';').map(String::trim)
-                val rooms=mutableListOf<String>()
-                for(piece in pieces) when {
-                    "周" in piece -> pending.weeks=piece
-                    piece.startsWith("时间：") || piece.startsWith("时间:") -> pending.time=piece.drop(3)
-                    piece.isNotBlank() -> rooms+=piece
-                }
-                pending.room=rooms.joinToString("；")+if(prefix.isNotBlank()) "($prefix)" else ""
-            } else if("<a " in value) {
-                if(active) skippedCourseCount++
-                val id=identifier(value)
-                pending=found[id]?.copy(params=found.getValue(id).params.toMutableList()) ?: Pending(id=id)
-                active=true; inherited=found.containsKey(id)
-            } else if("<b>" in value) {
-                pending.name=Jsoup.parseBodyFragment(value).selectFirst("b")?.text().orEmpty()
-            } else if(match.groupValues[2]=="=" && value.isBlank()) {
-                if(active) skippedCourseCount++
-                pending=Pending(); active=false
-            }
+            if (truncated) skippedCourseCount++
         }
-        if(active) skippedCourseCount++
         return result.distinct()
     }
 
@@ -219,34 +244,32 @@ class JwThuScriptParser(source:String, private val semesterDataJson:String?=null
     private fun identifier(value:String):String =
         Regex("(?:;|[?&]p_id=)([0-9A-Z]{8})(?=['\"&#?<>]|$)").find(value)?.groupValues?.get(1).orEmpty()
 
-    private fun metadata(script:String):List<Metadata> {
-        val columns=array(script,"gridColumns")?.let(::split) ?: return emptyList()
-        val name=columns.indexOfFirst { "课程名" in it }
-        val teacher=columns.indexOfFirst { "任课教师" in it }
-        val note=columns.indexOfFirst { "选课文字说明" in it }
-        if(name<0) return emptyList()
-        val rows=array(script,"gridData")?.let(::split) ?: return emptyList()
-        val result=mutableListOf<Metadata>()
-        for(row in rows) {
-            if(!row.trim().startsWith('[') || !row.trim().endsWith(']')) continue
-            val fields=split(row.trim().drop(1).dropLast(1)).map { decode(it.trim()) ?: it.trim() }
-            val key=fields.getOrNull(name)?.takeIf(String::isNotBlank) ?: continue
-            result+=Metadata(text(key),identifier(key),fields.getOrNull(teacher).orEmpty(),fields.getOrNull(note).orEmpty())
+    private fun metadata():List<Metadata> {
+        val arrays=scripts.flatMap { script ->
+            script.matches(Regex("""=\s*\[""")).mapNotNull { match ->
+                script.arguments(match.range.last)?.first
+            }.toList()
         }
-        return result
-    }
-
-    private fun array(script:String,name:String):String? {
-        val match=Regex("\\bvar\\s+$name\\s*=\\s*\\[").find(script) ?: return null
-        val start=match.range.last+1
-        var depth=1; var quote:Char?=null; var escape=false
-        for(index in start until script.length) {
-            val c=script[index]
-            if(quote!=null) {
-                if(escape) escape=false else if(c=='\\') escape=true else if(c==quote) quote=null
-            } else if(c=='\'' || c=='"') quote=c else if(c=='[') depth++ else if(c==']' && --depth==0) return script.substring(start,index)
+        val schemas=arrays.filter { fields ->
+            fields.any { "课程名" in (decode(it) ?: "") } && fields.any {
+                val label=decode(it).orEmpty()
+                "任课教师" in label || "选课文字说明" in label
+            }
         }
-        return null
+        // Each course resolves its own metadata by identifier or an unambiguous name.
+        // Unrelated record arrays must not invalidate an otherwise complete schema.
+        return schemas.flatMap { columns ->
+            val name=columns.indexOfFirst { "课程名" in (decode(it) ?: "") }
+            val teacher=columns.indexOfFirst { "任课教师" in (decode(it) ?: "") }
+            val note=columns.indexOfFirst { "选课文字说明" in (decode(it) ?: "") }
+            arrays.flatten().mapNotNull { row ->
+                if(!row.trim().startsWith('[') || !row.trim().endsWith(']')) return@mapNotNull null
+                val fields=split(row.trim().drop(1).dropLast(1)).map { decode(it.trim()) ?: it.trim() }
+                if(fields.size!=columns.size) return@mapNotNull null
+                val key=fields.getOrNull(name)?.takeIf(String::isNotBlank) ?: return@mapNotNull null
+                Metadata(text(key),identifier(key),fields.getOrNull(teacher).orEmpty(),fields.getOrNull(note).orEmpty())
+            }
+        }.distinct()
     }
 
     private fun split(value:String):List<String> {
@@ -288,23 +311,4 @@ class JwThuScriptParser(source:String, private val semesterDataJson:String?=null
         return result.toString()
     }
 
-    private fun withoutComments(input:String):String {
-        val out=StringBuilder(); var index=0; var quote:Char?=null; var escape=false
-        while(index<input.length) {
-            val c=input[index]
-            if(quote!=null) {
-                out.append(c)
-                if(escape) escape=false else if(c=='\\') escape=true else if(c==quote) quote=null
-                index++
-            } else if(c=='\'' || c=='"') { quote=c; out.append(c); index++ }
-            else if(input.startsWith("//",index)) {
-                while(index<input.length && input[index]!='\n') { out.append(' '); index++ }
-            } else if(input.startsWith("/*",index)) {
-                out.append("  "); index+=2
-                while(index<input.length && !input.startsWith("*/",index)) { out.append(if(input[index]=='\n') '\n' else ' '); index++ }
-                if(index<input.length) { out.append("  "); index+=2 }
-            } else { out.append(c); index++ }
-        }
-        return out.toString()
-    }
 }

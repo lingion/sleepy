@@ -1,7 +1,8 @@
 package com.lingion.sleepy.ui.screen.imports
 
-import com.lingion.sleepy.data.jw.JwParseDiagnostics
+import com.lingion.sleepy.data.jw.JwChengFangParser
 import com.lingion.sleepy.data.jw.JwNewUrpSuperParser
+import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwParserRegistry
 import org.json.JSONArray
 import org.json.JSONObject
@@ -40,7 +41,7 @@ data class FrameCaptureResult(
     val html: String,
     /** 该 frame 命中的锚点名, 与 ANCHORS 子集对应 */
     val matchedAnchors: List<String>,
-    /** 调用方喂 parser 后回填; 抓取层产出时恒 0 */
+    /** 真实解析得到的课程数；仅命中空容器时为 0。 */
     val courseCount: Int = 0,
     val status: FrameCaptureStatus,
     /** 跨域 frame 描述 "frameName@domain", 仅 CROSS_DOMAIN_IFRAME_BLOCKED / 诊断时非空 */
@@ -114,11 +115,6 @@ data class FrameSnapshotList(
 }
 
 object FrameTraversalTree {
-    private val declaredHtmlTypes = setOf("pku", "huat", "seu_2017", "shu2024", "tju", "hqu", "changzhou", "sicnu", "nuist", "sit", "sysu", "jz_1", "jz_x", "wist", "xmu", "swjtu_post", "kg_zx", "hbut", "hnjm", "lz", "nau", "nju", "cqupt", "xhtd", "xytc", "cidp", "sdpei", "shu", "jmpt", "lngd", "vatuu", "yzzy", "cqu", "hit", "jz", "gxic", "gxnu", "jxnu", "nnutc", "shcc", "hbmzu", "nua", "gdei", "aic", "hust", "gliet", "cnu",
-        "cdut", "gzhuyjs", "dhu", "ecjtu", "zptc", "ctgu", "nyist", "jxau",
-        "hniu", "uic", "cityu", "stu", "nfu", "jmucy", "nuaajc", "qmu", "javtc", "hitsz",
-        "bjtu", "scau", "jnu", "swust", "xjtu_post", "uestc_post", "bfa_post", "gdbyxy",
-        "cupl_post", "ysu_post", "whu_post", "hrbeu_post", "shtu_post", "ustc_post", "xauat_post", "shuwei_old", "urp")
     /**
      * 锚点集 — 与 parser 容器选择器对齐
      * (Table1→JwOldZfParser, blacktab→T1 兜底链, kbtable→JwQzParser,
@@ -167,11 +163,16 @@ object FrameTraversalTree {
             com.lingion.sleepy.data.jw.JwOldQzSuperParser(html).generateCourseList().isNotEmpty()
         ) modernQzAnchors + "old-qz-structural" else modernQzAnchors
         val thuAnchors = if (isThuCoursePage(html)) oldQzAnchors + THU_SCRIPT_ANCHOR else oldQzAnchors
+        // CF arrays may live in script-only frames. Validate the course schema
+        // instead of accepting a variable name or a generic table.
+        val cfAnchors = if (!looksLikeLoginPage(html) && JwChengFangParser(html).hasCourseData()) {
+            thuAnchors + "cf-course-schema"
+        } else thuAnchors
         // Some URP pages embed the timetable as a flat JSON array in a script,
         // without a table id/class. Validate its structure before selecting frame.
         return if (html.contains("\"skzc\"") && html.contains("\"kcm\"") &&
             JwNewUrpSuperParser(html).hasFlatArraySchema()
-        ) thuAnchors + "new-urp-array" else thuAnchors
+        ) cfAnchors + "new-urp-array" else cfAnchors
     }
 
     /** 跨域 frame 列表: 返回 "frameName@domain" 字符串(frameName 缺省用 src 尾段) */
@@ -229,9 +230,11 @@ object FrameTraversalTree {
         // 既有 LOGIN_FINGERPRINTS 关键词打分<2 永远漏报, 必须先于 score≥2。
         if (JwParseDiagnostics.LOGOUT_REDIRECT.containsMatchIn(html)) return true
         val lower = html.lowercase()
+        val passwordControl = lower.contains("password") && org.jsoup.Jsoup.parse(html)
+            .select("input").any { it.attr("type").equals("password", ignoreCase = true) }
         var score = 0
         for ((kw, _) in LOGIN_FINGERPRINTS) {
-            if (lower.contains(kw)) score++
+            if (lower.contains(kw) || kw == "type=\"password\"" && passwordControl) score++
         }
         return score >= 2
     }
@@ -249,6 +252,25 @@ object FrameTraversalTree {
             .filter { it.outerHTML != null && it.depth <= maxDepth }
             .filter { JwParseDiagnostics.LOGOUT_REDIRECT.containsMatchIn(it.outerHTML!!) }
             .maxByOrNull { it.depth }
+    }
+
+    /** Login state belongs to the capture, not just the frame that still holds cached courses. */
+    private fun sessionExpiredResult(snapshots: FrameSnapshotList, maxDepth: Int): FrameCaptureResult? {
+        val reachable = snapshots.frames.filter { it.outerHTML != null && it.depth <= maxDepth }
+        val login = reachable.filter { looksLikeLoginPage(it.outerHTML!!) }.maxByOrNull { it.depth }
+            ?: return null
+        return FrameCaptureResult(
+            selectedFramePath = login.parentPath + (login.frameName ?: ""),
+            html = login.outerHTML!!,
+            matchedAnchors = emptyList(),
+            status = FrameCaptureStatus.SESSION_EXPIRED,
+            blockedFrames = findBlockedFrames(snapshots),
+            maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0,
+            diagnosticHint = "检测到登录页/会话过期特征(frame=${login.frameName ?: "(top)"})，请重新登录后再点「导入此页」",
+            allFrames = reachable.map {
+                (it.parentPath + (it.frameName ?: "(top)")).joinToString("_") to it.outerHTML!!
+            }
+        )
     }
 
     internal data class Candidate(
@@ -298,12 +320,15 @@ object FrameTraversalTree {
     /**
      * 选择规则(优先级自上而下, 来自 11 份 case.json 的 frameStrategy 字段):
      *  ① 可达 = outerHTML != null 且 depth <= maxDepth(默认 8)。
-     *  ② 对每个可达 frame 独立 findAnchors; 命中者进候选。
-     *  ③ 候选排序: 锚点数降序 → 深度降序 → DOM 顺序升序; 排序第一名为初选。
-     *  ④ 全部可达 frame 均无锚点: 登录指纹 > 跨域 > WRONG_PAGE。
+     *  ② 任一可达 frame 命中登录指纹则拒绝缓存数据；已声明协议先由注册的解析器检查。
+     *  ③ 其余候选按锚点数降序 → 深度降序 → DOM 顺序升序，排序第一名为初选。
+     *  ④ 全部可达 frame 均无锚点: 跨域 > WRONG_PAGE。
      *  ⑤ 全部 frame 不可达(顶层都跨域): blocked 非空 → CROSS_DOMAIN_IFRAME_BLOCKED, 否则 WRONG_PAGE。
      */
-    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8, declaredType: String? = null): FrameCaptureResult {
+    fun selectBestFrame(snapshots: FrameSnapshotList, maxDepth: Int = 8, declaredType: String? = null): FrameCaptureResult =
+        selectFrame(snapshots, maxDepth, declaredType, probeSchemas = true)
+
+    private fun selectFrame(snapshots: FrameSnapshotList, maxDepth: Int, declaredType: String?, probeSchemas: Boolean): FrameCaptureResult {
         val blocked = findBlockedFrames(snapshots)
         val reachable = snapshots.frames.filter { it.outerHTML != null && it.depth <= maxDepth }
         val maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0
@@ -326,23 +351,44 @@ object FrameTraversalTree {
                 allFrames = allFrames
             )
         }
-        // Several declared school layouts have no generic table id. Validate with
-        // that school's parser before choosing a frame; do not widen generic detection.
-        if (declaredType in declaredHtmlTypes && reachable.none { looksLikeLoginPage(it.outerHTML!!) }) {
-            val declared = reachable.sortedByDescending { it.depth }.firstOrNull { frame ->
-                runCatching {
-                    JwParserRegistry.parserFor(declaredType!!, frame.outerHTML!!).generateCourseList().isNotEmpty()
-                }.getOrDefault(false)
+        sessionExpiredResult(snapshots, maxDepth)?.let { return it }
+        // The registry already knows supported protocols. A second type/id whitelist
+        // must not discard readable data before its parser gets to inspect it.
+        if (JwParserRegistry.supports(declaredType)) {
+            for (frame in reachable.sortedByDescending { it.depth }) {
+                val count = runCatching {
+                    JwParserRegistry.parserFor(declaredType!!, frame.outerHTML!!).generateCourseList().size
+                }.getOrDefault(0)
+                if (count > 0) return FrameCaptureResult(
+                    selectedFramePath = frame.parentPath + (frame.frameName ?: ""),
+                    html = frame.outerHTML!!,
+                    matchedAnchors = listOf("declared-$declaredType") + findAnchors(frame.outerHTML!!),
+                    courseCount = count,
+                    status = FrameCaptureStatus.OK,
+                    blockedFrames = blocked,
+                    maxDepthReached = maxDepthReached,
+                    allFrames = allFrames,
+                )
             }
-            if (declared != null) return FrameCaptureResult(
-                selectedFramePath = declared.parentPath + (declared.frameName ?: ""),
-                html = declared.outerHTML!!,
-                matchedAnchors = listOf("declared-$declaredType"),
-                status = FrameCaptureStatus.OK,
-                blockedFrames = blocked,
-                maxDepthReached = maxDepthReached,
-                allFrames = allFrames,
-            )
+        } else if (probeSchemas && declaredType.isNullOrBlank()) {
+            val candidates = rankedCandidates(snapshots, maxDepth)
+            val parsed = probeCourseFrames(snapshots, maxDepth, candidates) {
+                JwParserRegistry.selectBest(it).first
+            }
+            if (parsed != null) {
+                val (candidate, count) = parsed
+                return FrameCaptureResult(
+                    selectedFramePath = candidate.snapshot.parentPath + (candidate.snapshot.frameName ?: ""),
+                    html = candidate.snapshot.outerHTML!!,
+                    matchedAnchors = candidate.anchors,
+                    courseCount = count,
+                    status = FrameCaptureStatus.OK,
+                    blockedFrames = blocked,
+                    maxDepthReached = maxDepthReached,
+                    skippedFrames = computeSkipped(snapshots, maxDepth, candidates + candidate),
+                    allFrames = allFrames,
+                )
+            }
         }
         // ②③ 候选
         val candidates = rankedCandidates(snapshots, maxDepth)
@@ -387,24 +433,6 @@ object FrameTraversalTree {
         }
 
         // ④ 全部可达 frame 均无锚点
-        //  - 任一可达 frame looksLikeLoginPage → SESSION_EXPIRED
-        //    多个 frame 同时命中时取最深的(顶层 frameset 可能因注释/说明文字含弱指纹词,
-        //    真正的登录表单在更深的内层 frame — case #8)
-        val loginFrame = reachable.filter { looksLikeLoginPage(it.outerHTML!!) }
-            .maxByOrNull { it.depth }
-        if (loginFrame != null) {
-            return FrameCaptureResult(
-                selectedFramePath = loginFrame.parentPath + (loginFrame.frameName ?: ""),
-                html = loginFrame.outerHTML ?: "",
-                matchedAnchors = emptyList(),
-                status = FrameCaptureStatus.SESSION_EXPIRED,
-                blockedFrames = blocked,
-                maxDepthReached = maxDepthReached,
-                skippedFrames = skipped,
-                diagnosticHint = "检测到登录页/会话过期特征(frame=${loginFrame.frameName ?: "(top)"})，请重新登录后再点「导入此页」",
-                allFrames = allFrames
-            )
-        }
         //  - 存在 blocked frame → CROSS_DOMAIN_IFRAME_BLOCKED
         if (blocked.isNotEmpty()) {
             return FrameCaptureResult(
@@ -431,6 +459,33 @@ object FrameTraversalTree {
             diagnosticHint = if (reachable.isEmpty()) "页面无可读 frame" else "当前页面未检测到课表容器",
             allFrames = allFrames
         )
+    }
+
+    private fun probeCourseFrames(
+        snapshots: FrameSnapshotList,
+        maxDepth: Int,
+        candidates: List<Candidate>,
+        parse: (String) -> List<*>,
+    ): Pair<Candidate, Int>? {
+        val probes = candidates + snapshots.frames.withIndex()
+            .filter { (_, f) -> f.outerHTML != null && f.depth <= maxDepth && candidates.none { it.snapshot == f } }
+            .sortedByDescending { it.value.depth }
+            .map { (index, frame) -> Candidate(frame, listOf("parsed-course-data"), index) }
+
+        var bestCount = 0
+        var bestCandidate: Candidate? = null
+        for (c in probes) {
+            val count = try {
+                parse(c.snapshot.outerHTML!!).size
+            } catch (t: Throwable) {
+                0
+            }
+            if (count > bestCount) {
+                bestCount = count
+                bestCandidate = c
+            }
+        }
+        return bestCandidate?.let { it to bestCount }
     }
 
     /**
@@ -460,22 +515,12 @@ object FrameTraversalTree {
                 diagnosticHint = "检测到登录页/会话过期特征(${logoutFrame.frameName ?: "(top)"} 含 logout.aspx 跳转脚本)，请重新登录后再点「导入此页」"
             )
         }
+        sessionExpiredResult(snapshots, maxDepth)?.let { return it }
         val candidates = rankedCandidates(snapshots, maxDepth)
-        val skipped = computeSkipped(snapshots, maxDepth, candidates)
-
-        var bestCount = 0
-        var bestCandidate: Candidate? = null
-        for (c in candidates) {
-            val count = try {
-                parse(c.snapshot.outerHTML!!).size
-            } catch (t: Throwable) {
-                0
-            }
-            if (count > bestCount) {
-                bestCount = count
-                bestCandidate = c
-            }
-        }
+        val parsed = probeCourseFrames(snapshots, maxDepth, candidates, parse)
+        val bestCandidate = parsed?.first
+        val bestCount = parsed?.second ?: 0
+        val skipped = computeSkipped(snapshots, maxDepth, candidates + listOfNotNull(bestCandidate))
 
         val first = candidates.firstOrNull()
         if (bestCandidate != null && bestCount > 0) {
@@ -507,7 +552,7 @@ object FrameTraversalTree {
         }
 
         // 候选为空 → 与 selectBestFrame 一致(登录指纹 > 跨域 > WRONG_PAGE)
-        return selectBestFrame(snapshots, maxDepth)
+        return selectFrame(snapshots, maxDepth, declaredType = null, probeSchemas = false)
     }
 }
 
@@ -518,6 +563,14 @@ object RenderReadinessChecker {
             "el-table__body", "kbDataTd")
 
     enum class Readiness { READY, DELAY, GIVE_UP }
+
+    fun check(result: FrameCaptureResult, retryCount: Int): Readiness {
+        if (result.status == FrameCaptureStatus.SESSION_EXPIRED ||
+            result.status == FrameCaptureStatus.OK && result.courseCount > 0) return Readiness.READY
+        if (retryCount >= 3) return Readiness.GIVE_UP
+        if (checkBlankShell(result.html)) return Readiness.DELAY
+        return check(result.html, retryCount)
+    }
 
     /**
      * @param html 本次抓取选中的 frame HTML(不是整页拼接)
