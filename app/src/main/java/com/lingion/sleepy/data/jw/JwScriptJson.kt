@@ -30,29 +30,15 @@ internal object JwScriptJson {
     }
 
     private fun ranges(script: String): List<Pair<Int, Int>> {
+        val code = JwScriptMask.read(script).second
         val result = mutableListOf<Pair<Int, Int>>()
         val pending = mutableListOf<Pair<Int, Int>>()
         val stack = ArrayDeque<Pair<Int, Char>>()
-        var quote: Char? = null
-        var escaped = false
-        var lineComment = false
-        var blockComment = false
         var tooDeep = false
         var index = 0
         while (index < script.length) {
-            val ch = script[index]
-            val next = script.getOrNull(index + 1)
+            val ch = code[index]
             when {
-                lineComment -> if (ch == '\n' || ch == '\r') lineComment = false
-                blockComment -> if (ch == '*' && next == '/') { blockComment = false; index++ }
-                quote != null -> when {
-                    escaped -> escaped = false
-                    ch == '\\' -> escaped = true
-                    ch == quote -> quote = null
-                }
-                ch == '/' && next == '/' -> { lineComment = true; index++ }
-                ch == '/' && next == '*' -> { blockComment = true; index++ }
-                ch == '"' || ch == '\'' || ch == '`' -> quote = ch
                 ch == '[' || ch == '{' -> {
                     stack.addLast(index to ch)
                     if (stack.size > 64) tooDeep = true

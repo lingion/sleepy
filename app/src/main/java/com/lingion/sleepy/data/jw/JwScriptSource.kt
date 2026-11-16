@@ -12,36 +12,9 @@ internal class JwScriptSource(source: String) {
     init {
         val raw = if (source.trimStart().startsWith('<'))
             Jsoup.parse(source).select("script").joinToString("\n") { it.data() } else source
-        val plain = raw.toCharArray()
-        val mask = raw.toCharArray()
-        var quote: Char? = null
-        var escaped = false
-        var line = false
-        var block = false
-        var i = 0
-        while (i < raw.length) {
-            val c = raw[i]
-            val next = raw.getOrNull(i + 1)
-            when {
-                line -> { plain[i] = if (c == '\n' || c == '\r') c else ' '; mask[i] = plain[i]; if (c == '\n' || c == '\r') line = false }
-                block -> {
-                    plain[i] = if (c == '\n' || c == '\r') c else ' '; mask[i] = plain[i]
-                    if (c == '*' && next == '/') { plain[i + 1] = ' '; mask[++i] = ' '; block = false }
-                }
-                quote != null -> {
-                    mask[i] = ' '
-                    if (escaped) escaped = false else if (c == '\\') escaped = true else if (c == quote) quote = null
-                }
-                c == '/' && (next == '/' || next == '*') -> {
-                    line = next == '/'; block = next == '*'
-                    plain[i] = ' '; mask[i] = ' '; plain[i + 1] = ' '; mask[++i] = ' '
-                }
-                c == '\'' || c == '"' || c == '`' -> { quote = c; mask[i] = ' ' }
-            }
-            i++
-        }
-        text = String(plain)
-        code = String(mask)
+        val masked = JwScriptMask.read(raw)
+        text = masked.first
+        code = masked.second
     }
 
     fun matches(regex: Regex): Sequence<MatchResult> = regex.findAll(text)
@@ -112,20 +85,76 @@ internal class JwScriptSource(source: String) {
             .distinct().toList().singleOrNull()
     }
 
-    fun string(expression: String): String? = expression.trim().takeIf {
-        Regex(""""(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'""").matches(it)
-    }?.let { runCatching { JSONTokener(it).nextValue() as? String }.getOrNull() }
+    fun string(expression: String): String? = staticString(expression, emptyMap())
+
+    private fun key(value: String) = value.replace(Regex("\\s+"), "").removePrefix("this.")
+
+    /** Only string literals, snapshots of bindings, parentheses and string concatenation. */
+    private fun staticString(expression: String, bindings: Map<String, String>): String? {
+        var index = 0
+        fun spaces() { while (index < expression.length && expression[index].isWhitespace()) index++ }
+        fun read(depth: Int): String? {
+            if (depth > 64) return null
+            val result = StringBuilder()
+            while (true) {
+                spaces()
+                val value = when (val ch = expression.getOrNull(index)) {
+                    '\'', '"' -> {
+                        val start = index++
+                        while (index < expression.length) {
+                            if (expression[index] == '\\') { index = minOf(index + 2, expression.length); continue }
+                            if (expression[index++] == ch) break
+                        }
+                        val literal = expression.substring(start, index)
+                        if (literal.length < 2 || literal.last() != ch) return null
+                        runCatching { JSONTokener(literal).nextValue() as? String }.getOrNull()
+                    }
+                    '(' -> {
+                        index++
+                        val nested = read(depth + 1) ?: return null
+                        spaces()
+                        if (expression.getOrNull(index++) != ')') return null
+                        nested
+                    }
+                    else -> {
+                        val match = Regex("""[\w$]+(?:\s*\.\s*[\w$]+)*""").find(expression, index)
+                            ?.takeIf { it.range.first == index } ?: return null
+                        index = match.range.last + 1
+                        bindings[key(match.value)]
+                    }
+                } ?: return null
+                if (result.length.toLong() + value.length > 1_048_576) return null
+                result.append(value)
+                spaces()
+                if (expression.getOrNull(index) != '+') return result.toString()
+                index++
+            }
+        }
+        val result = read(0) ?: return null
+        spaces()
+        return result.takeIf { index == expression.length }
+    }
 
     fun resolveString(binding: String, before: Int, until: Int): String? {
-        val key = binding.removePrefix("this.")
-        val values = assignments.filter { it.target == key || it.target == binding }
-        val preceding = values.filter { it.start < before }
-        val selected = if (preceding.isNotEmpty()) preceding else values.filter { it.start in before until until }
-        var result: String? = null
-        for (item in selected) {
-            val value = string(item.expression) ?: continue
-            result = if (item.operator == "+=") result?.plus(value) else value
+        val name = key(binding)
+        val deferred = Regex("""[\w$]+(?:\s*\.\s*[\w$]+)*""").matches(binding.trim()) &&
+            assignments.none { key(it.target) == name && it.start < before }
+        val limit = if (deferred) until else before
+        val values = mutableMapOf<String, String>()
+        var expanded = 0L
+        for (item in assignments) {
+            if (item.start >= limit) break
+            val target = key(item.target)
+            val value = staticString(item.expression, values)
+            val result = if (item.operator == "+=") values[target]?.let { previous ->
+                value?.takeIf { previous.length.toLong() + it.length <= 1_048_576 }?.let(previous::plus)
+            } else value
+            if (result == null) values.remove(target) else {
+                expanded += result.length
+                if (expanded > 1_048_576) return null
+                values[target] = result
+            }
         }
-        return result
+        return staticString(binding, values)
     }
 }
