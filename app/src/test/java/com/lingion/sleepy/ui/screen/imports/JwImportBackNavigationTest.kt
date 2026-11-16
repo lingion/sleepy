@@ -121,7 +121,11 @@ class JwImportBackNavigationTest {
         activity = scenario
         awaitState { compose.onAllNodesWithTag("school_search").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("school_search").performTextInput(school.name)
-        compose.onNode(hasTestTag("school_item") and hasText(school.name)).performScrollTo().performClick()
+        val schoolRow = hasTestTag("school_item") and hasText(school.name)
+        // The search field can be composed before loadSchools finishes on Dispatchers.IO.
+        // Compose idleness alone does not wait for that external work or its filtered result.
+        awaitState { compose.onAllNodes(schoolRow).fetchSemanticsNodes().size == 1 }
+        compose.onNode(schoolRow).performScrollTo().performClick()
         awaitState { compose.onAllNodesWithTag("jw_back").fetchSemanticsNodes().isNotEmpty() }
 
         // Robolectric's WebView shadow records loadUrl without fetching the school's network.
@@ -142,7 +146,8 @@ class JwImportBackNavigationTest {
         scenario.onActivity { assertFalse("Login back must not finish the import Activity", it.isFinishing) }
         awaitState { compose.onAllNodesWithTag("school_search").fetchSemanticsNodes().isNotEmpty() }
         compose.onNodeWithTag("school_search").assertTextContains(school.name)
-        compose.onNode(hasTestTag("school_item") and hasText(school.name)).performScrollTo().assertIsDisplayed()
+        awaitState { compose.onAllNodes(schoolRow).fetchSemanticsNodes().size == 1 }
+        compose.onNode(schoolRow).performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("jw_back").assertDoesNotExist()
 
         // Only the second back, from the school list itself, exits to the caller.
