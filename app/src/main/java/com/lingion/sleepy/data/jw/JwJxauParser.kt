@@ -1,19 +1,20 @@
 package com.lingion.sleepy.data.jw
 
 import org.jsoup.Jsoup
+import org.jsoup.nodes.Element
 
 class JwJxauParser(source: String) : JwParser(source) {
-    private val table by lazy { Jsoup.parse(source).getElementById("KebiaoTable1") }
+    private val document by lazy { Jsoup.parse(source) }
+    private val courses by lazy { courseTableCandidates(document, "#KebiaoTable1", ::parseTable) }
+    override fun generateCourseList(): List<JwCourse> = courses
 
-    override fun generateCourseList(): List<JwCourse> = mergeCourseWeeks(buildList {
-        val grid = table ?: return@buildList
-        val rows = grid.select("tr").filter { it.closest("table") == grid }.drop(2).take(7)
+    private fun parseTable(grid: Element): List<JwCourse> = mergeCourseWeeks(buildList {
+        val rows = grid.select("tr").filter { it.closest("table") == grid }.filter { weekday(it) != null }
         if (rows.any { row -> row.children().any { cell ->
                 listOf("rowspan", "colspan").any { cell.hasAttr(it) && cell.attr(it).toIntOrNull() != 1 }
             } }) return@buildList
         for (row in rows) {
-            val label = row.selectFirst(".left1")?.text()?.trim().orEmpty().removePrefix("星期")
-            val day = when (label) { "一" -> 1; "二" -> 2; "三" -> 3; "四" -> 4; "五" -> 5; "六" -> 6; "日", "天" -> 7; else -> continue }
+            val day = weekday(row) ?: continue
             var node = 1
             for ((index, cell) in row.children().filter { it.tagName() == "td" }.drop(1).withIndex()) {
                 if (index == 4 || index == 6) continue
@@ -35,6 +36,12 @@ class JwJxauParser(source: String) : JwParser(source) {
         }
     })
 
-    override fun confidence(): Int = if (table != null) 100 else 0
-    override fun matchedFeatures(): List<String> = if (table != null) listOf("JXAU/KebiaoTable1") else emptyList()
+    private fun weekday(row: Element): Int? {
+        val label = (row.selectFirst(".left1") ?: row.children().firstOrNull())?.text()?.trim()
+            ?.removePrefix("星期")?.removePrefix("周") ?: return null
+        return when (label) { "一" -> 1; "二" -> 2; "三" -> 3; "四" -> 4; "五" -> 5; "六" -> 6; "日", "天" -> 7; else -> null }
+    }
+
+    override fun confidence(): Int = if (document.getElementById("KebiaoTable1") != null || courses.isNotEmpty()) 100 else 0
+    override fun matchedFeatures(): List<String> = if (document.getElementById("KebiaoTable1") != null || courses.isNotEmpty()) listOf("JXAU/KebiaoTable1") else emptyList()
 }
