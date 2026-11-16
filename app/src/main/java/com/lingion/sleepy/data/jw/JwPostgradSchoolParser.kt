@@ -39,10 +39,10 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         "hrbeu_post" -> if (document.select("#StuCul_TimetableQry_TimeTable .WtbodyZlistS").isNotEmpty()) 100 else 0
         "shtu_post" -> if (document.getElementById("div-table") != null) 100 else 0
         "ustc_post" -> if (document.getElementById("tablexskbcx-index-table") != null) 100 else 0
-        "xauat_post" -> if (Regex("td_[1-7]_[0-9]{2}").containsMatchIn(source) && "td.innerHTML" in source) 100 else 0
+        "xauat_post" -> if (xauat().isNotEmpty()) 100 else 0
         "zju_post" -> if ("kcbForm" in source && runCatching { JSONArray(source) }.isSuccess) 100 else 0
         "csv" -> if (source.lineSequence().firstOrNull()?.let { "课程名称" in it && "开始节数" in it } == true) 100 else 0
-        "shuwei_old" -> if (Regex("var\\s+activity\\s*=\\s*null;").containsMatchIn(source) && "table0.marshalTable" in source) 100 else 0
+        "shuwei_old" -> if (shuweiOld().isNotEmpty() || (Regex("var\\s+activity\\s*=\\s*null;").containsMatchIn(source) && "table0.marshalTable" in source)) 100 else 0
         else -> 0
     }
 
@@ -307,25 +307,32 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
     }
 
     private fun xauat(): List<JwCourse> = buildList {
-        val script = document.selectFirst("script")?.data() ?: return@buildList
-        val clean = script.lineSequence().filterNot { it.trimStart().startsWith("//") }.joinToString("\n")
-        val coordinates = Regex("td_([1-7])_([0-9]{2})").findAll(clean).toList()
-        val assignments = Regex("td\\.innerHTML\\s*\\+=\\s*(\"(?:\\\\.|[^\"\\\\])*\")").findAll(clean).toList()
-        if (coordinates.size != assignments.size) return@buildList
-        for ((coordinate, assignment) in coordinates.zip(assignments)) {
-            val html = runCatching { JSONTokener(assignment.groupValues[1]).nextValue() as? String }.getOrNull() ?: continue
-            if (html.isBlank()) continue
-            val fields = lines(html)
-            if (fields.size < 4 || !fields[0].startsWith("课程:")) continue
-            val timing = Regex("\\(([^)]+)\\)").find(fields[3])?.groupValues?.get(1) ?: continue
-            val week = Regex("第([^周]+)周").find(timing)?.groupValues?.get(1) ?: continue
-            val parity = when { "单" in timing -> "单"; "双" in timing -> "双"; else -> "" }
-            val node = coordinate.groupValues[2].toInt() - 40
-            val teacher = fields[2].removePrefix("主讲教师：").removePrefix("教师：").substringBefore('（')
-            val room = fields[3].substringBefore('(').substringAfter('-')
-            addSlots(fields[0].removePrefix("课程:"), room, teacher, coordinate.groupValues[1].toInt(), node.toString(), week + parity)
+        val script = JwScriptSource(source)
+        val cells = mutableMapOf<String, Pair<Int, Int>>()
+        val lookup = Regex("""(?:document\s*\.\s*)?getElementById\s*\(\s*(.+?)\s*\)""")
+        for (assignment in script.assignments) {
+            if (assignment.target.endsWith(".innerHTML")) {
+                val coordinate = cells[assignment.target.removeSuffix(".innerHTML")] ?: continue
+                val html = script.string(assignment.expression) ?: script.resolveString(assignment.expression, assignment.start, assignment.start)
+                    ?: continue
+                val fields = lines(html)
+                if (fields.size < 4 || !fields[0].startsWith("课程:")) continue
+                val timing = Regex("\\(([^)]+)\\)").find(fields[3])?.groupValues?.get(1) ?: continue
+                val week = Regex("第([^周]+)周").find(timing)?.groupValues?.get(1) ?: continue
+                val parity = when { "单" in timing -> "单"; "双" in timing -> "双"; else -> "" }
+                val teacher = fields[2].removePrefix("主讲教师：").removePrefix("教师：").substringBefore('（')
+                val room = fields[3].substringBefore('(').substringAfter('-')
+                addSlots(fields[0].removePrefix("课程:"), room, teacher, coordinate.first, coordinate.second.toString(), week + parity)
+                continue
+            }
+            val id = lookup.matchEntire(assignment.expression)?.groupValues?.get(1)?.let(script::string)
+            val coordinate = id?.let { Regex("td_([1-7])_([0-9]{2})").matchEntire(it) }?.let {
+                it.groupValues[1].toInt() to it.groupValues[2].toInt() - 40
+            } ?: cells[assignment.expression.trim()]
+            if (coordinate == null) cells.remove(assignment.target) else cells[assignment.target] = coordinate
         }
     }
+
 
     private fun zju(): List<JwCourse> = buildList {
         val pages = runCatching { JSONArray(source) }.getOrNull() ?: return@buildList
@@ -420,42 +427,60 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
     }
 
     private fun shuweiOld(): List<JwCourse> = buildList {
-        val section = Regex("var\\s+activity\\s*=\\s*null;([\\s\\S]*?)(?=table0\\.marshalTable)").find(source)?.groupValues?.get(1) ?: return@buildList
-        val statements = Regex("(?:\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|[^;\"'])+;").findAll(section)
-        var declaredName = ""
-        var name = ""
-        var teacher = ""
-        var room = ""
-        var weekList = emptyList<Int>()
-        for (statement in statements) {
-            val text = statement.value.trim()
-            if (Regex("^var\\s+courseName\\s*=").containsMatchIn(text)) declaredName = jsStrings(text).firstOrNull().orEmpty()
-            else if (Regex("^courseName\\s*\\+=").containsMatchIn(text)) declaredName += jsStrings(text).firstOrNull().orEmpty()
-            if (Regex("^var\\s+actTeachers\\s*=").containsMatchIn(text)) {
-                val teachers = runCatching { JSONArray(text.substringAfter('=').trim().removeSuffix(";")) }.getOrNull()
-                teacher = if (teachers == null) "" else (0 until teachers.length()).mapNotNull { teachers.optJSONObject(it)?.optString("name")?.trim()?.takeIf(String::isNotBlank) }.joinToString(", ")
+        val script = JwScriptSource(source)
+        val tasks = script.matches(Regex("""new\s+TaskActivity\s*\(""")).toList()
+        for ((index, task) in tasks.withIndex()) {
+            val (args, close) = script.arguments(task.range.last) ?: continue
+            if (args.size < 5) continue
+            val nextTask = tasks.getOrNull(index + 1)?.range?.first ?: script.text.length
+            val receiver = script.assignments.lastOrNull { it.start < task.range.first &&
+                Regex("""^new\s+TaskActivity\s*\(""").containsMatchIn(it.expression) }?.target
+            val binding = "[\\w$]+(?:\\s*\\.\\s*[\\w$]+)*"
+            val insertions = script.matches(Regex("($binding)\\s*\\.\\s*activities\\s*\\[\\s*([\\w$]+)\\s*](?:\\s*\\[[^]\\r\\n]*])*\\s*=\\s*($binding)"))
+                .filter { it.range.first in close + 1 until nextTask }.toList()
+            fun compact(value: String) = value.replace(Regex("\\s+"), "")
+            val tables = insertions.filter { compact(it.groupValues[3]) == receiver }
+                .map { compact(it.groupValues[1]) }.toSet()
+            val until = script.matches(Regex("($binding)\\s*\\.\\s*marshalTable\\s*\\("))
+                .firstOrNull { it.range.first in close + 1 until nextTask &&
+                    (tables.isEmpty() || compact(it.groupValues[1]) in tables) }?.range?.first ?: nextTask
+            fun value(expression: String): String? = script.string(expression) ?: script.resolveString(expression, task.range.first, until)
+            val bitmap = value(args[4]) ?: continue
+            if (bitmap.isEmpty() || bitmap.any { it != '0' && it != '1' } || bitmap[0] == '1') continue
+            val weekList = (1 until bitmap.length).filter { bitmap[it] == '1' }
+            val declaredName = if (script.string(args[1]) == null) value(args[1]).orEmpty() else {
+                // Compatibility with old minimal captures that omit the actual name reference.
+                script.assignments.filter { it.target == "courseName" && it.start in
+                    ((tasks.getOrNull(index - 1)?.range?.first ?: -1) + 1) until task.range.first }
+                    .fold(null as String?) { value, assignment ->
+                        val part = script.string(assignment.expression)
+                        if (assignment.operator == "+=") value?.plus(part.orEmpty()) else part
+                    }.orEmpty()
             }
-            if (Regex("new\\s+TaskActivity\\s*\\(").containsMatchIn(text)) {
-                val args = jsStrings(text)
-                if (args.size < 5) { name = ""; weekList = emptyList(); continue }
-                val group = if (args.size == 11) args[8] else args.getOrNull(6).orEmpty()
-                name = (declaredName.ifBlank { args[1] }).substringBefore('(').substringBefore('[')
-                if (declaredName.isBlank() && group.isNotBlank()) name += "(${group.removeSuffix("组")}组)"
-                room = args[3]
-                val bitmap = args[4]
-                weekList = if (bitmap.all { it == '0' || it == '1' } && bitmap.firstOrNull() != '1')
-                    (1 until bitmap.length).filter { bitmap[it] == '1' } else emptyList()
+            var name = declaredName.ifBlank { value(args[1]).orEmpty() }.substringBefore('(').substringBefore('[')
+            val group = args.getOrNull(if (args.size == 11) 8 else 6)?.let(::value).orEmpty()
+            if (declaredName.isBlank() && group.isNotBlank()) name += "(${group.removeSuffix("组")}组)"
+            val room = value(args[3]) ?: continue
+            val teacher = script.assignments.asSequence().filter { it.start < task.range.first }
+                .mapNotNull { assignment ->
+                    val array = runCatching { JSONArray(assignment.expression) }.getOrNull() ?: return@mapNotNull null
+                    if (array.length() == 0) return@mapNotNull null
+                    val names = (0 until array.length()).map { (array.optJSONObject(it)?.opt("name") as? String)?.trim() }
+                    if (names.any { it == null }) null else names.filterNotNull().joinToString(", ")
+                }.lastOrNull().orEmpty()
+            val indices = insertions.filter { it.range.first < until && compact(it.groupValues[3]) == receiver }
+                .map { it.groupValues[2] }.toSet()
+            for (assignment in script.assignments.filter { it.start in close + 1 until until }) {
+                if (insertions.isNotEmpty() && assignment.target !in indices) continue
+                // Old snippets omit activity insertion, but retain the explicit coordinate formula.
+                val coordinate = Regex("""([0-9]+)\s*\*\s*[\w$]+\s*\+\s*([0-9]+)""")
+                    .matchEntire(assignment.expression) ?: continue
+                val day = coordinate.groupValues[1].toIntOrNull()?.plus(1) ?: continue
+                val node = coordinate.groupValues[2].toIntOrNull()?.plus(1) ?: continue
+                for (week in weekList) addSlots(name, room, teacher, day, node.toString(), week.toString())
             }
-            val coordinate = Regex("^index\\s*=\\s*([0-9]+)\\s*\\*\\s*unitCount\\s*\\+\\s*([0-9]+)\\s*;$").matchEntire(text) ?: continue
-            val day = coordinate.groupValues[1].toIntOrNull()?.plus(1) ?: continue
-            val node = coordinate.groupValues[2].toIntOrNull()?.plus(1) ?: continue
-            for (week in weekList) addSlots(name,room,teacher,day,node.toString(),week.toString())
-            declaredName = ""
         }
     }
-
-    private fun jsStrings(text: String): List<String> = Regex("\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'").findAll(text)
-        .mapNotNull { runCatching { JSONTokener(it.value).nextValue() as? String }.getOrNull() }.toList()
 
     private fun expandedWeeks(ranges: List<Triple<Int, Int, Int>>): List<Int> = ranges.flatMap { (start,end,parity) ->
         (start..end).filter { parity == 0 || it % 2 == parity % 2 }
