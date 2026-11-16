@@ -11,12 +11,12 @@
     "entryEvidencePass": "2026-10-16"
   },
   "summary": {
-    "verified": 748,
-    "unknown": 2276,
+    "verified": 747,
+    "unknown": 2277,
     "contradicted": 1,
     "highConfidence": 181,
-    "mediumConfidence": 568,
-    "lowConfidence": 2276,
+    "mediumConfidence": 567,
+    "lowConfidence": 2277,
     "interpretation": "Verified means recorded school identity proves the exact configured endpoint, directly or through an archived directed HTTP chain; unknown lacks sufficient ownership proof; contradicted identifies a different school.",
     "unknownWithResearchTrace": 170,
     "researchTraceReasonCounts": {
@@ -3554,13 +3554,13 @@
     {
       "catalogId": "G_广西农业职业技术大学",
       "name": "广西农业职业技术大学",
-      "url": "https://jwxt.gxnzd.com.cn/jwglxt/xtgl/login_slogin.html",
+      "url": "https://vpn.gxnzd.com.cn",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-11-16",
       "http": 200,
-      "finalUrl": "https://jwxt.gxnzd.com.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "verified",
-      "confidence": "medium",
+      "finalUrl": "https://vpn.gxnzd.com.cn/login",
+      "status": "unknown",
+      "confidence": "low",
       "sources": [
         {
           "url": "https://jwxt.gxnzd.com.cn/jwglxt/xtgl/login_slogin.html",
@@ -3573,14 +3573,51 @@
           "linkedUrls": [
             "https://jwxt.gxnzd.com.cn/jwglxt/pwdmgr/retake/index.zf"
           ]
+        },
+        {
+          "url": "https://www.gxnzd.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "学校官网的网络入口链接到 VPN 登录页；该链接不反向证明用户指定的根入口。",
+          "checkedAt": "2026-11-16",
+          "title": "广西农业职业技术大学",
+          "observedText": "﻿ 广西农业职业技术大学 学生 校友 网络 书记校长信箱 搜索 学校概况 学校概况 现任领导 组织机构 校园风光 招生就业 招生信息网 就业服务网 教学院系 农业工程学院 动物科技学院 城乡建设学院 智能装备工程学院 食品药品工程学院 信息工程学院 经济管理学院 马克思主义学院 人文与艺术学院 通识教育学院 教育培训学院（广西乡村振兴学院） 国际教育学院 教",
+          "bodySha256": "0eae1739f0dd0427eda45cf61d0757dc6ef6676b6b629eb35a28a64e9468cb1b",
+          "linkedUrls": [
+            "https://vpn.gxnzd.com.cn/login"
+          ]
         }
       ],
-      "defects": [],
+      "defects": [
+        "用户明确指定根入口，未进行认证或课表导入。学校官网链接 /login；根入口经 HTTP 302 到达该页，不反向推断精确端点归属，旧入口的 verified 结论不用于新入口。"
+      ],
       "proposedCorrection": null,
-      "title": "教学管理信息服务平台",
+      "title": "资源访问控制系统",
       "probeError": null,
       "availability": "public-page",
-      "authenticatedImportTested": false
+      "authenticatedImportTested": false,
+      "redirects": [
+        {
+          "from": "https://vpn.gxnzd.com.cn",
+          "http": 302,
+          "to": "https://vpn.gxnzd.com.cn/login"
+        }
+      ],
+      "authenticationRequired": true,
+      "entryUpdate": {
+        "basis": "user-specified-entry",
+        "scope": "用户明确要求只更新入口，保留原协议类型、历史目录状态及其他学校条目。",
+        "protocolRetained": "zf_new",
+        "authenticatedImportTested": false
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-11-16",
+          "previousUrl": "https://jwxt.gxnzd.com.cn/jwglxt/xtgl/login_slogin.html",
+          "previousStatus": "verified",
+          "previousConfidence": "medium",
+          "reason": "旧入口的原始观察完整保留在 sources 中；新入口未完成认证。"
+        }
+      ]
     },
     {
       "catalogId": "G_广西物流职业技术学院",
