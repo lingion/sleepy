@@ -51,7 +51,6 @@ import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -72,8 +71,6 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.lingion.sleepy.ui.component.liquidglass.GlassMaterialRole
-import com.lingion.sleepy.ui.component.liquidglass.NativeGlassSheetTopSectionShape
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.OfficialNavIconMotion
@@ -900,42 +897,20 @@ private fun MainRoute(
                             updateNoticeVisible = updateNoticeVisible,
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .fillMaxWidth()
-                            .height(barHeight)
-                            .onSizeChanged { barHeightPx = it.height }
+                    com.lingion.sleepy.ui.component.liquidglass.GlassAttachedNavigationBar(
+                        backdrop = backdrop,
+                        modifier = Modifier.align(Alignment.BottomCenter),
+                        onHeightChanged = { barHeightPx = it },
                     ) {
-                        // The backing is exactly bar-height. Its top edge and 36dp corners are
-                        // the Sheet's original; square lower corners represent the part cropped off.
-                        Box(
-                            Modifier
-                                .matchParentSize()
-                                .padding(horizontal = 8.dp)
-                                .glassControl(
-                                    shape = NativeGlassSheetTopSectionShape,
-                                    enabled = false,
-                                    registerPane = false,
-                                    role = GlassMaterialRole.Sheet,
-                                    backdropOverride = backdrop,
-                                )
-                        )
-                        NavigationBar(
-                            modifier = Modifier.fillMaxWidth(),
-                            containerColor = Color.Transparent,
-                            tonalElevation = 0.dp,
-                        ) {
-                            Tab.entries.forEach { tab ->
-                                NavigationBarItem(
-                                    colors = NavigationBarItemDefaults.colors(indicatorColor = colors.secondaryContainer),
-                                    modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
-                                    selected = currentTab == tab,
-                                    onClick = { setCurrentTab(tab) },
-                                    icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
-                                    label = { Text(stringResource(tab.labelRes)) },
-                                )
-                            }
+                        Tab.entries.forEach { tab ->
+                            NavigationBarItem(
+                                colors = NavigationBarItemDefaults.colors(indicatorColor = colors.secondaryContainer),
+                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
+                                selected = currentTab == tab,
+                                onClick = { setCurrentTab(tab) },
+                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
+                                label = { Text(stringResource(tab.labelRes)) },
+                            )
                         }
                     }
                 }
