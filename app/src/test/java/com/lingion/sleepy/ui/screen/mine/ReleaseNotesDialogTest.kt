@@ -80,7 +80,7 @@ class ReleaseNotesDialogTest {
         val bitmap = compose.onNode(isDialog()).captureToImage().asAndroidBitmap()
         assertTrue(bitmap.width > 0 && bitmap.height > 0)
         val file = File("build/reports/release-notes/$name.png")
-        file.parentFile.mkdirs()
+        requireNotNull(file.parentFile).mkdirs()
         file.outputStream().use { assertTrue(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it)) }
         bitmap.recycle()
     }

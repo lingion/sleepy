@@ -34,6 +34,12 @@ class ReleaseNotesContractTest {
         val fixture = System.getenv("SLEEPY_RELEASE_MIRROR_FIXTURE")
         assumeNotNull(fixture)
         val mirrored = parseMirrorPage(File(requireNotNull(fixture)).readText(), "v${ReleaseNotesCandidate.version}")
-        assertEquals(MarkdownBlocks.parse(ReleaseNotesCandidate.markdown), MarkdownBlocks.parse(mirrored))
+        // HTML line breaks can split one list into adjacent Bullet blocks. Compare
+        // ordered items with their types/inline formatting, not that grouping detail.
+        fun items(markdown: String) = MarkdownBlocks.parse(markdown).flatMap { block ->
+            if (block is MarkdownBlocks.Block.Bullet) block.items.map { MarkdownBlocks.Block.Bullet(listOf(it)) }
+            else listOf(block)
+        }
+        assertEquals(items(ReleaseNotesCandidate.markdown), items(mirrored))
     }
 }
