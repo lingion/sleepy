@@ -97,6 +97,7 @@
     <string name="edit_table_start_date">学期开始日期</string>
     <string name="edit_table_start_date_hint">例如 2026-02-24</string>
     <string name="edit_table_max_week">总周数</string>
+    <string name="edit_table_max_week_error">总周数必须是大于 0 的整数</string>
     <string name="edit_table_reminder_enable">本表参与提醒</string>
     <string name="edit_table_reminder_desc">关闭后，本课表不再发送课前提醒、每日课表摘要与流体云</string>
     <string name="edit_table_time_slots">作息表</string>

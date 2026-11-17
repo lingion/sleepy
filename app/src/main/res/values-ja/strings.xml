@@ -88,6 +88,7 @@
     <string name="edit_table_start_date">学期開始日</string>
     <string name="edit_table_start_date_hint">例: 2026-02-24</string>
     <string name="edit_table_max_week">総週数</string>
+    <string name="edit_table_max_week_error">総週数は 1 以上の整数で入力してください</string>
     <string name="edit_table_reminder_enable">この時間割を通知</string>
     <string name="edit_table_reminder_desc">オフにすると、この時間割の课前リマインダー・日課表サマリー・フローティングクラウドは送信されません</string>
     <string name="edit_table_time_slots">時程表</string>

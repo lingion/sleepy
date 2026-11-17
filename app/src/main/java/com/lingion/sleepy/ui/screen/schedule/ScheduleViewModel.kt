@@ -71,7 +71,7 @@ data class ScheduleState(
 
     val displayMaxWeek: Int
         get() = currentTable?.let { table ->
-            maxOf(table.maxWeek, transfers.filter {
+            maxOf(1, table.maxWeek, transfers.filter {
                 DateUtils.semesterStatus(table.startDate, table.maxWeek, it.sourceDate) == DateUtils.SemesterStatus.IN_RANGE
             }.maxOfOrNull { DateUtils.currentWeek(table.startDate, it.targetDate) } ?: table.maxWeek)
         } ?: 20
