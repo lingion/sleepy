@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.*
@@ -13,20 +12,14 @@ import com.lingion.sleepy.ui.component.liquidglass.GlassIconButton as IconButton
 import com.lingion.sleepy.ui.component.liquidglass.GlassButton as Button
 import com.lingion.sleepy.ui.component.liquidglass.glassButtonShape
 import com.lingion.sleepy.ui.component.liquidglass.GlassTonalButton as FilledTonalButton
-import com.lingion.sleepy.ui.component.liquidglass.GlassFilterChip as FilterChip
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.graphics.toColorInt
 import com.lingion.sleepy.R
-import com.lingion.sleepy.data.entity.CourseColorMode
-import com.lingion.sleepy.ui.component.ColorPickerDialog
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
 /** A compact entry form sharing the full editor's draft and save/confirmation pipeline. */
@@ -38,6 +31,7 @@ internal fun SingleOccurrenceCourseForm(
     alias: String,
     onAliasChange: (String) -> Unit,
     block: MeetingBlockDraft,
+    groupSourceColorHex: String,
     scheduleSummary: String,
     validationMessages: List<String>,
     saving: Boolean,
@@ -48,7 +42,6 @@ internal fun SingleOccurrenceCourseForm(
 ) {
     val colors = MaterialTheme.colorScheme
     val keyboard = LocalSoftwareKeyboardController.current
-    var showColorPicker by remember { mutableStateOf(false) }
     Scaffold(
         modifier = Modifier.imePadding().testTag("single-occurrence-form"),
         containerColor = colors.background,
@@ -103,34 +96,10 @@ internal fun SingleOccurrenceCourseForm(
                     "single-occurrence-room", enabled = !saving)
                 SingleOccurrenceField(block.noteState, { block.noteState = it }, stringResource(R.string.course_note),
                     "single-occurrence-note", enabled = !saving, multiline = true)
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.course_color), modifier = Modifier.weight(1f))
-                    FilterChip(selected = block.colorModeState != CourseColorMode.CUSTOM, enabled = !saving,
-                        onClick = { block.colorModeState = CourseColorMode.GROUP; block.colorState = "" },
-                        label = { Text(stringResource(R.string.color_auto)) })
-                    FilledTonalButton(onClick = { showColorPicker = true }, enabled = !saving,
-                        modifier = Modifier.testTag("single-occurrence-color")) {
-                        if (block.colorModeState == CourseColorMode.CUSTOM) {
-                            val swatch = runCatching { Color(block.colorState.toColorInt()) }.getOrDefault(colors.primary)
-                            Box(Modifier.size(18.dp).background(swatch, CircleShape))
-                            Spacer(Modifier.width(8.dp))
-                        }
-                        Text(stringResource(R.string.color_custom))
-                    }
-                }
+                ColorSection(block, groupSourceColorHex, enabled = !saving)
             }
         }
     }
-    if (showColorPicker) ColorPickerDialog(
-        initialHex = block.colorState.ifBlank { "#FF6750A4" },
-        onConfirm = { hex ->
-            block.colorState = hex
-            block.colorModeState = CourseColorMode.CUSTOM
-            showColorPicker = false
-        },
-        onDismiss = { showColorPicker = false }
-    )
 }
 
 @Composable

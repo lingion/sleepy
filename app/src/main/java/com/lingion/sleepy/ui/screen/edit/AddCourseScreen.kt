@@ -68,6 +68,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -559,6 +560,7 @@ fun AddCourseScreen(
         SingleOccurrenceCourseForm(
             courseName = courseName, onCourseNameChange = { courseName = it },
             alias = courseAlias, onAliasChange = { courseAlias = it }, block = block,
+            groupSourceColorHex = groupSourceColorHex,
             scheduleSummary = summary, validationMessages = validationIssues.map { it.message },
             saving = saving, canSave = canSave && currentTable != null,
             onBack = onBack, onSave = { performSave() },
@@ -1862,9 +1864,10 @@ private fun GroupColorSection(
  *  上移基础信息卡 GroupColorSection, OFF 态仅显示组色色块+hex。
  *  开关左侧文案固定「自定义颜色」(只描述开=什么, 不随开关态变)。 */
 @Composable
-private fun ColorSection(
+internal fun ColorSection(
     block: MeetingBlockDraft,
-    groupSourceColorHex: String
+    groupSourceColorHex: String,
+    enabled: Boolean = true,
 ) {
     val colors = MaterialTheme.colorScheme
     val useDifferent = block.colorModeState != com.lingion.sleepy.data.entity.CourseColorMode.GROUP
@@ -1895,6 +1898,8 @@ private fun ColorSection(
                     color = colors.onSurfaceVariant
                 )
                 Switch(
+                    modifier = Modifier.testTag("course-color-custom-switch"),
+                    enabled = enabled,
                     checked = useDifferent,
                     onCheckedChange = { on ->
                         block.colorModeState = if (on) {
@@ -1931,6 +1936,8 @@ private fun ColorSection(
             ) {
                 // 自动 — 按块序号散色(渲染时由 hueForCourse 计算)
                 AutoColorDot(
+                    modifier = Modifier.testTag("course-color-auto"),
+                    enabled = enabled,
                     selected = block.colorModeState == com.lingion.sleepy.data.entity.CourseColorMode.AUTO,
                     onClick = {
                         block.colorModeState = com.lingion.sleepy.data.entity.CourseColorMode.AUTO
@@ -1939,6 +1946,8 @@ private fun ColorSection(
                 )
                 // 自定义 — 弹出调色盘选固定色
                 CustomColorDot(
+                    modifier = Modifier.testTag("course-color-custom"),
+                    enabled = enabled,
                     hex = block.colorState.takeIf {
                         it.isNotBlank() && block.colorModeState == com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM
                     },
@@ -2072,9 +2081,9 @@ private fun NumberField(
 // ── 课程颜色选择器 ──
 
 @Composable
-private fun AutoColorDot(selected: Boolean, onClick: () -> Unit) {
+private fun AutoColorDot(selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     // IconButton 包裹 — 裸 32dp 圆点的涟漪半径过小且无 48dp 最小触达区
-    IconButton(onClick = onClick) {
+    IconButton(onClick = onClick, modifier = modifier, enabled = enabled) {
         Box(
             modifier = Modifier
                 .size(32.dp)
@@ -2095,7 +2104,7 @@ private fun AutoColorDot(selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun CustomColorDot(hex: String?, onClick: () -> Unit) {
+private fun CustomColorDot(hex: String?, onClick: () -> Unit, modifier: Modifier = Modifier, enabled: Boolean = true) {
     val c = if (hex != null) {
         runCatching { Color(android.graphics.Color.parseColor(hex)) }
             .getOrDefault(MaterialTheme.colorScheme.surfaceVariant)
@@ -2103,7 +2112,7 @@ private fun CustomColorDot(hex: String?, onClick: () -> Unit) {
         MaterialTheme.colorScheme.surfaceVariant
     }
     // IconButton 包裹 — 裸 32dp 圆点的涟漪半径过小且无 48dp 最小触达区
-    IconButton(onClick = onClick) {
+    IconButton(onClick = onClick, modifier = modifier, enabled = enabled) {
         Box(
             modifier = Modifier
                 .size(32.dp)

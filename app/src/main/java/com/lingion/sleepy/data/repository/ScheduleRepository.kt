@@ -104,6 +104,10 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     // ========== TimeTable ==========
 
+    private fun requirePositiveWeekCount(table: TimeTableEntity) {
+        require(table.maxWeek > 0) { "Timetable duration must be a positive number of weeks" }
+    }
+
     fun observeAllTables(): Flow<List<TimeTableEntity>> = tableDao.observeAll()
 
     /** All tables with effective switch values, shared by settings and notification consumers. */
@@ -247,6 +251,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun getDefaultTable(): TimeTableEntity? = tableDao.getDefault()
 
     suspend fun insertTable(table: TimeTableEntity): Long {
+        requirePositiveWeekCount(table)
         captureForUndo()
         val id = tableDao.insert(table)
         if (table.isDefault || tableDao.count() == 1) {
@@ -263,6 +268,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         bindPeriodTableId: Long? = null,
         keepGroups: Boolean = false
     ): Long {
+        requirePositiveWeekCount(table)
         val id = importNewTableAtomically(object : NewTableImportStore {
             override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction {
                 val bound = bindPeriodTableId?.let { periodTableDao.getById(it) }
@@ -320,6 +326,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun updateTable(table: TimeTableEntity) {
+        requirePositiveWeekCount(table)
         captureForUndo()
         tableDao.update(table)
         onDataChanged()
@@ -341,6 +348,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         table: TimeTableEntity,
         writeTimeDomain: Boolean = false
     ) {
+        requirePositiveWeekCount(table)
         val current = tableDao.getById(table.id) ?: return
         captureForUndo()
         val merged = current.copy(
@@ -366,6 +374,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         table: TimeTableEntity,
         periodTable: com.lingion.sleepy.data.entity.PeriodTableEntity
     ) {
+        requirePositiveWeekCount(table)
         val current = tableDao.getById(table.id) ?: return
         if (periodTableDao.getById(periodTable.id) == null) return
         captureForUndo()
@@ -395,6 +404,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         periodTableId: Long?,
         periodContent: com.lingion.sleepy.data.entity.PeriodTableEntity? = null
     ) {
+        requirePositiveWeekCount(table)
         val current = tableDao.getById(table.id) ?: return
         if (periodTableId != null && periodTableDao.getById(periodTableId) == null) return
         if (periodContent != null && periodTableDao.getById(periodContent.id) == null) return
@@ -444,6 +454,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         table: TimeTableEntity,
         previousTimeJson: String? = null
     ) {
+        requirePositiveWeekCount(table)
         captureForUndo()
         db.withTransaction {
             val current = tableDao.getById(table.id)

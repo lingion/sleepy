@@ -113,7 +113,8 @@ class SingleOccurrenceCourseFormTest {
         fill("single-occurrence-teacher", "Teacher")
         fill("single-occurrence-room", "A101")
         fill("single-occurrence-note", "Bring a book")
-        compose.onNodeWithTag("single-occurrence-color").performScrollTo().performClick()
+        compose.onNodeWithTag("course-color-custom-switch").performScrollTo().performClick()
+        compose.onNodeWithTag("course-color-custom").performScrollTo().performClick()
         compose.onNodeWithText(app.getString(R.string.action_confirm)).performClick()
         compose.onNodeWithTag("single-occurrence-more").performClick()
         compose.onNodeWithTag("single-occurrence-form").assertDoesNotExist()
@@ -141,5 +142,22 @@ class SingleOccurrenceCourseFormTest {
         show(initialSlot = null)
         compose.onNodeWithTag("single-occurrence-form").assertDoesNotExist()
         compose.onNodeWithText(app.getString(R.string.create_course)).assertIsDisplayed()
+    }
+
+    @Test fun colorUsesTheFullEditorsGroupAutoAndCustomModes() {
+        show()
+        compose.onNodeWithTag("course-color-custom-switch").performScrollTo().assertIsOff()
+        compose.onNodeWithTag("course-color-auto").assertDoesNotExist()
+        compose.onNodeWithTag("course-color-custom-switch").performClick().assertIsOn()
+        compose.onNodeWithTag("course-color-auto").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("course-color-custom").performScrollTo().performClick()
+        compose.onNodeWithText(app.getString(R.string.action_confirm)).performClick()
+        compose.onNodeWithTag("course-color-auto").performClick()
+        fill("single-occurrence-name", "Auto course")
+        compose.onNodeWithTag("single-occurrence-save").performClick()
+        waitFor { saved }
+        val row = runBlocking { repo.getCourses(1).single() }
+        assertEquals(CourseColorMode.AUTO, row.colorMode)
+        assertEquals("", row.color)
     }
 }

@@ -183,6 +183,15 @@ object MigrationDatabaseCodec {
         importDrafts = importDraftDao.getAll().map { it.toRow() },
     )
 
+    private fun DatabaseSnapshot.recoveredTimeTables(): List<TimeTableRow> {
+        val lastCourseWeeks = courses.groupingBy { it.tableId }
+            .fold(1) { lastWeek, course -> maxOf(lastWeek, course.endWeek) }
+        return timeTables.map { row ->
+            if (row.maxWeek > 0) row
+            else row.copy(maxWeek = lastCourseWeeks[row.id] ?: 1)
+        }
+    }
+
     /**
      * 覆盖导入: 四表全量替换, 保留包内原始 ID 与关系。
      * 写入顺序遵循 FK: period_tables → time_tables → courses; import_drafts 无 FK。
@@ -199,7 +208,7 @@ object MigrationDatabaseCodec {
         timeTableDao.deleteAll()
         periodTableDao.deleteAll()
         periodTableDao.insertAll(snapshot.periodTables.map { it.toEntity() })
-        timeTableDao.insertAll(snapshot.timeTables.map { it.toEntity() })
+        timeTableDao.insertAll(snapshot.recoveredTimeTables().map { it.toEntity() })
         snapshot.courses.forEach { courseDao.insertKeepId(it.toEntity()) }
         snapshot.importDrafts.forEach { importDraftDao.upsert(it.toEntity()) }
     }
@@ -223,7 +232,7 @@ object MigrationDatabaseCodec {
             periodIdMap[row.id] = newId
         }
         val tableIdMap = HashMap<Long, Long>()
-        for (row in snapshot.timeTables) {
+        for (row in snapshot.recoveredTimeTables()) {
             val newId = timeTableDao.insert(
                 row.toEntity().copy(
                     id = 0,
