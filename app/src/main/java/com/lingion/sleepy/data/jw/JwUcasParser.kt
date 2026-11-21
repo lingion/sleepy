@@ -319,30 +319,10 @@ class JwUcasParser(source: String) : JwParser(source) {
         val trimmed = HTML_COMMENT_RE.replace(raw, "").trim()
         if (trimmed.isEmpty()) return null
         if (trimmed.startsWith('[')) return runCatching { JSONArray(trimmed) }.getOrNull()
-        // 跳过前导 HTML 注释 / 空白, 找首个 '{' 或 '[' 真正 JSON 起点
-        // 优先 '{' — 顶层对象更常见, 避开注释里 `[2:]` 这类方括号误命中
-        val objStart = trimmed.indexOf('{')
-        val arrStart = trimmed.indexOf('[')
-        val jsonStart = when {
-            objStart >= 0 -> objStart
-            arrStart >= 0 -> arrStart
-            else -> return null
-        }
-        val jsonBody = trimmed.substring(jsonStart)
-        return try {
-            when (jsonBody.first()) {
-                '{' -> {
-                    val obj = JSONObject(jsonBody)
-                    obj.optJSONArray("courseTimeList")
-                        ?: obj.optJSONObject("data")?.optJSONArray("courseTimeList")
-                }
-                '[' -> JSONArray(jsonBody)
-                else -> null
-            }
-        } catch (e: Exception) {
-            // JSON 解析失败时返回 null 让调用方回退 HTML 路径; 不打日志避免导入侧噪音
-            null
-        }
+        val literal = JwScriptJson.find(trimmed) {
+            (it.value as? JSONObject)?.optJSONArray("courseTimeList") != null
+        } ?: return null
+        return (literal.value as JSONObject).optJSONArray("courseTimeList")
     }
 
     /**
