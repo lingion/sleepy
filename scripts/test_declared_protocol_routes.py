@@ -21,11 +21,16 @@ class DeclaredProtocolRoutesTest(unittest.TestCase):
         reviewed = [a for a in read('scripts/data/school_import_admissions.json')
                     if a.get('protocolRouteReview')]
         self.assertTrue(reviewed)
+        verified_by_report = {'同济大学 - 研究生'}
         for admission in reviewed:
             with self.subTest(school=admission['name']):
                 review = admission['protocolRouteReview']
-                self.assertFalse(review['authenticatedImportTested'])
-                self.assertFalse(admission.get('authenticatedImportTested', False))
+                if admission['name'] in verified_by_report:
+                    self.assertTrue(review['authenticatedImportTested'])
+                    self.assertTrue(admission.get('authenticatedImportTested', False))
+                else:
+                    self.assertFalse(review['authenticatedImportTested'])
+                    self.assertFalse(admission.get('authenticatedImportTested', False))
                 self.assertIn(admission['mappedType'], routes)
                 self.assertTrue(review['sourceRows'])
                 for row in review['sourceRows']:
@@ -38,13 +43,17 @@ class DeclaredProtocolRoutesTest(unittest.TestCase):
     def test_generated_routes_keep_unverified_status(self):
         catalog = {r['name']: r for r in read('app/src/main/assets/schools.json')}
         baseline = {r['name'] for r in read('scripts/data/school_catalog_baseline.json')}
+        verified_by_report = {'同济大学 - 研究生'}
         for admission in read('scripts/data/school_import_admissions.json'):
             if not admission.get('protocolRouteReview'):
                 continue
             with self.subTest(school=admission['name']):
                 self.assertNotIn(admission['name'], baseline)
                 row = catalog[admission['name']]
-                self.assertIn(row['status'], ('unverified', 'grad_unverified', 'pending', 'grad_pending'))
+                if admission['name'] in verified_by_report:
+                    self.assertIn(row['status'], ('supported', 'grad_supported'))
+                else:
+                    self.assertIn(row['status'], ('unverified', 'grad_unverified', 'pending', 'grad_pending'))
                 if row['url']:
                     self.assertEqual(admission['mappedType'], row['type'])
                     self.assertEqual(admission['probe']['finalUrl'], row['url'])
