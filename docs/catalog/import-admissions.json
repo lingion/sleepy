@@ -36341,9 +36341,9 @@
     "http": 200,
     "title": "同济大学",
     "fingerprints": [],
+    "authenticatedImportTested": true,
     "limitation": "User supplied a Sleepy import-success report on 2026-11-25: app 1.0.67 (10067), catalogId wakeup:fd1f929ef2d8152a969e, protocol tju, url https://1.tongji.edu.cn/, 19 courses imported through the unchanged catalog URL. Reported status was grad_unverified; this report confirms authenticated graduate import, not an independent public-page ownership audit.",
-    "ownershipAction": "retained-wakeup-662-declared-owner",
-    "authenticatedImportTested": true
+    "ownershipAction": "retained-wakeup-662-declared-owner"
   },
   {
     "catalogId": "wakeup:0f01dbe4a5bcb31a2c3f",
