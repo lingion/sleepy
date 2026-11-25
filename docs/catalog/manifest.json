@@ -4,11 +4,11 @@
   "catalogCount": 4140,
   "statusCounts": {
     "supported": 353,
-    "grad_supported": 2,
+    "grad_supported": 3,
     "unverified": 2478,
     "grad_pending": 253,
     "pending": 1006,
-    "grad_unverified": 48
+    "grad_unverified": 47
   },
   "sourceCounts": {
     "official": 3377,
@@ -23622,7 +23622,7 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "https://1.tongji.edu.cn/",
-        "authenticatedImportTested": false
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "wakeup:7e6b956e4ef142c42c8c",

@@ -36087,7 +36087,7 @@
     "name": "同济大学 - 研究生",
     "url": "https://1.tongji.edu.cn/",
     "type": "tju",
-    "status": "grad_unverified",
+    "status": "grad_supported",
     "aliases": [],
     "sortKeyFull": "tongjidaxueyanjiusheng",
     "enableFetch": false,

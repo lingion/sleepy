@@ -1,6 +1,6 @@
 # 学校目录
 
-> 共 4140 个目录条目：已实现配置 355；待验证、需确认后尝试 2526；待适配 1259。数据基准：2026-10-14。
+> 共 4140 个目录条目：已实现配置 356；待验证、需确认后尝试 2525；待适配 1259。数据基准：2026-10-14。
 
 目录收录不等于教务导入支持。已实现配置沿用历史状态，也不保证每校当前登录均已实机验证；待验证条目仅有公开入口和候选协议证据，未登录测试；待适配条目没有可启用的导入配置。
 
@@ -3343,7 +3343,7 @@
 | 通化市职工大学 | 待适配 | tonghuashizhigongdaxue |  |  | moe-2026-adult; moe:4222050242 |
 | 通化医药健康职业学院 | 待验证·可尝试 | tonghuayiyaojiankangzhiyexueyuan | https://www.thyyjkzyxy.org.cn/index.php | jw_home | moe-2026-regular, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4122014744 |
 | 同济大学 | 待验证·可尝试 | tongjidaxue | https://1.tongji.edu.cn/ | sg_asset | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4131010247 |
-| 同济大学 - 研究生 | 研究生·待验证·可尝试 | tongjidaxueyanjiusheng | https://1.tongji.edu.cn/ | tju | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fd1f929ef2d8152a969e |
+| 同济大学 - 研究生 | 研究生·已实现配置 | tongjidaxueyanjiusheng | https://1.tongji.edu.cn/ | tju | wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; wakeup:fd1f929ef2d8152a969e |
 | 同济大学浙江学院 | 待适配 | tongjidaxuezhejiangxueyuan |  |  | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4133014206 |
 | 通辽职业学院 | 待验证·可尝试 | tongliaozhiyexueyuan | https://xg.tlzyxy.com/p/index/index.html | zf_new | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4115013740 |
 | 铜陵学院 | 待验证·可尝试 | tonglingxueyuan | https://auth.tlu.edu.cn/zhxy/ | qz | moe-2026-regular, wakeup-52.36-user-attachment, wakeup-6.1.06-asset, wakeup-6.6.2-official-asset; moe:4134010383 |
