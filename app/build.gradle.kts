@@ -309,7 +309,7 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.compose.ui.test.junit4)
     // ConsoleAcceptanceAndroidTest makes real HTTP requests to the debug server.
-    androidTestImplementation("com.squareup.okhttp3:okhttp:4.12.0")
+    androidTestImplementation("com.squareup.okhttp3:okhttp:5.5.1")
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
 }
