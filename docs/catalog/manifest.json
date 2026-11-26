@@ -4,11 +4,11 @@
   "catalogCount": 4140,
   "statusCounts": {
     "supported": 353,
-    "grad_supported": 2,
+    "grad_supported": 3,
     "unverified": 2478,
     "grad_pending": 253,
     "pending": 1006,
-    "grad_unverified": 48
+    "grad_unverified": 47
   },
   "sourceCounts": {
     "official": 3377,
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "e5b4ba6052f65777c52cc4d07dfcb92929ea5a2cd1ad2cadefc313cd12ac910f"
+      "sha256": "a663755ceca391aac653e2285a84a8b04d5880a28d80def9587330fc1ca5b227"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "c790490ecb927965615fb12db904903870b69bb8c0101dad1e65f616f8e1dc19"
+      "sha256": "3565ccb65deee544305cbb3c4122e0485edc93a26cfc2c4337e2a53c72c969fa"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -23622,7 +23622,7 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "https://1.tongji.edu.cn/",
-        "authenticatedImportTested": false
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "wakeup:7e6b956e4ef142c42c8c",

@@ -203,12 +203,27 @@ class Schools179CrossValidationTest {
         // 2026-11-05 青岛大学 (sg_asset，贡献者回报实测导入成功，PR #326) → 353
         // 2026-11-06 南通理工学院（2023届及之后）(zf_new，学生回传实测 42 门课导入成功) → 354
         val supported = JwImportViewModel.parseSchoolsJson(schoolsJson).filter { it.isSupported }
-        assertEquals(355, supported.size)
+        assertEquals(356, supported.size)
         assertEquals(352, supported.count {
-            it.name != "青岛大学" && it.name != "南通理工学院（2023届及之后）" && it.name != "江西科技师范大学"
+            it.name != "青岛大学" && it.name != "南通理工学院（2023届及之后）" && it.name != "江西科技师范大学" && it.name != "同济大学 - 研究生"
         })
         assertEquals(JwProtocol.TYPE_SG_ASSET, supported.single { it.name == "青岛大学" }.type)
         assertEquals(JwProtocol.TYPE_ZF_NEW, supported.single { it.name == "南通理工学院（2023届及之后）" }.type)
+    }
+
+    @Test
+    fun `TJU graduate entry is grad_supported after 2026-11-25 import report`() {
+        val school = JwImportViewModel.parseSchoolsJson(schoolsJson)
+            .single { it.catalogId == "wakeup:fd1f929ef2d8152a969e" }
+        assertEquals("同济大学 - 研究生", school.name)
+        assertEquals(JwSchoolInfo.STATUS_GRAD_SUPPORTED, school.status)
+        assertEquals(JwProtocol.TYPE_TJU, school.type)
+        assertEquals("https://1.tongji.edu.cn/", school.url)
+        assertTrue(school.isSupported)
+        assertTrue(school.isGrad)
+        assertTrue(school.canImport)
+        assertFalse(school.isUnverified)
+        assertFalse(school.enableFetch)
     }
 
     @Test
