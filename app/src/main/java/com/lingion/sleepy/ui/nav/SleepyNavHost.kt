@@ -183,6 +183,10 @@ internal fun SleepyNavHost(
     // 转场底衬: content 家族缩放动画(0.92↔1)期间页面四周会露出底层,
     // 无底衬时露的是窗口默认白底(Theme.Material.Light.NoActionBar),
     // 进出子页动画即现白边。铺一层 background 色兜住缩放边缘, 随主题即时切换。
+    val hostContext = LocalContext.current
+    val startView by AppPrefs.startViewFlow(hostContext).collectAsState(initial = AppPrefs.getStartView(hostContext))
+    val todayFirst = startView == "today"
+    val homeTab = if (todayFirst) Tab.Today else Tab.Schedule
     Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
     NavDisplay(
         backStack = nav,
@@ -279,7 +283,7 @@ internal fun SleepyNavHost(
                 onSaved = {
                     session.clearEditCourse()
                     if (!navigator.pop()) { /* 同上 */ }
-                    setCurrentTab(Tab.Schedule)
+                    setCurrentTab(homeTab)
                 },
                 editingCourse = editingCourse,
                 initialSlot = if (key.week > 0) com.lingion.sleepy.ui.screen.edit.InitialCourseSlot(key.tableId, key.week, key.day, key.node, key.step) else null,
@@ -387,7 +391,7 @@ internal fun SleepyNavHost(
                 onDeleted = {
                     pending = null; prevDefault = null
                     navigator.pop()
-                    setCurrentTab(Tab.Schedule)
+                    setCurrentTab(homeTab)
                 },
             )
         }
@@ -590,15 +594,22 @@ private fun MainRoute(
     updateNoticeVisible: Boolean,
     pillBarState: PillBarState,
 ) {
-    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine, motionKey = it.motionKey) }
     val holder: SaveableStateHolder = rememberSaveableStateHolder()
-    // 双击退出只在课表页生效;其它 tab 第一次返回回课表页。
     val ctxForExit = LocalContext.current
-    var lastBackAt by remember { mutableStateOf(0L) }
-    BackHandler(enabled = currentTab != Tab.Schedule) {
-        setCurrentTab(Tab.Schedule)
+    val startView by AppPrefs.startViewFlow(ctxForExit).collectAsState(initial = AppPrefs.getStartView(ctxForExit))
+    val todayFirst = startView == "today"
+    val homeTab = if (todayFirst) Tab.Today else Tab.Schedule
+    val orderedTabs = remember(todayFirst) {
+        if (todayFirst) listOf(Tab.Today, Tab.Schedule, Tab.Manage, Tab.Mine)
+        else listOf(Tab.Schedule, Tab.Today, Tab.Manage, Tab.Mine)
     }
-    BackHandler(enabled = currentTab == Tab.Schedule) {
+    val navItems = orderedTabs.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine, motionKey = it.motionKey) }
+    // 双击退出只在默认主页生效;其它 tab 第一次返回回默认主页。
+    var lastBackAt by remember { mutableStateOf(0L) }
+    BackHandler(enabled = currentTab != homeTab) {
+        setCurrentTab(homeTab)
+    }
+    BackHandler(enabled = currentTab == homeTab) {
         val now = android.os.SystemClock.elapsedRealtime()
         if (now - lastBackAt < 2000L) {
             (ctxForExit as? android.app.Activity)?.finish()
@@ -848,8 +859,8 @@ private fun MainRoute(
                 PillNavigationBar(
                     modifier = Modifier.testTag("app_navigation_dock"),
                     items = navItems,
-                    selectedIndex = currentTab.ordinal,
-                    onSelect = { setCurrentTab(Tab.entries[it]) },
+                    selectedIndex = orderedTabs.indexOf(currentTab).coerceAtLeast(0),
+                    onSelect = { orderedTabs.getOrNull(it)?.let(setCurrentTab) },
                     dock = true,
                     state = pillBarState,
                     backdrop = backdrop,
@@ -860,7 +871,8 @@ private fun MainRoute(
         // Compact + 贴底: 官方有 NavigationBar → 用官方(替自研贴底形态)
         // 2026-11-08 报障"更新后底栏图标不动"正落在此分支: 官方 item 图标此前
         // 从未接驱动 → 接线表 + 按压跟踪在此挂上(dock 分支不受影响)。
-        val officialMotion = rememberOfficialNavIconMotion(Tab.entries.map { it.motionKey }, currentTab.ordinal)
+        val orderedIndex = orderedTabs.indexOf(currentTab).coerceAtLeast(0)
+        val officialMotion = rememberOfficialNavIconMotion(orderedTabs.map { it.motionKey }, orderedIndex)
         if (LocalUiStyle.current == UiStyle.LiquidGlass) {
             // Sample the page behind the bar and keep the measured bar height available to scroll content.
             val backdrop = rememberLayerBackdrop()
@@ -902,13 +914,13 @@ private fun MainRoute(
                         modifier = Modifier.align(Alignment.BottomCenter),
                         onHeightChanged = { barHeightPx = it },
                     ) {
-                        Tab.entries.forEach { tab ->
+                        orderedTabs.forEachIndexed { idx, tab ->
                             NavigationBarItem(
                                 colors = NavigationBarItemDefaults.colors(indicatorColor = colors.secondaryContainer),
-                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
+                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(idx)!!),
                                 selected = currentTab == tab,
                                 onClick = { setCurrentTab(tab) },
-                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
+                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion, motionSlot = idx) },
                                 label = { Text(stringResource(tab.labelRes)) },
                             )
                         }
@@ -921,13 +933,13 @@ private fun MainRoute(
                 containerColor = MaterialTheme.colorScheme.background,
                 bottomBar = {
                     NavigationBar {
-                        Tab.entries.forEach { tab ->
+                        orderedTabs.forEachIndexed { idx, tab ->
                             NavigationBarItem(
                                 colors = NavigationBarItemDefaults.colors(indicatorColor = MaterialTheme.colorScheme.secondaryContainer),
-                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(tab.ordinal)!!),
+                                modifier = Modifier.observePressTracker(officialMotion.pressTrackerFor(idx)!!),
                                 selected = currentTab == tab,
                                 onClick = { setCurrentTab(tab) },
-                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion) },
+                                icon = { NavigationTabIcon(tab, updateNoticeVisible && tab == Tab.Mine, officialMotion, motionSlot = idx) },
                                 label = { Text(stringResource(tab.labelRes)) },
                             )
                         }
@@ -981,9 +993,9 @@ private fun GlassNavigationIcon(
 }
 
 @Composable
-internal fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean, motion: OfficialNavIconMotion? = null) {
+internal fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean, motion: OfficialNavIconMotion? = null, motionSlot: Int = tab.ordinal) {
     val colors = MaterialTheme.colorScheme
-    val driver = motion?.driverFor(tab.ordinal)
+    val driver = motion?.driverFor(motionSlot)
     if (!showUpdateDot) {
         NavPartIcon(driver = driver, fallback = tab.icon, iconSize = 24.dp)
         return

@@ -65,11 +65,23 @@ internal fun CommonDisplaySettings() {
         SettingsFlatCard(
             title = stringResource(R.string.settings_appearance_default_view),
             subtitle = stringResource(R.string.settings_appearance_default_view_sub),
-            options = listOf(stringResource(R.string.settings_start_view_full), stringResource(R.string.settings_start_view_cards)),
-            selectedKey = if (startView == "full") 0 else 1,
+            options = listOf(
+                stringResource(R.string.settings_start_view_full),
+                stringResource(R.string.settings_start_view_cards),
+                stringResource(R.string.tab_today),
+            ),
+            selectedKey = when (startView) {
+                "full" -> 0
+                "today" -> 2
+                else -> 1
+            },
             dbg = "display_start_view",
             onSelect = { index ->
-                startView = if (index == 0) "full" else "cards"
+                startView = when (index) {
+                    0 -> "full"
+                    2 -> "today"
+                    else -> "cards"
+                }
                 AppPrefs.setStartView(context, startView)
             },
         )
