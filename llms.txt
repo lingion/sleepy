@@ -46,8 +46,8 @@ Current-main WebDAV capability (not included in the v1.0.64 release): Android us
 
 The v1.0.64 app/src/main/assets/schools.json snapshot contains 4140 unique catalog entries. Status normalization follows JwSchoolInfo:
 
-- Configured: 355, comprising supported 353 and grad_supported 3. Missing status fields normalize to supported and are not an additional subtotal.
-- Unverified: 2526, comprising unverified 2478 and grad_unverified 47.
+- Configured: 357, comprising supported 354 and grad_supported 3. Missing status fields normalize to supported and are not an additional subtotal.
+- Unverified: 2524, comprising unverified 2477 and grad_unverified 47.
 - Pending: 1259, comprising pending 1006 and grad_pending 253; these cannot directly start academic imports.
 
 The website excludes pending records and therefore lists 2881 entries. This is not a live-verified school count or a guarantee of successful import. A usable URL, registered parser, school availability and sometimes explicit confirmation are still required. Sources and boundaries are recorded in docs/catalog/manifest.json and docs/catalog/README.md.

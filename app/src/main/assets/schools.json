@@ -28233,7 +28233,7 @@
     "name": "青岛城市学院",
     "url": "http://jwgl.qdc.edu.cn/jwglxt/xtgl/login_slogin.html",
     "type": "zf_new",
-    "status": "unverified",
+    "status": "supported",
     "aliases": [],
     "sortKeyFull": "qingdaochengshixueyuan",
     "enableFetch": false,

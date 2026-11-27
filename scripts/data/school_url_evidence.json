@@ -57203,9 +57203,19 @@
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
-      "availability": "public-page",
-      "authenticatedImportTested": false,
-      "defects": []
+      "availability": "authenticated-import-tested",
+      "authenticatedImportTested": true,
+      "defects": [],
+      "authenticatedImportReport": {
+        "source": "user-supplied-sleepy-import-success-report",
+        "date": "2026-11-27",
+        "versionName": "1.0.67-debug",
+        "versionCode": 10067,
+        "reportedStatus": "unverified",
+        "protocol": "zf_new",
+        "url": "http://jwgl.qdc.edu.cn/jwglxt/xtgl/login_slogin.html",
+        "courseCount": 53
+      }
     },
     {
       "catalogId": "moe:4137014709",
