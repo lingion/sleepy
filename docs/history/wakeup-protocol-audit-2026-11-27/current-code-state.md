@@ -18,7 +18,7 @@
 - JwThuScriptParser.kt
 - JwUndergradHtmlParser.kt
 
-新增回归文件为以下三个。
+新增回归文件为以下四个。
 
 - app/src/test/java/com/lingion/sleepy/data/jw/JwStaticScriptIdentifierRenameTest.kt
 - app/src/test/java/com/lingion/sleepy/data/jw/JwEcuplRenamedScriptIdentifiersTest.kt
@@ -33,17 +33,17 @@ ECUPL 脚本活动绑定只接受任务前的真实赋值或声明。找不到�
 
 旧树维的置信度识别要求存在真实的 TaskActivity 代码，并且存在活动数组写入或任意接收者的 marshalTable。它仍保留旧空课表和最小采集片段的成功判定。
 
-ECUPL 年表解析和来源作息选择复用 TaskActivity 与 marshalTable 结构判据，成员点号两侧允许空白，不再要求固定的 `table0` 或 ASCII 标识符。shuwei_old 的标题兼容读取相邻真实字符串累加器，可适配改名后的中文标题变量，同时保留静态字符串限制。
+ECUPL 年表解析和来源作息选择复用 TaskActivity 与活动表接收者对应的 marshalTable 参数，允许该调用位于另一个脚本块，也不再要求固定的 `table0` 或 ASCII 标识符。shuwei_old 仅在相邻字符串累加器唯一时用其兼容旧标题，否则保留 TaskActivity 中明确声明的课程名。
 
 ## 测试
 
 三个独立测试组均通过。
 
-脚本解析组执行以下命令，206 项通过。
+脚本解析组执行以下命令，213 项通过。
 
     ANDROID_HOME="$HOME/Library/Android/sdk" ./gradlew --no-daemon :app:testDebugUnitTest --tests 'com.lingion.sleepy.data.jw.JwStaticScriptIdentifierRenameTest' --tests 'com.lingion.sleepy.data.jw.JwLegacyScriptBindingTest' --tests 'com.lingion.sleepy.data.jw.JwClassicEams*Test' --tests 'com.lingion.sleepy.data.jw.JwScript*ResilienceTest' --tests 'com.lingion.sleepy.data.jw.JwStaticScriptVariationsTest' --tests 'com.lingion.sleepy.data.jw.JwPostgrad*Test' --tests 'com.lingion.sleepy.data.jw.JwThu*Test' --offline --console=plain --max-workers=2
 
-ECUPL 组执行以下命令，60 项通过。
+ECUPL 组执行以下命令，62 项通过。
 
     ANDROID_HOME="$HOME/Library/Android/sdk" ./gradlew --no-daemon :app:testDebugUnitTest --tests 'com.lingion.sleepy.data.jw.JwEcuplRenamedScriptIdentifiersTest' --tests 'com.lingion.sleepy.data.jw.JwEcuplMixedSourcePeriodsTest' --tests 'com.lingion.sleepy.data.jw.JwSourcePeriodsTest' --tests 'com.lingion.sleepy.data.jw.JwEcupl*Test' --offline --console=plain --max-workers=2
 
@@ -57,8 +57,10 @@ ECUPL 组执行以下命令，60 项通过。
 - 经典 EAMS 的 marshalTable 之后存在无关数字赋值。
 - shuwei_old 使用中文活动名、教师名、坐标名和表格名。
 - shuwei_old 改名后的中文标题累加器替代占位标题。
+- shuwei_old 存在多个字符串累加器时保留 TaskActivity 明确声明的课程名。
 - ECUPL 混合年表和脚本页改名表格、活动、节数及坐标绑定后仍选择年表作息。
 - ECUPL marshalTable 接收者改名并在成员点号两侧增加空白后仍选择年表数据和作息。
+- ECUPL 不把其他表对象的 marshalTable 误认作年表收尾，并保留同一活动表跨脚本绑定。
 - 既有脚本改名、声明方式、成员路径空白、注释、字符串和正则伪数据。
 
 ## 证据边界和剩余限制
