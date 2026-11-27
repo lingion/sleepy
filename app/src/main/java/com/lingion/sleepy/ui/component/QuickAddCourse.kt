@@ -16,16 +16,19 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.R
@@ -34,6 +37,8 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 data class QuickAddRange(val day: Int, val startNode: Int, val endNode: Int) {
     val step: Int get() = endNode - startNode + 1
 }
+
+private val QuickAddResizeHandleHeight = 14.dp
 
 @Stable
 class QuickAddCourseState {
@@ -69,9 +74,15 @@ internal fun QuickAddCourseCapsule(
     val colors = MaterialTheme.colorScheme
     val shape = RoundedCornerShape(14.dp)
     val label = stringResource(R.string.occurrence_quick_add, selection.startNode, selection.endNode)
+    val handleHeight = with(LocalDensity.current) { QuickAddResizeHandleHeight.toPx() }
+    val pointerGestureFilter = remember(handleHeight) {
+        { position: Offset, size: IntSize ->
+            position.y >= handleHeight && position.y <= size.height - handleHeight
+        }
+    }
     Box(modifier.onGloballyPositioned { state.capsuleBounds = it.boundsInRoot() }
         .testTag("quick-add-capsule")
-        .glassControl(shape = shape, tint = colors.primaryContainer)
+        .glassControl(shape = shape, tint = colors.primaryContainer, pointerGestureFilter = pointerGestureFilter)
         .background(controlFill(colors.primaryContainer), shape)
         .border(1.dp, colors.primary, shape)
         .semantics { contentDescription = label }
@@ -82,7 +93,7 @@ internal fun QuickAddCourseCapsule(
             val resize by rememberUpdatedState(onResize)
             val handleLabel = stringResource(if (top) R.string.occurrence_quick_add_start else R.string.occurrence_quick_add_end)
             Box(Modifier.align(if (top) Alignment.TopCenter else Alignment.BottomCenter)
-                .fillMaxWidth().height(14.dp)
+                .fillMaxWidth().height(QuickAddResizeHandleHeight)
                 .testTag(if (top) "quick-add-top" else "quick-add-bottom")
                 .semantics { contentDescription = handleLabel }
                 .pointerInput(top) {

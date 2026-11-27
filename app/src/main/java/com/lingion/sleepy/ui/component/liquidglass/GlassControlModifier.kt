@@ -61,7 +61,8 @@ internal fun Modifier.observeGlassControlPointers(
     enabled: Boolean,
     grouped: Boolean = false,
     interactionSource: MutableInteractionSource? = null,
-): Modifier = pointerInput(interaction, enabled, grouped, interactionSource) {
+    gestureFilter: (Offset, IntSize) -> Boolean = { _, _ -> true },
+): Modifier = pointerInput(interaction, enabled, grouped, interactionSource, gestureFilter) {
     if (!enabled) return@pointerInput
     val motion = interaction.motion
     try {
@@ -70,6 +71,7 @@ internal fun Modifier.observeGlassControlPointers(
                 val event = awaitPointerEvent(PointerEventPass.Initial)
                 if (interaction.pointerId == null) {
                     val pointer = event.changes.firstOrNull { it.pressed && !it.previousPressed } ?: continue
+                    if (!gestureFilter(pointer.position, size)) continue
                     interaction.pointerId = pointer.id
                     interaction.rawPressOrigin = pointer.position
                     interaction.accepted = !grouped || interactionSource == null
@@ -114,6 +116,7 @@ fun Modifier.glassControl(
     exportedBackdrop: LayerBackdrop? = null,
     sharedInteraction: GlassControlInteraction? = null,
     backdropOverride: Backdrop? = null,
+    pointerGestureFilter: (Offset, IntSize) -> Boolean = { _, _ -> true },
 ): Modifier {
     check(!LocalGlassSourceContent.current) { "An optical consumer cannot be recorded as an ordinary source" }
     val host = LocalGlassHost.current
@@ -192,7 +195,7 @@ fun Modifier.glassControl(
         // Observe in the fixed layout coordinates, before the painted layer
         // moves. Leave click/scroll ownership to the existing gesture handlers.
         .then(if (sharedInteraction == null) Modifier.observeGlassControlPointers(
-            interaction, enabled, grouped, interactionSource,
+            interaction, enabled, grouped, interactionSource, pointerGestureFilter,
         ) else Modifier)
         .graphicsLayer {
             val growth = 16f * density / size.maxDimension.coerceAtLeast(1f)

@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.component
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.unit.dp
@@ -82,6 +83,63 @@ class CourseOccurrenceGestureTest {
         compose.runOnIdle { assertNull(added) }
         compose.onNodeWithTag("quick-add-capsule").performTouchInput { click() }
         compose.runOnIdle { assertEquals(Triple(2, 2, 3), added) }
+    }
+
+    @Test fun liquidGlassModeDoesNotStealCapsuleResizeHandles() {
+        val app = androidx.test.core.app.ApplicationProvider.getApplicationContext<android.content.Context>()
+        val previous = com.lingion.sleepy.util.AppPrefs.getUiStyle(app)
+        com.lingion.sleepy.util.AppPrefs.setUiStyle(app, com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass)
+        try {
+            var added: Triple<Int, Int, Int>? = null
+            var activeStyle: com.lingion.sleepy.ui.theme.UiStyle? = null
+            var hasGlassHost = false
+            compose.setContent {
+                SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+                    com.lingion.sleepy.ui.component.liquidglass.GlassHost(Modifier.size(360.dp, 640.dp)) {
+                        activeStyle = com.lingion.sleepy.ui.theme.LocalUiStyle.current
+                        hasGlassHost = com.lingion.sleepy.ui.component.liquidglass.LocalGlassHost.current != null
+                        Box(Modifier.size(360.dp, 640.dp).testTag("gesture-root")) {
+                            CardsGridView(
+                                courses = listOf(course),
+                                timeSlots = TimeTableUtils.timeSlotsFor(TimeTableUtils.DEFAULT_TIME_JSON),
+                                rowHeightScale = 1.4f,
+                                onCourseClick = {},
+                                onQuickAdd = { day, node, step -> added = Triple(day, node, step) },
+                            )
+                        }
+                    }
+                }
+            }
+            compose.runOnIdle {
+                assertEquals(com.lingion.sleepy.ui.theme.UiStyle.LiquidGlass, activeStyle)
+                assertTrue("LiquidGlass test must run inside an active GlassHost", hasGlassHost)
+            }
+            val rowHeight = compose.onNodeWithTag("add-course-2-3").fetchSemanticsNode().boundsInRoot.top -
+                compose.onNodeWithTag("add-course-2-2").fetchSemanticsNode().boundsInRoot.top
+            compose.onNodeWithTag("add-course-2-3").performTouchInput { click() }
+            val initialLeft = compose.onNodeWithTag("quick-add-capsule").fetchSemanticsNode().boundsInRoot.left
+            val root = compose.onNodeWithTag("gesture-root")
+            fun dragHandle(tag: String, delta: androidx.compose.ui.geometry.Offset) {
+                val rootBounds = root.fetchSemanticsNode().boundsInRoot
+                val start = compose.onNodeWithTag(tag, useUnmergedTree = true)
+                    .fetchSemanticsNode().boundsInRoot.center - rootBounds.topLeft
+                root.performTouchInput { down(start) }
+                repeat(20) { frame ->
+                    root.performTouchInput { moveTo(start + delta * ((frame + 1) / 20f)) }
+                    compose.mainClock.advanceTimeByFrame()
+                }
+                val midLeft = compose.onNodeWithTag("quick-add-capsule").fetchSemanticsNode().boundsInRoot.left
+                assertEquals("Glass drag pull must not translate capsule during handle resize", initialLeft, midLeft, 0.5f)
+                root.performTouchInput { up() }
+            }
+            dragHandle("quick-add-top", androidx.compose.ui.geometry.Offset(12f, -rowHeight))
+            dragHandle("quick-add-bottom", androidx.compose.ui.geometry.Offset(-12f, rowHeight))
+            compose.runOnIdle { assertNull(added) }
+            compose.onNodeWithTag("quick-add-capsule").performTouchInput { click() }
+            compose.runOnIdle { assertEquals(Triple(2, 2, 3), added) }
+        } finally {
+            com.lingion.sleepy.util.AppPrefs.setUiStyle(app, previous)
+        }
     }
 
     @Test fun capsuleCanShrinkToOnePeriodAndWeekChangesDiscardIt() {
