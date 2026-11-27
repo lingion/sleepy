@@ -520,19 +520,20 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
 
     private fun legacyStringAccumulator(script: JwScriptSource, range: IntRange): String? {
         val values = linkedMapOf<String, String>()
-        var accumulatedTarget: String? = null
+        val accumulatedTargets = linkedSetOf<String>()
         for (assignment in script.assignments.filter { it.start in range }) {
             if (!jsIdentifierRegex.matches(assignment.target)) continue
             val part = script.string(assignment.expression) ?: continue
             val value = if (assignment.operator == "+=") {
                 values[assignment.target]?.plus(part) ?: continue
             } else {
+                accumulatedTargets.remove(assignment.target)
                 part
             }
             values[assignment.target] = value
-            if (assignment.operator == "+=") accumulatedTarget = assignment.target
+            if (assignment.operator == "+=") accumulatedTargets += assignment.target
         }
-        return accumulatedTarget?.let(values::get)
+        return accumulatedTargets.singleOrNull()?.let(values::get)
     }
 
     private fun expandedWeeks(ranges: List<Triple<Int, Int, Int>>): List<Int> = ranges.flatMap { (start,end,parity) ->
