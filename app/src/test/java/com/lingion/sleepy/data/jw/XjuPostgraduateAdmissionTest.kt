@@ -48,12 +48,18 @@ class XjuPostgraduateAdmissionTest {
         // 2026-11-06 南通理工学院（2023届及之后）(zf_new，学生回传实测导入通过) → 354
         assertEquals("Existing supported entry count remains 352", 352,
             supported.count {
-                it.name != "青岛大学" && it.name != "南通理工学院（2023届及之后）" && it.name != "江西科技师范大学"
+                it.name != "青岛大学" &&
+                    it.name != "南通理工学院（2023届及之后）" &&
+                    it.name != "江西科技师范大学" &&
+                    it.name != "同济大学 - 研究生" &&
+                    it.name != "青岛城市学院"
             })
-        assertEquals(355, supported.size)
+        assertEquals(357, supported.size)
         assertEquals(JwProtocol.TYPE_SG_ASSET, supported.single { it.name == "青岛大学" }.type)
         assertEquals(JwProtocol.TYPE_ZF_NEW, supported.single { it.name == "南通理工学院（2023届及之后）" }.type)
         assertEquals(JwProtocol.TYPE_ZF_NEW, supported.single { it.catalogId == "moe:4136011318" }.type)
+        assertEquals(JwProtocol.TYPE_TJU, supported.single { it.catalogId == "wakeup:fd1f929ef2d8152a969e" }.type)
+        assertEquals(JwProtocol.TYPE_ZF_NEW, supported.single { it.catalogId == "moe:4137013378" }.type)
     }
 
     // ---------- ② URL 判型 ----------

@@ -2755,6 +2755,10 @@ const val LINKS_JS = """
 /**
  * Passive runtime network recorder. It preserves native fetch/XHR behavior and records only
  * what the page itself can observe. Bodies are intentionally retained unredacted for diagnosis.
+ *
+ * Production contract: `window.__sleepyDiagNetworkRecords` is also consumed in release builds
+ * by `ZF_NEW_FETCH_JS` passive timetable capture (schools that reject replayed fetch requests).
+ * Do not gate installation behind DEBUG or rename the record fields without updating consumers.
  */
 internal const val DIAGNOSTIC_NETWORK_INSTALL_JS = """
 (function(){

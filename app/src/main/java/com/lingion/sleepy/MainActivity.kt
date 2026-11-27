@@ -253,13 +253,15 @@ private fun AppRoot(
     // issue#45: 自研 Overlay 栈 → Navigation Compose。
     // AppRoot 只持「不属于任何路由的会话态」: 当前 tab / 底栏形态 / 课表视图模式。
     // 导航栈、页面状态保存、返回手势全部交给 NavHost(见 SleepyNavHost.kt)。
-    var currentTab by rememberSaveable { mutableStateOf(Tab.Schedule) }
     val context = LocalContext.current
+    var currentTab by rememberSaveable {
+        mutableStateOf(if (AppPrefs.getStartView(context) == "today") Tab.Today else Tab.Schedule)
+    }
     // 课表视图模式(周视图/网格) — 会话级,与 currentTab 同级持有:
     // overlay 与 tab 切换都会整页移除 ScheduleScreen,状态必须提升到这层才存活。
     var scheduleViewMode by remember {
         mutableStateOf(
-            if (AppPrefs.getStartView(context) == "cards") ViewMode.Cards else ViewMode.Full
+            if (AppPrefs.getStartView(context) == "full") ViewMode.Full else ViewMode.Cards
         )
     }
     val navDockFlowVal by AppPrefs.navDockFlow(context).collectAsState(initial = AppPrefs.isNavDock(context))

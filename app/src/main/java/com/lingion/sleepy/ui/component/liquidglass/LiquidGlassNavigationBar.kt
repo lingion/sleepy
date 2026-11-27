@@ -350,24 +350,8 @@ fun LiquidGlassNavigationBar(
             style = android.graphics.Paint.Style.FILL
         }
     }
-    val lensShader = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                android.graphics.RuntimeShader(LiquidGlassShader.shaderSource(context))
-            } catch (_: Throwable) {
-                null
-            }
-        } else null
-    }
-    val contentShader = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            try {
-                android.graphics.RuntimeShader(LiquidGlassShader.shaderSource(context))
-            } catch (_: Throwable) {
-                null
-            }
-        } else null
-    }
+    val lensShader = remember(context) { createDockLensShader(context) }
+    val contentShader = remember(context) { createDockLensShader(context) }
     fun computeInsideTransform(index: Int): DestinationTransform {
         val lift = liftSpring.value
         val centerMag = 1f + FlClashDockPhysics.LENS_MAGNIFY * lift
@@ -796,15 +780,7 @@ fun LiquidGlassNavigationBar(
                                 glow = touchGlow,
                                 circularCorners = true,
                             )
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                uniforms.forEach { (name, values) ->
-                                    lensShader.setFloatUniform(name, values)
-                                }
-                                this.renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
-                                    lensShader,
-                                    "uTexture",
-                                ).asComposeRenderEffect()
-                            }
+                            this.renderEffect = lensShader.renderEffect(uniforms)
                         } else {
                             this.renderEffect = null
                         }
@@ -945,15 +921,7 @@ fun LiquidGlassNavigationBar(
                                     glow = LiquidGlassGlow.None,
                                     circularCorners = true,
                                 )
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                    uniforms.forEach { (name, values) ->
-                                        contentShader.setFloatUniform(name, values)
-                                    }
-                                    this.renderEffect = android.graphics.RenderEffect.createRuntimeShaderEffect(
-                                        contentShader,
-                                        "uTexture",
-                                    ).asComposeRenderEffect()
-                                }
+                                this.renderEffect = contentShader.renderEffect(uniforms)
                             } else {
                                 this.renderEffect = null
                             }

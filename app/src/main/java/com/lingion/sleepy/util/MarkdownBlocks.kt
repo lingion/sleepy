@@ -13,6 +13,8 @@ package com.lingion.sleepy.util
  */
 object MarkdownBlocks {
 
+    private val rawHtmlTag = Regex("""</?[A-Za-z][^>]*>""")
+
     /** 块级元素 */
     sealed class Block {
         /** ATX 标题, level 1-6 */
@@ -52,7 +54,7 @@ object MarkdownBlocks {
 
         for (rawLine in markdown.lines()) {
             val line = rawLine.trimEnd()
-            val t = line.trim()
+            val t = stripRawHtmlTags(line.trim()).trim()
             when {
                 // 空行 = 块边界
                 t.isEmpty() -> flushAll()
@@ -77,14 +79,15 @@ object MarkdownBlocks {
         return blocks
     }
 
-    /** 行内解析: **粗体**、`代码`、[文字](链接) → 有序 span 列表 */
+    /** 行内解析: **粗体**、`代码`、[文字](链接)和 HTML 标签 → 有序 span 列表 */
     fun parseInline(text: String): List<Inline> {
         val spans = mutableListOf<Inline>()
-        // 一趟扫描, 三种模式按出现位置取最早
+        // 一趟扫描, Markdown 标记和 HTML 标签按出现位置取最早
         val patterns = listOf(
             Regex("""\*\*(.+?)\*\*"""),                       // bold
             Regex("""`([^`]+)`"""),                            // code
-            Regex("""\[([^\]]+)]\(([^)]+)\)""")                // link
+            Regex("""\[([^\]]+)]\(([^)]+)\)"""),              // link
+            rawHtmlTag                                                // raw HTML tag
         )
         var i = 0
         while (i < text.length) {
@@ -106,10 +109,13 @@ object MarkdownBlocks {
             when (bestKind) {
                 0 -> spans += Inline.Bold(bestMatch.groupValues[1])
                 1 -> spans += Inline.Code(bestMatch.groupValues[1])
-                else -> spans += Inline.Link(bestMatch.groupValues[1], bestMatch.groupValues[2])
+                2 -> spans += Inline.Link(bestMatch.groupValues[1], bestMatch.groupValues[2])
+                3 -> Unit // release-note anchors and other raw HTML tags carry no text
             }
             i = bestMatch.range.last + 1
         }
         return spans.filter { it !is Inline.Text || it.text.isNotEmpty() }
     }
+
+    private fun stripRawHtmlTags(text: String): String = rawHtmlTag.replace(text, "")
 }

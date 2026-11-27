@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.lingion.sleepy.data.dao.CourseDao
 import com.lingion.sleepy.data.dao.CalendarImportRecordDao
 import com.lingion.sleepy.data.dao.CourseColorDao
@@ -39,6 +40,20 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var instance: AppDatabase? = null
 
+        // Older editors allowed zero-week timetables. Keep their courses and
+        // identity, and recover enough weeks to include every existing course.
+        private val invalidWeekCountRepair = object : RoomDatabase.Callback() {
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    UPDATE time_tables
+                    SET maxWeek = MAX(1, COALESCE(
+                        (SELECT MAX(endWeek) FROM courses WHERE tableId = time_tables.id), 1
+                    ))
+                    WHERE maxWeek < 1
+                """.trimIndent())
+            }
+        }
+
         fun get(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 instance ?: Room.databaseBuilder(
@@ -47,6 +62,7 @@ abstract class AppDatabase : RoomDatabase() {
                     DB_NAME
                 )
                     .addMigrations(*ALL_MIGRATIONS)
+                    .addCallback(invalidWeekCountRepair)
                     // 严禁 fallbackToDestructiveMigration — 任意版本升会清空用户课表
                     // 任何 schema 改动必须先在 Migrations.kt 登记, 再升 version
                     .build()

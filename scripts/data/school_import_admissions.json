@@ -80120,8 +80120,9 @@
         "zf_new"
       ]
     },
-    "status": "unverified",
-    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "status": "supported",
+    "verification": "User supplied a Sleepy import-success report on 2026-11-27: app 1.0.67-debug (10067), catalogId moe:4137013378, protocol zf_new, url http://jwgl.qdc.edu.cn/jwglxt/xtgl/login_slogin.html, 53 courses imported through the unchanged catalog URL (PR #479). Reported status was unverified.",
+    "authenticatedImportTested": true
   },
   {
     "sourceId": "wakeup-6.1.06-asset",
@@ -85477,8 +85478,8 @@
       "title": "同济大学",
       "urlHints": []
     },
-    "status": "unverified",
-    "verification": "已接入本地6.6.2声明的专用解析路由，保留既有入口与归属证据。离线课程字段回归不代表真实账号已验证。",
+    "status": "supported",
+    "verification": "User supplied a Sleepy import-success report on 2026-11-25: app 1.0.67 (10067), catalogId wakeup:fd1f929ef2d8152a969e, protocol tju, url https://1.tongji.edu.cn/, 19 courses imported through the unchanged catalog URL. Reported status was grad_unverified; this report confirms authenticated graduate import, not an independent public-page ownership audit.",
     "sourceType662": "tju",
     "protocolRouteReview": {
       "sourceId": "wakeup-6.6.2-official-asset",
@@ -85487,8 +85488,9 @@
       ],
       "reviewedAt": "2026-11-08",
       "previousMappedType": "jw_home",
-      "authenticatedImportTested": false
-    }
+      "authenticatedImportTested": true
+    },
+    "authenticatedImportTested": true
   },
   {
     "sourceId": "wakeup-6.6.2-official-asset",

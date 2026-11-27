@@ -92,6 +92,7 @@ fun EditTableScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
+    val weekCountErrorMessage = stringResource(R.string.edit_table_max_week_error)
 
     // tableId == null means edit current table
     val liveTable = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
@@ -269,7 +270,7 @@ fun EditTableScreen(
                             onValueChange = { startDate = it },
                             label = stringResource(R.string.edit_table_start_date),
                             modifier = Modifier.fillMaxWidth(),
-                            isError = error != null
+                            isError = error != null && error != weekCountErrorMessage
                         )
                         TextField(
                             value = maxWeekText,
@@ -277,6 +278,7 @@ fun EditTableScreen(
                             label = { Text(stringResource(R.string.edit_table_max_week)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            isError = error == weekCountErrorMessage,
                             modifier = Modifier.fillMaxWidth(),
                             shape = SleepyTheme.fieldShape,
                             colors = fieldColors
@@ -401,7 +403,11 @@ fun EditTableScreen(
             item {
                 Button(
                     onClick = {
-                        val maxWeek = maxWeekText.toIntOrNull() ?: 20
+                        val maxWeek = maxWeekText.toIntOrNull()
+                        if (maxWeek == null || maxWeek < 1) {
+                            error = weekCountErrorMessage
+                            return@Button
+                        }
                         if (!startDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}"))) {
                             error = validationErrorMessage
                             return@Button

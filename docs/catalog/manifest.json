@@ -3,12 +3,12 @@
   "baselineCount": 353,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 353,
-    "grad_supported": 2,
-    "unverified": 2478,
+    "supported": 354,
+    "grad_supported": 3,
+    "unverified": 2477,
     "grad_pending": 253,
     "pending": 1006,
-    "grad_unverified": 48
+    "grad_unverified": 47
   },
   "sourceCounts": {
     "official": 3377,
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "e5b4ba6052f65777c52cc4d07dfcb92929ea5a2cd1ad2cadefc313cd12ac910f"
+      "sha256": "6fc89dc1b102ac6bc00ead24677c443feb284fa7cc255a8aad382dc4aac8e3b2"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "c790490ecb927965615fb12db904903870b69bb8c0101dad1e65f616f8e1dc19"
+      "sha256": "8000af9d2359a8dd4a359bc8c0c954143dfb6dbba4ba3f7b7a1b296c706bcbf7"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -11614,7 +11614,7 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://jwgl.qdc.edu.cn/jwglxt/xtgl/login_slogin.html",
-        "authenticatedImportTested": false
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "moe:4137013379",
@@ -23622,7 +23622,7 @@
         "ownershipStatus": "unknown",
         "action": "retained-wakeup-662-declared-owner",
         "operationalUrl": "https://1.tongji.edu.cn/",
-        "authenticatedImportTested": false
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "wakeup:7e6b956e4ef142c42c8c",

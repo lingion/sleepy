@@ -91,7 +91,7 @@ object AppPrefs {
     const val KEY_CONFLICT_FOLD_SIZE = "conflict_fold_size" // Float dp — 折角幅度(fold 样式): 折痕直角边长, 视觉符号与命中区共用; 默认 16dp = 旧硬编码值
     val CONFLICT_FOLD_SIZE_RANGE = 8f..28f        // 拖杆量程(dp)
     const val CONFLICT_FOLD_SIZE_DEFAULT = 16f    // 默认(dp) — 沿用旧 FOLD_SIZE_DP 硬编码值
-    const val KEY_START_VIEW = "start_view" // "full" / "cards" — 启动默认视图（仅通用设置里设置；手动切换课表顶部视图不写入；出厂默认 cards）
+    const val KEY_START_VIEW = "start_view" // "full" / "cards" / "today" — 启动默认页（仅课表设置里设置；手动切换课表顶部视图不写入；出厂默认 cards）
     const val KEY_SHOW_VIEW_SWITCHER = "show_view_switcher" // boolean — 首页是否显示周视图/网格视图切换栏（默认 true）
     const val KEY_SHOW_DATE = "show_date"       // boolean — 网格视图表头显示当前日期（出厂默认 true，用户反馈找不到开关）
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
@@ -589,16 +589,29 @@ object AppPrefs {
         } catch (_: Exception) { emptyMap() }
     }
 
-    // ===== 启动默认视图：完整 / 卡片 =====
+    // ===== 启动默认页：周视图 / 网格 / 今日 =====
 
     // 出厂默认 "cards"（网格视图）— 用户反馈网格更好用，新装直接进网格
     fun getStartView(ctx: Context): String =
         sp(ctx).getString(KEY_START_VIEW, "cards") ?: "cards"
 
     fun setStartView(ctx: Context, value: String) {
-        require(value == "full" || value == "cards")
+        require(value == "full" || value == "cards" || value == "today")
         sp(ctx).edit().putString(KEY_START_VIEW, value).apply()
+        _changeBus.tryEmit(KEY_START_VIEW)
     }
+
+    fun startViewFlow(ctx: Context): Flow<String> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, k ->
+            if (k == KEY_START_VIEW) {
+                trySend(getStartView(ctx))
+            }
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getStartView(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
 
     fun isShowViewSwitcher(ctx: Context): Boolean =
         sp(ctx).getBoolean(KEY_SHOW_VIEW_SWITCHER, true)

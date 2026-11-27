@@ -15,6 +15,72 @@ permissions:
   contents: read
 
 jobs:
+  release-notes-consumers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check out the website consumer
+        uses: actions/checkout@v7
+        with:
+          repository: lingion/sleepy-site
+          # Verify against the reviewed production consumer, including its lockfile.
+          ref: 5e79170d01aa419efc5662f39125a1772a0cab26
+          path: .release-notes-site
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: .release-notes-site/package-lock.json
+      - name: Install website dependencies
+        run: npm ci --prefix .release-notes-site
+      - name: Exercise the live website data pipeline
+        working-directory: .release-notes-site
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run data
+      - name: Stage the unpublished release notes in the disposable website checkout
+        run: |
+          notes=$(find docs -maxdepth 1 -name 'release-notes-v*.md' | sort -V | tail -1)
+          node scripts/prepare_release_notes_site.mjs "$notes" .release-notes-site
+          test -s .release-notes-site/candidate-mirror.html
+      - name: Run the website CI rendering gates with the candidate body
+        working-directory: .release-notes-site
+        run: |
+          npm run tokens
+          git diff --exit-code -- src/tokens/
+          npm run check
+          npm run build
+          npm test
+          node scripts/audit-seo.mjs
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version-file: .tool-versions
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: actions/cache@v6
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-${{ runner.os }}-${{ hashFiles('gradle/libs.versions.toml') }}
+          restore-keys: robolectric-${{ runner.os }}-
+      - name: Render the actual update dialog and check GitHub and mirror parsing
+        env:
+          SLEEPY_RELEASE_MIRROR_FIXTURE: ${{ github.workspace }}/.release-notes-site/candidate-mirror.html
+        run: ./gradlew :app:testDebugUnitTest --tests '*ReleaseNotesContractTest' --tests '*ReleaseNotesDialogTest' --stacktrace
+      - name: Upload release rendering evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-notes-rendering
+          include-hidden-files: true
+          path: |
+            app/build/reports/release-notes/
+            app/build/reports/tests/testDebugUnitTest/
+            .release-notes-site/dist/client/releases/
+            .release-notes-site/dist/client/en/releases/
+          retention-days: 7
+
   commit-lint:
     runs-on: ubuntu-latest
     steps:
@@ -99,6 +165,7 @@ jobs:
       - name: Execute school timetable fetch contracts
         run: |
           node tools/test-cf-new-fetch.js
+          node tools/test-zf-new-fetch.js
           node tools/test-classic-eams-fetch.js
           node tools/test-weekly-fetch.js
           node tools/test-chaoxing-share-fetch.js

@@ -57203,9 +57203,19 @@
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
-      "availability": "public-page",
-      "authenticatedImportTested": false,
-      "defects": []
+      "availability": "authenticated-import-tested",
+      "authenticatedImportTested": true,
+      "defects": [],
+      "authenticatedImportReport": {
+        "source": "user-supplied-sleepy-import-success-report",
+        "date": "2026-11-27",
+        "versionName": "1.0.67-debug",
+        "versionCode": 10067,
+        "reportedStatus": "unverified",
+        "protocol": "zf_new",
+        "url": "http://jwgl.qdc.edu.cn/jwglxt/xtgl/login_slogin.html",
+        "courseCount": 53
+      }
     },
     {
       "catalogId": "moe:4137014709",
@@ -60506,13 +60516,23 @@
       "status": "unknown",
       "confidence": "low",
       "title": "同济大学",
-      "availability": "public-page",
+      "availability": "authenticated-import-tested",
       "probeError": null,
-      "authenticatedImportTested": false,
+      "authenticatedImportTested": true,
       "sources": [],
       "defects": [
-        "Ownership declared by the official WakeUP 6.6.2 shipped catalog (third party); entry page confirmed live with HTTP 200 on 2026-10-28; no authenticated import performed."
-      ]
+        "Public-page ownership remains independently unverified; the user-supplied authenticated-import report does not replace a recorded public identity source."
+      ],
+      "authenticatedImportReport": {
+        "source": "user-supplied-sleepy-import-success-report",
+        "date": "2026-11-25",
+        "versionName": "1.0.67",
+        "versionCode": 10067,
+        "reportedStatus": "grad_unverified",
+        "protocol": "tju",
+        "url": "https://1.tongji.edu.cn/",
+        "courseCount": 19
+      }
     },
     {
       "catalogId": "wakeup:84f4f40e3a9d9df4ebbd",

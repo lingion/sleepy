@@ -103,6 +103,37 @@ class EditTableDraftRestoreTest {
         assertEquals("Original", runBlocking { db.timeTableDao().getAll().first().name })
     }
 
+    @Test fun zeroWeekCountCannotStartSaving() = verifyWeekInput("0", expectedSaveStarts = 0)
+
+    @Test fun emptyWeekCountCannotStartSaving() = verifyWeekInput("", expectedSaveStarts = 0)
+
+    @Test fun overflowingWeekCountCannotStartSaving() = verifyWeekInput("999999999999999", expectedSaveStarts = 0)
+
+    @Test fun singleWeekTimetableCanStartSaving() = verifyWeekInput("1", expectedSaveStarts = 1)
+
+    private fun verifyWeekInput(value: String, expectedSaveStarts: Int) {
+        var saveStarts = 0
+        compose.setContent {
+            SleepyThemeProvider(darkTheme = false, themeKey = "default") {
+                EditTableScreen(tableId = 1, onBack = {}, onSaved = {}, onDeleted = {}, viewModel = model,
+                    onSaveStarted = { saveStarts++; false })
+            }
+        }
+        compose.waitUntil(10_000) {
+            shadowOf(android.os.Looper.getMainLooper()).idle()
+            compose.onAllNodes(hasSetTextAction() and hasText(app.getString(R.string.edit_table_max_week)))
+                .fetchSemanticsNodes().size == 1
+        }
+        compose.onNode(hasSetTextAction() and hasText(app.getString(R.string.edit_table_max_week)))
+            .performTextReplacement(value)
+        compose.onNode(hasScrollToNodeAction()).performScrollToNode(hasText(app.getString(R.string.edit_table_save)))
+        compose.onNodeWithText(app.getString(R.string.edit_table_save)).performClick()
+        compose.runOnIdle {
+            assertEquals("Week input '$value' must be validated before a save starts", expectedSaveStarts, saveStarts)
+        }
+        assertEquals(20, runBlocking { db.timeTableDao().getById(1)!!.maxWeek })
+    }
+
     @Test fun saversKeepIncompleteRowsAndAutomaticConfigurationExactly() {
         val scope = SaverScope { true }
         val rows = mutableStateListOf(
