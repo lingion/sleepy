@@ -34,8 +34,6 @@ Choose **Today** in **Settings > Schedule Display > Default schedule view** to o
 - The tag-triggered Release workflow reruns unit tests, builds production-signed APKs, verifies their signing certificates against the configured release keystore, and attaches `sha256sums.txt` with the final APK fingerprints.
 - Contributors this release: @z2bguoguo (Qingdao City University timetable import fix, PR #479).
 
----
-
 # Sleepy v1.0.68
 
 启动时可直接进入「今日」页，青岛城市学院课表现已支持导入，液态玻璃模式下也能正常调整快速加课的节次。
