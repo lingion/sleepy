@@ -165,6 +165,7 @@ jobs:
       - name: Execute school timetable fetch contracts
         run: |
           node tools/test-cf-new-fetch.js
+          node tools/test-zf-new-fetch.js
           node tools/test-classic-eams-fetch.js
           node tools/test-weekly-fetch.js
           node tools/test-chaoxing-share-fetch.js

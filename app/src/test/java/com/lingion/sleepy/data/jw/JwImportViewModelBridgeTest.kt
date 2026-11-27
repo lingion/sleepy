@@ -87,6 +87,12 @@ class JwImportViewModelBridgeTest {
         // 2026-09 新版正方裸 /kbcx/ (广东医科等): pathPrefix 推导后 API 不再硬编 /jwglxt
         assertTrue("apiPath 必须通过 pathPrefix 拼接, 不能硬编 /jwglxt/kbcx",
             js.contains("pathPrefix + '/kbcx/xskbcx_cxXsgrkb.html"))
+        // 2026-11 新版正方被动捕获契约: 与 DIAGNOSTIC_NETWORK_INSTALL_JS 共享全局录制符号
+        val diagJs = com.lingion.sleepy.ui.screen.imports.DIAGNOSTIC_NETWORK_INSTALL_JS
+        assertTrue("ZF_NEW_FETCH_JS 必须通过 PASSIVE_CAPTURE_HOSTS 管理强验证站点",
+            js.contains("PASSIVE_CAPTURE_HOSTS"))
+        assertTrue("ZF_NEW_FETCH_JS 与 DIAGNOSTIC_NETWORK_INSTALL_JS 必须共享 __sleepyDiagNetworkRecords",
+            js.contains("__sleepyDiagNetworkRecords") && diagJs.contains("__sleepyDiagNetworkRecords"))
     }
 
     @Test
