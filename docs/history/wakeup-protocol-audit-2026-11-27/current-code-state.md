@@ -65,9 +65,9 @@ ECUPL 组执行以下命令，62 项通过。
 
 ## 证据边界和剩余限制
 
-完整单元测试在本轮补充作息回归前已运行通过，共 5101 项测试通过，0 failures，0 errors，3 skipped。跳过项为 WakeUP 真实服务器握手离线重放、WakeUP 活体直连和 ReleaseNotes 镜像回退环境测试。
+完整单元测试在补充作息回归前通过 5101 项，0 failures，0 errors，3 skipped。补充回归后曾有两次完整运行停在既有 Compose UI 等待用例。第一次停在 `EditTableTargetIsolationTest.deletingATableStopsItsCachedObserverAndRestoringItsIdCreatesAFreshOne`，该用例随后单独运行通过。第二次停在 `EditorCreationRoomTest.periodReadyAndDiscardUseTheRealRowAndWaitForListCleanup` 的 Compose 根节点等待。
 
-补充作息回归后再次运行完整套件，两次都停在既有 Compose UI 测试的等待阶段，没有得到完整测试结果。第一次等待 `EditTableTargetIsolationTest.deletingATableStopsItsCachedObserverAndRestoringItsIdCreatesAFreshOne`。该用例随后单独运行通过。第二次停在 `EditorCreationRoomTest.periodReadyAndDiscardUseTheRealRowAndWaitForListCleanup` 的 Compose 根节点等待。三个定向测试组均通过，本轮完整套件重跑未完成。
+随后在整合提交 `4acdc374982f98253ae3879d38bf36671f42f537` 上，以 `ANDROID_HOME="$HOME/Library/Android/sdk" ./gradlew --no-daemon --offline --console=plain --max-workers=2 :app:testDebugUnitTest --rerun-tasks` 强制重跑全量单测。结果为 `BUILD SUCCESSFUL in 21m 19s`，59 项 Gradle 任务全部执行。682 份 XML 共计 5105 tests，0 failures，0 errors，3 skipped。三个跳过项分别是缺少 `SLEEPY_WAKEUP_XINPUT` 的离线握手重放、缺少 `SLEEPY_WAKEUP_LIVE` 的 WakeUP 活体直连，以及缺少镜像 HTML fixture 的 `ReleaseNotesContractTest.websiteHtmlAlsoSurvivesTheMirrorFallback`。
 
 lint 在最终成员点号空白调整之前运行。结果为 `BUILD SUCCESSFUL`，报告有 571 个 warning、40 个 hint 和 0 个 error。报告未发现本轮修改文件中的 lint issue。之后的成员点号调整通过 Kotlin 编译和 ECUPL 定向测试。HTML 报告位于 `app/build/reports/lint-results-debug.html`。
 
