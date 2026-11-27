@@ -26,7 +26,45 @@ const val ZF_NEW_FETCH_JS = """(function(){
       ok:true, data:data, xnm:xnm, xqm:xqm, emptySemester:!!empty, format:'zf_new'
     }));
   }
+
+  function captureQdcTimetable(){
+    // The school validates its own query. Import only the response already returned to that page.
+    var fields = ['xnm', 'xqm', 'xsdm', 'kclbdm', 'kclxdm'];
+    var values = fields.map(function(name){
+      var element = document.querySelector('#' + name);
+      return element && element.value != null ? String(element.value) : '';
+    });
+    var records = window.__sleepyDiagNetworkRecords || [];
+    if (values[0] && values[1]) {
+      for (var i = records.length - 1; i >= 0; i--) {
+        var record = records[i];
+        if (record.source !== 'xhr' || record.frame !== 'top' || record.method !== 'POST') continue;
+        var url;
+        try { url = new URL(record.url, location.href); } catch(e) { continue; }
+        if (url.origin !== location.origin || url.pathname !== '/jwglxt/kbcx/xskbcx_cxXsgrkb.html') continue;
+        var params = new URLSearchParams(record.requestBody);
+        if (params.get('kzlx') !== 'ck' || !fields.every(function(name, index){
+          return (params.get(name) || '') === values[index];
+        })) continue;
+        if (record.status !== 200) break;
+        try {
+          var data = JSON.parse(record.responseBody);
+          if (data && Array.isArray(data.kbList)) {
+            ok(JSON.stringify({kbList:data.kbList}), values[0], values[1], data.kbList.length === 0);
+            return;
+          }
+        } catch(e) {}
+        break;
+      }
+    }
+    fail('NOT_ON_TIMETABLE', '请在学生课表页点击查询，按页面提示完成验证，等课表显示后再导入');
+  }
+
   try {
+    if (location.hostname === 'jwgl.qdc.edu.cn') {
+      captureQdcTimetable();
+      return;
+    }
     var path = location.pathname;
     // T5+/2026-09 新版正方: 旧版路径前缀 /jwglxt/, 新版 (广东医科等) 直接 /kbcx/, WebVPN 改写为 /http/<hex>/
     var onJwglxt = path.indexOf('/jwglxt/') >= 0;

@@ -22,6 +22,19 @@ class JwNewZfParserTest {
         return stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
     }
 
+    @Test
+    fun `qdc timetable keeps both separate week ranges`() {
+        val courses = JwNewZfParser(readFixture("kblist_qdc.json")).generateCourseList()
+
+        assertEquals(
+            listOf(
+                JwCourse("高等数学", "A101", "李老师", 1, 1, 2, 1, 4),
+                JwCourse("高等数学", "A101", "李老师", 1, 1, 2, 7, 16),
+            ),
+            courses,
+        )
+    }
+
     private fun assertCourses(expectedName: String, actual: List<JwCourse>) {
         val expectedJson = readFixture("$expectedName.expected.json")
         val expected = parseExpected(expectedJson)
