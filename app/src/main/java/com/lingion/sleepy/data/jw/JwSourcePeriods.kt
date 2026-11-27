@@ -24,7 +24,7 @@ object JwSourcePeriods {
         if (type in setOf(JwProtocol.TYPE_ECUPL_SCRIPT, JwProtocol.TYPE_ECUPL,
                 JwProtocol.TYPE_ECUPL_SUPER, JwProtocol.TYPE_CLASSIC_EAMS)) {
             val annualSelected = type in setOf(JwProtocol.TYPE_ECUPL, JwProtocol.TYPE_ECUPL_SUPER) &&
-                source.contains("new TaskActivity(") && source.contains("table0.marshalTable") &&
+                JwEcuplParser(source).hasAnnualScheduleData() &&
                 JwEcuplParser.RE_LIST_TABLE.containsMatchIn(source) &&
                 runCatching { JwEcuplParser(source).generateCourseList().isNotEmpty() }.getOrDefault(false)
             if (!annualSelected) JwEcuplScriptParser.sourcePeriods(source).takeIf { it.isNotEmpty() }?.let { return it }

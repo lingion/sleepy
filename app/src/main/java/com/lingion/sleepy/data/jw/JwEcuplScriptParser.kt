@@ -83,10 +83,10 @@ class JwEcuplScriptParser(source: String) : JwParser(source) {
             val roomValue = script.string(args[5]) ?: continue
             val dateValue = script.string(args[6]) ?: continue
             val bound = script.assignments.lastOrNull { assignment ->
-                assignment.start < start && Regex("""[\w$.]+\s*=\s*(?:[\w$.]+\.)?""")
+                assignment.start < start && Regex("""$JS_IDENTIFIER_PATH\s*=\s*(?:$JS_IDENTIFIER_PATH\s*\.\s*)?""")
                     .matches(script.text.substring(assignment.start, start))
-            }?.target ?: script.matches(Regex("""(?:var|let|const)\s+([\w$]+)\s*;"""))
-                .lastOrNull { it.range.first < start }?.groupValues?.get(1) ?: "activity"
+            }?.target ?: script.matches(Regex("""(?:var|let|const)\s+($JS_IDENTIFIER)\s*;"""))
+                .lastOrNull { it.range.first < start }?.groupValues?.get(1) ?: continue
             val slot = Regex("""\baddActivityByTime\s*\(\s*${Regex.escape(bound)}\s*,\s*(\d)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)\s*;?""")
             val date = runCatching { java.time.LocalDate.parse(dateValue) }.getOrNull() ?: continue
             val bitmap = args[7].toLongOrNull() ?: continue

@@ -46,4 +46,17 @@ class JwEcuplMixedSourcePeriodsTest {
                 JwSourcePeriods.resolve(source, type, "华东政法大学", emptyList()))
         }
     }
+
+    @Test fun renamedAnnualBindingsStillSelectAnnualPeriods() {
+        val source = mixedPage()
+            .replace(Regex("\\btable0\\b"), "年度表")
+            .replace(Regex("\\bactivity\\b"), "年度活动")
+            .replace(Regex("\\bunitCount\\b"), "每日节数")
+            .replace(Regex("\\bindex\\b"), "时段")
+            .replace("年度表.marshalTable", "年度表 . marshalTable")
+        assertEquals(annualPeriods,
+            JwSourcePeriods.resolve(source, JwProtocol.TYPE_ECUPL, "华东政法大学", emptyList()))
+        assertEquals(annualPeriods,
+            JwSourcePeriods.resolve(source, JwProtocol.TYPE_ECUPL_SUPER, "华东政法大学", emptyList()))
+    }
 }

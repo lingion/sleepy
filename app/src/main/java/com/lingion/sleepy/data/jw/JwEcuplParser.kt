@@ -12,8 +12,10 @@ class JwEcuplParser(source: String) : JwParser(source) {
     private val script by lazy { JwScriptSource(source) }
     private val hasAnnualData by lazy {
         script.matches(Regex("""new\s+TaskActivity\s*\(""")).any() &&
-            script.matches(Regex("""[\w$]+\.marshalTable\s*\(""")).any()
+            script.matches(Regex("""$JS_IDENTIFIER_PATH\s*\.\s*marshalTable\s*\(""")).any()
     }
+
+    internal fun hasAnnualScheduleData(): Boolean = hasAnnualData
 
     companion object {
         // ---- 协议指纹 10 件套 ----
@@ -46,7 +48,7 @@ class JwEcuplParser(source: String) : JwParser(source) {
         // Coordinates still come from TaskActivity/index; metadata never creates a slot.
         if (!hasAnnualData ||
             !RE_LIST_TABLE.containsMatchIn(source)) return JwEcuplScriptParser(source).generateCourseList()
-        val marshal = script.matches(Regex("""[\w$]+\.marshalTable\s*\(\s*(\d+)\s*,\s*\d+\s*,\s*(\d+)\s*\)""")).firstOrNull()
+        val marshal = script.matches(Regex("""$JS_IDENTIFIER_PATH\s*\.\s*marshalTable\s*\(\s*(\d+)\s*,\s*\d+\s*,\s*(\d+)\s*\)""")).firstOrNull()
             ?: return emptyList()
         val origin = marshal.groupValues[1].toIntOrNull()?.takeIf { it in 2..54 } ?: return emptyList()
         val weekCount = marshal.groupValues[2].toIntOrNull()?.takeIf { it in 1..64 } ?: return emptyList()
