@@ -16,6 +16,12 @@ package com.lingion.sleepy.ui.screen.imports
  * 由 native 侧 tryAllParsers 已抓到的 outerHTML 接管。
  */
 const val ZF_NEW_FETCH_JS = """(function(){
+  // Hosts whose timetable query enforces per-request validation (e.g. slider/token)
+  // and rejects replayed fetch() calls. Always reuse the page's own verified XHR.
+  var PASSIVE_CAPTURE_HOSTS = ['jwgl.qdc.edu.cn'];
+  var OPTIONAL_FILTER_FIELDS = ['xsdm', 'kclbdm', 'kclxdm'];
+  var KB_ENDPOINT_SUFFIX = '/kbcx/xskbcx_cxXsgrkb.html';
+
   function fail(kind, err){
     window.__sleepyBridge.onWiseduResult(JSON.stringify({
       ok:false, kind:kind, err:err||'', format:'zf_new'
@@ -26,43 +32,90 @@ const val ZF_NEW_FETCH_JS = """(function(){
       ok:true, data:data, xnm:xnm, xqm:xqm, emptySemester:!!empty, format:'zf_new'
     }));
   }
+  function isPassiveCaptureHost(hostname){
+    var h = String(hostname || '').toLowerCase();
+    for (var i = 0; i < PASSIVE_CAPTURE_HOSTS.length; i++) {
+      if (h === PASSIVE_CAPTURE_HOSTS[i]) return true;
+    }
+    return false;
+  }
+  function findKbList(obj, depth){
+    if (depth > 5 || !obj || typeof obj !== 'object') return null;
+    if (Array.isArray(obj)) {
+      for (var i = 0; i < obj.length; i++) {
+        var r = findKbList(obj[i], depth + 1);
+        if (r) return r;
+      }
+      return null;
+    }
+    if (obj.kbList && Array.isArray(obj.kbList)) return obj.kbList;
+    for (var k in obj) {
+      var r = findKbList(obj[k], depth + 1);
+      if (r) return r;
+    }
+    return null;
+  }
+  function readDomField(id){
+    var el = document.querySelector('#' + id);
+    if (!el || el.value == null) return null;
+    return String(el.value).trim();
+  }
+  function captureRecordedTimetable(targetTerm){
+    // Reuse the latest verified XHR response recorded by DIAGNOSTIC_NETWORK_INSTALL_JS.
+    var xnm = targetTerm && targetTerm.xnm ? String(targetTerm.xnm).trim() : (readDomField('xnm') || '');
+    var xqm = targetTerm && targetTerm.xqm ? String(targetTerm.xqm).trim() : (readDomField('xqm') || '');
+    if (!xnm || !xqm) return null;
 
-  function captureQdcTimetable(){
-    // The school validates its own query. Import only the response already returned to that page.
-    var fields = ['xnm', 'xqm', 'xsdm', 'kclbdm', 'kclxdm'];
-    var values = fields.map(function(name){
-      var element = document.querySelector('#' + name);
-      return element && element.value != null ? String(element.value) : '';
-    });
+    var filters = [];
+    for (var f = 0; f < OPTIONAL_FILTER_FIELDS.length; f++) {
+      var name = OPTIONAL_FILTER_FIELDS[f];
+      var val = readDomField(name);
+      if (val !== null) filters.push({name: name, value: val});
+    }
+
     var records = window.__sleepyDiagNetworkRecords || [];
-    if (values[0] && values[1]) {
+    var frameTiers = ['top', 'frame'];
+    for (var tier = 0; tier < frameTiers.length; tier++) {
+      var wantedFrame = frameTiers[tier];
       for (var i = records.length - 1; i >= 0; i--) {
         var record = records[i];
-        if (record.source !== 'xhr' || record.frame !== 'top' || record.method !== 'POST') continue;
+        if (!record || record.source !== 'xhr' || record.frame !== wantedFrame || record.method !== 'POST') continue;
         var url;
         try { url = new URL(record.url, location.href); } catch(e) { continue; }
-        if (url.origin !== location.origin || url.pathname !== '/jwglxt/kbcx/xskbcx_cxXsgrkb.html') continue;
-        var params = new URLSearchParams(record.requestBody);
-        if (params.get('kzlx') !== 'ck' || !fields.every(function(name, index){
-          return (params.get(name) || '') === values[index];
-        })) continue;
-        if (record.status !== 200) break;
+        if (url.origin !== location.origin || url.pathname.indexOf(KB_ENDPOINT_SUFFIX) < 0) continue;
+        var reqParams = new URLSearchParams(record.requestBody || '');
+        if (reqParams.has('kzlx') && reqParams.get('kzlx') !== 'ck') continue;
+        if ((reqParams.get('xnm') || '').trim() !== xnm || (reqParams.get('xqm') || '').trim() !== xqm) continue;
+        var filtersMatch = true;
+        for (var j = 0; j < filters.length; j++) {
+          if ((reqParams.get(filters[j].name) || '').trim() !== filters[j].value) {
+            filtersMatch = false;
+            break;
+          }
+        }
+        if (!filtersMatch) continue;
+        if (record.status !== 200) return null;
         try {
           var data = JSON.parse(record.responseBody);
-          if (data && Array.isArray(data.kbList)) {
-            ok(JSON.stringify({kbList:data.kbList}), values[0], values[1], data.kbList.length === 0);
-            return;
+          var kbList = findKbList(data, 0);
+          if (kbList) {
+            return {kbList: kbList, xnm: xnm, xqm: xqm, empty: kbList.length === 0};
           }
         } catch(e) {}
-        break;
+        return null;
       }
     }
-    fail('NOT_ON_TIMETABLE', '请在学生课表页点击查询，按页面提示完成验证，等课表显示后再导入');
+    return null;
   }
 
   try {
-    if (location.hostname === 'jwgl.qdc.edu.cn') {
-      captureQdcTimetable();
+    if (isPassiveCaptureHost(location.hostname)) {
+      var captured = captureRecordedTimetable(null);
+      if (captured) {
+        ok(JSON.stringify({kbList:captured.kbList}), captured.xnm, captured.xqm, captured.empty);
+      } else {
+        fail('NOT_ON_TIMETABLE', '请在学生课表页点击查询，按页面提示完成验证，等课表显示后再导入');
+      }
       return;
     }
     var path = location.pathname;
@@ -158,25 +211,28 @@ const val ZF_NEW_FETCH_JS = """(function(){
         && (text.indexOf('请输入密码') >= 0 || text.indexOf('name="mm"') >= 0 || text.indexOf('name="password"') >= 0);
       if (looksLikeLogin) { fail('SESSION_EXPIRED', '会话已过期,请重新登录'); return; }
       var data;
-      try { data = JSON.parse(text); } catch(e){ fail('SESSION_EXPIRED', '接口返回非 JSON(可能已过期): '+String(e)); return; }
-      function findKbList(obj, depth){
-        if (depth > 5 || !obj || typeof obj !== 'object') return null;
-        if (Array.isArray(obj)) {
-          for (var i=0;i<obj.length;i++){
-            var r = findKbList(obj[i], depth+1);
-            if (r) return r;
-          }
-          return null;
+      try {
+        data = JSON.parse(text);
+      } catch(e) {
+        var fallbackOnParse = captureRecordedTimetable(t);
+        if (fallbackOnParse) {
+          ok(JSON.stringify({kbList:fallbackOnParse.kbList}), fallbackOnParse.xnm, fallbackOnParse.xqm, fallbackOnParse.empty);
+          return;
         }
-        if (obj.kbList && Array.isArray(obj.kbList)) return obj.kbList;
-        for (var k in obj) {
-          var r = findKbList(obj[k], depth+1);
-          if (r) return r;
-        }
-        return null;
+        fail('SESSION_EXPIRED', '接口返回非 JSON(可能已过期): '+String(e));
+        return;
       }
       var kbList = findKbList(data, 0);
-      if (!kbList || kbList.length === 0) {
+      if (!kbList) {
+        var fallbackOnMissing = captureRecordedTimetable(t);
+        if (fallbackOnMissing) {
+          ok(JSON.stringify({kbList:fallbackOnMissing.kbList}), fallbackOnMissing.xnm, fallbackOnMissing.xqm, fallbackOnMissing.empty);
+          return;
+        }
+        ok(JSON.stringify({kbList:[]}), t.xnm, t.xqm, true);
+        return;
+      }
+      if (kbList.length === 0) {
         ok(JSON.stringify({kbList:[]}), t.xnm, t.xqm, true);
         return;
       }
