@@ -10,9 +10,10 @@ package com.lingion.sleepy.data.jw
 class JwEcuplParser(source: String) : JwParser(source) {
 
     private val script by lazy { JwScriptSource(source) }
+    private val annualMarshalArguments by lazy { script.marshalArguments() }
     private val hasAnnualData by lazy {
         script.matches(Regex("""new\s+TaskActivity\s*\(""")).any() &&
-            script.matches(Regex("""$JS_IDENTIFIER_PATH\s*\.\s*marshalTable\s*\(""")).any()
+            annualMarshalArguments != null
     }
 
     internal fun hasAnnualScheduleData(): Boolean = hasAnnualData
@@ -48,10 +49,9 @@ class JwEcuplParser(source: String) : JwParser(source) {
         // Coordinates still come from TaskActivity/index; metadata never creates a slot.
         if (!hasAnnualData ||
             !RE_LIST_TABLE.containsMatchIn(source)) return JwEcuplScriptParser(source).generateCourseList()
-        val marshal = script.matches(Regex("""$JS_IDENTIFIER_PATH\s*\.\s*marshalTable\s*\(\s*(\d+)\s*,\s*\d+\s*,\s*(\d+)\s*\)""")).firstOrNull()
-            ?: return emptyList()
-        val origin = marshal.groupValues[1].toIntOrNull()?.takeIf { it in 2..54 } ?: return emptyList()
-        val weekCount = marshal.groupValues[2].toIntOrNull()?.takeIf { it in 1..64 } ?: return emptyList()
+        val marshal = annualMarshalArguments ?: return emptyList()
+        val origin = marshal[0].takeIf { it in 2..54 } ?: return emptyList()
+        val weekCount = marshal[2].takeIf { it in 1..64 } ?: return emptyList()
         val year = script.matches(Regex("""new\s+CourseTable\s*\(\s*(\d{4})\s*,\s*\d+\s*\)""")).firstOrNull()
             ?.groupValues?.get(1)?.toIntOrNull() ?: return emptyList()
         // 6.6.2 ECUPLParser.OooOOo0 has a distinct year-wrap branch. The helper
