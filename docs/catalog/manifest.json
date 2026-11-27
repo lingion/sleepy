@@ -3,9 +3,9 @@
   "baselineCount": 353,
   "catalogCount": 4140,
   "statusCounts": {
-    "supported": 353,
+    "supported": 354,
     "grad_supported": 3,
-    "unverified": 2478,
+    "unverified": 2477,
     "grad_pending": 253,
     "pending": 1006,
     "grad_unverified": 47
@@ -38,7 +38,7 @@
     },
     {
       "path": "scripts/data/school_import_admissions.json",
-      "sha256": "a663755ceca391aac653e2285a84a8b04d5880a28d80def9587330fc1ca5b227"
+      "sha256": "6fc89dc1b102ac6bc00ead24677c443feb284fa7cc255a8aad382dc4aac8e3b2"
     },
     {
       "path": "scripts/data/school_catalog_renames.json",
@@ -46,7 +46,7 @@
     },
     {
       "path": "scripts/data/school_url_evidence.json",
-      "sha256": "3565ccb65deee544305cbb3c4122e0485edc93a26cfc2c4337e2a53c72c969fa"
+      "sha256": "8000af9d2359a8dd4a359bc8c0c954143dfb6dbba4ba3f7b7a1b296c706bcbf7"
     },
     {
       "path": "scripts/data/school_catalog_domain_reference.json",
@@ -11614,7 +11614,7 @@
         "ownershipStatus": "verified",
         "action": "ownership-confirmed",
         "operationalUrl": "http://jwgl.qdc.edu.cn/jwglxt/xtgl/login_slogin.html",
-        "authenticatedImportTested": false
+        "authenticatedImportTested": true
       },
       {
         "catalogId": "moe:4137013379",
