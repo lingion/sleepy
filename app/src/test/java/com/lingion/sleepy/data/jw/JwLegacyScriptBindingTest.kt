@@ -57,4 +57,28 @@ class JwLegacyScriptBindingTest {
         assertTrue(parse("xauat_post",page).isEmpty())
     }
 
+    @Test
+    fun oldShuweiRenamedTitleAccumulatorReplacesPlaceholderLiteral() {
+        val page = """<script>let 当前标题 = "专题";
+            当前标题 += "2";
+            let 当前活动 = null;
+            当前活动 = new TaskActivity("id","占位","roomId","A","010");
+            当前索引 = 0 * 每日节数 + 2;
+            当前表.marshalTable();</script>"""
+        assertEquals(listOf(JwCourse("专题2","A","",1,3,3,1,1)), parse("shuwei_old", page))
+    }
+
+    @Test
+    fun oldShuweiKeepsTheDeclaredTitleWhenMultipleStringAccumulatorsAreAmbiguous() {
+        val page = """<script>let 课程标题 = "专题";
+            课程标题 += "2";
+            let 页面标题 = "教务";
+            页面标题 += "系统";
+            let 任课教师 = [{"name":"王"}];
+            let 当前活动 = null;
+            当前活动 = new TaskActivity("id","明确课程","roomId","A","010");
+            当前索引 = 0 * 每日节数 + 2;
+            当前表.marshalTable();</script>"""
+        assertEquals(listOf(JwCourse("明确课程","A","王",1,3,3,1,1)), parse("shuwei_old", page))
+    }
 }

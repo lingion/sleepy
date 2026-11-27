@@ -52,14 +52,14 @@ internal object JwScriptMask {
                         if (ch == ']') characterClass = false
                         if (ch == '/' && !characterClass) break
                     }
-                    while (i < raw.length && (raw[i].isLetterOrDigit() || raw[i] in "_$")) i++
+                    while (i < raw.length && jsIdentifierPartRegex.matches(raw[i].toString())) i++
                     hide(start, i, true)
                     operand = false
                     token = "literal"
                 }
-                c.isLetter() || c in "_$" -> {
+                jsIdentifierStartRegex.matches(c.toString()) -> {
                     val start = i++
-                    while (i < raw.length && (raw[i].isLetterOrDigit() || raw[i] in "_$")) i++
+                    while (i < raw.length && jsIdentifierPartRegex.matches(raw[i].toString())) i++
                     val member = token == "."
                     token = raw.substring(start, i)
                     operand = !member && token in setOf("return", "throw", "case", "delete", "void", "typeof", "new", "in", "instanceof", "yield", "await", "else", "do")

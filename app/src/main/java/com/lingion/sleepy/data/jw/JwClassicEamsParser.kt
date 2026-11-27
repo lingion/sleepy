@@ -42,6 +42,7 @@ class JwClassicEamsParser(
 
     private val script by lazy { JwScriptSource(source) }
     private val taskPattern = Regex("""new\s+TaskActivity\s*\(""")
+    private val marshalPattern = Regex("""($JS_IDENTIFIER_PATH)\s*\.\s*marshalTable\s*\(""")
 
     /** 一条 TaskActivity 记录 (块级, 尚未按 index/位图展开) */
     private data class Task(
@@ -104,8 +105,8 @@ class JwClassicEamsParser(
 
     /** Resolve the stride actually referenced by coordinate arithmetic. */
     private fun unitCountFromPage(): Int? {
-        val referenced = script.matches(Regex("""[\w$]+\s*=\s*\d+\s*\*\s*([\w$]+)\s*\+"""))
-            .map { it.groupValues[1] }.toSet()
+        val referenced = script.matches(Regex("""$JS_IDENTIFIER_PATH\s*=\s*\d+\s*\*\s*($JS_IDENTIFIER_PATH)\s*\+"""))
+            .map { it.groupValues[1].replace(Regex("\\s+"), "") }.toSet()
         val counts = script.assignments.filter { it.target in referenced && it.operator == "=" }
             .mapNotNull { it.expression.toIntOrNull()?.takeIf { n -> n > 0 } }.distinct()
         if (counts.size == 1) return counts.single()
@@ -152,13 +153,23 @@ class JwClassicEamsParser(
                 nameExpr = if (isQuoted(nameArg)) null else nameArg.trim(),
             )
 
-            // 本块的 index 段: TaskActivity(...) 之后到下一个块声明 (或 marshalTable) 之间
-            val blockEnd = matches.getOrNull(i + 1)?.range?.first ?: script.text.length
+            // 本块的 index 段: TaskActivity(...) 之后到下一个块声明或实际收尾调用。
+            // 收尾后的脚本通常还会写入表单和菜单状态，不能把这些数字赋值当作坐标。
+            val nextTask = matches.getOrNull(i + 1)?.range?.first ?: script.text.length
+            val activityReceivers = script.matches(Regex("""($JS_IDENTIFIER_PATH)\s*\.\s*activities\s*\["""))
+                .filter { it.range.first in (closingParen + 1) until nextTask }
+                .map { it.groupValues[1].replace(Regex("\\s+"), "") }
+                .toSet()
+            val marshalEnd = script.matches(marshalPattern)
+                .firstOrNull { it.range.first in (closingParen + 1) until nextTask &&
+                    (activityReceivers.isEmpty() || it.groupValues[1].replace(Regex("\\s+"), "") in activityReceivers) }
+                ?.range?.first
+            val blockEnd = minOf(nextTask, marshalEnd ?: nextTask)
             val tail = script.code.substring(closingParen + 1, blockEnd)
-            val referencedIndices = Regex("""\.activities\s*\[\s*([\w$]+)\s*]""")
+            val referencedIndices = Regex("""\.activities\s*\[\s*($JS_IDENTIFIER_PATH)\s*]""")
                 .findAll(tail).map { it.groupValues[1] }.toSet()
             val indexPairs = mutableListOf<Pair<Int, Int>>()
-            val formula = Regex("""(\d+)\s*\*\s*([\w$]+|\d+)\s*\+\s*(\d+)""")
+            val formula = Regex("""(\d+)\s*\*\s*($JS_IDENTIFIER_PATH|\d+)\s*\+\s*(\d+)""")
             for (assignment in script.assignments.filter { it.start in (closingParen + 1) until blockEnd }) {
                 if (referencedIndices.isNotEmpty() && assignment.target !in referencedIndices) continue
                 val expression = assignment.expression
@@ -191,7 +202,7 @@ class JwClassicEamsParser(
 
     /** Follow the joined binding and its actual name projection, without executing scripts. */
     private fun resolveTeachers(expression: String, before: Int): String {
-        val binding = "[\\w$]+(?:\\.[\\w$]+)*"
+        val binding = JS_IDENTIFIER_PATH
         fun names(raw: String, objects: Boolean): String? {
             val rows = runCatching { JSONArray(raw) }.getOrNull() ?: return null
             if (rows.length() == 0) return null
@@ -207,13 +218,15 @@ class JwClassicEamsParser(
         val joined = Regex("^($binding)\\s*\\.\\s*join\\s*\\(").find(expression)?.groupValues?.get(1)
         if (joined != null) {
             value(joined)?.let { names(it, false) }?.let { return it }
-            val push = Regex("${Regex.escape(joined)}\\s*\\.\\s*push\\s*\\(\\s*($binding)\\s*\\[\\s*[\\w$]+\\s*]\\s*\\.\\s*name\\s*\\)")
+            val push = Regex(
+                Regex.escape(joined) + """\s*\.\s*push\s*\(\s*($binding)\s*\[\s*$JS_IDENTIFIER_PATH\s*]\s*\.\s*name\s*\)"""
+            )
             val reset = script.assignments.lastOrNull { it.target == joined && it.start < before }?.start ?: 0
             val recordBinding = script.matches(push).filter { it.range.first in reset until before }
                 .lastOrNull()?.groupValues?.get(1)
             if (recordBinding != null) return value(recordBinding)?.let { names(it, true) }.orEmpty()
         }
-        val mapped = Regex("^($binding)\\s*\\.\\s*map\\s*\\(\\s*([\\w$]+)\\s*=>\\s*\\2\\s*\\.\\s*name\\s*\\)\\s*\\.\\s*join\\s*\\(")
+        val mapped = Regex("^($binding)\\s*\\.\\s*map\\s*\\(\\s*($JS_IDENTIFIER)\\s*=>\\s*\\2\\s*\\.\\s*name\\s*\\)\\s*\\.\\s*join\\s*\\(")
             .find(expression)?.groupValues?.get(1)
         if (mapped != null) return value(mapped)?.let { names(it, true) }.orEmpty()
         // Older simplified captures omit the projection loop. Preserve their
