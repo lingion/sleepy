@@ -6,7 +6,7 @@ import org.jsoup.Jsoup
 /** Read static JSON literals by schema, without executing scripts or depending on variable names. */
 internal object JwScriptJson {
     data class Literal(val json: String, val value: Any, val binding: String?)
-    private val bindingPattern = Regex("""([\w$]+(?:\.[\w$]+)*)\s*=\s*$""")
+    private val bindingPattern = Regex("""($JS_IDENTIFIER_PATH)\s*=\s*$""")
 
     fun find(source: String, accepts: (Literal) -> Boolean): Literal? {
         val scripts = if (source.trimStart().startsWith('<')) {
@@ -21,7 +21,7 @@ internal object JwScriptJson {
                 val json = script.substring(start, end + 1)
                 val value = runCatching { JSONTokener(json).nextValue() }.getOrNull() ?: continue
                 val prefix = script.substring(maxOf(0, start - 256), start)
-                val binding = bindingPattern.find(prefix)?.groupValues?.get(1)
+                val binding = bindingPattern.find(prefix)?.groupValues?.get(1)?.replace(Regex("\\s+"), "")
                 val literal = Literal(json, value, binding)
                 if (accepts(literal)) return literal
             }

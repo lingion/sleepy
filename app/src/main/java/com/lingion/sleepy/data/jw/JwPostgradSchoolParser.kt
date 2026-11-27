@@ -46,7 +46,7 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
         "xauat_post" -> if (xauat().isNotEmpty()) 100 else 0
         "zju_post" -> if ("kcbForm" in source && runCatching { JSONArray(source) }.isSuccess) 100 else 0
         "csv" -> if (source.lineSequence().firstOrNull()?.let { "课程名称" in it && "开始节数" in it } == true) 100 else 0
-        "shuwei_old" -> if (shuweiOld().isNotEmpty() || (Regex("var\\s+activity\\s*=\\s*null;").containsMatchIn(source) && "table0.marshalTable" in source)) 100 else 0
+        "shuwei_old" -> if (shuweiOld().isNotEmpty() || hasShuweiOldStructure()) 100 else 0
         else -> 0
     }
 
@@ -464,8 +464,8 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
             val nextTask = tasks.getOrNull(index + 1)?.range?.first ?: script.text.length
             val receiver = script.assignments.lastOrNull { it.start < task.range.first &&
                 Regex("""^new\s+TaskActivity\s*\(""").containsMatchIn(it.expression) }?.target
-            val binding = "[\\w$]+(?:\\s*\\.\\s*[\\w$]+)*"
-            val insertions = script.matches(Regex("($binding)\\s*\\.\\s*activities\\s*\\[\\s*([\\w$]+)\\s*](?:\\s*\\[[^]\\r\\n]*])*\\s*=\\s*($binding)"))
+            val binding = JS_IDENTIFIER_PATH
+            val insertions = script.matches(Regex("($binding)\\s*\\.\\s*activities\\s*\\[\\s*($JS_IDENTIFIER_PATH)\\s*](?:\\s*\\[[^]\\r\\n]*])*\\s*=\\s*($binding)"))
                 .filter { it.range.first in close + 1 until nextTask }.toList()
             fun compact(value: String) = value.replace(Regex("\\s+"), "")
             val tables = insertions.filter { compact(it.groupValues[3]) == receiver }
@@ -478,13 +478,12 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
             if (bitmap.isEmpty() || bitmap.any { it != '0' && it != '1' } || bitmap[0] == '1') continue
             val weekList = (1 until bitmap.length).filter { bitmap[it] == '1' }
             val declaredName = if (script.string(args[1]) == null) value(args[1]).orEmpty() else {
-                // Compatibility with old minimal captures that omit the actual name reference.
-                script.assignments.filter { it.target == "courseName" && it.start in
-                    ((tasks.getOrNull(index - 1)?.range?.first ?: -1) + 1) until task.range.first }
-                    .fold(null as String?) { value, assignment ->
-                        val part = script.string(assignment.expression)
-                        if (assignment.operator == "+=") value?.plus(part.orEmpty()) else part
-                    }.orEmpty()
+                // Compatibility with old minimal captures that pass a placeholder
+                // literal and build the real title in a nearby string accumulator.
+                legacyStringAccumulator(
+                    script,
+                    ((tasks.getOrNull(index - 1)?.range?.first ?: -1) + 1) until task.range.first,
+                ).orEmpty()
             }
             var name = declaredName.ifBlank { value(args[1]).orEmpty() }.substringBefore('(').substringBefore('[')
             val group = args.getOrNull(if (args.size == 11) 8 else 6)?.let(::value).orEmpty()
@@ -502,13 +501,38 @@ class JwPostgradSchoolParser(source: String, private val protocol: String) : JwP
             for (assignment in script.assignments.filter { it.start in close + 1 until until }) {
                 if (insertions.isNotEmpty() && assignment.target !in indices) continue
                 // Old snippets omit activity insertion, but retain the explicit coordinate formula.
-                val coordinate = Regex("""([0-9]+)\s*\*\s*[\w$]+\s*\+\s*([0-9]+)""")
+                val coordinate = Regex("""([0-9]+)\s*\*\s*$JS_IDENTIFIER_PATH\s*\+\s*([0-9]+)""")
                     .matchEntire(assignment.expression) ?: continue
                 val day = coordinate.groupValues[1].toIntOrNull()?.plus(1) ?: continue
                 val node = coordinate.groupValues[2].toIntOrNull()?.plus(1) ?: continue
                 for (week in weekList) addSlots(name, room, teacher, day, node.toString(), week.toString())
             }
         }
+    }
+
+    private fun hasShuweiOldStructure(): Boolean {
+        val script = JwScriptSource(source)
+        if (!script.matches(Regex("""new\s+TaskActivity\s*\(""")).any()) return false
+        val hasActivityArray = script.matches(Regex("""$JS_IDENTIFIER_PATH\s*\.\s*activities\s*\[""")).any()
+        val hasMarshal = script.matches(Regex("""$JS_IDENTIFIER_PATH\s*\.\s*marshalTable\s*\(""")).any()
+        return hasActivityArray || hasMarshal
+    }
+
+    private fun legacyStringAccumulator(script: JwScriptSource, range: IntRange): String? {
+        val values = linkedMapOf<String, String>()
+        var accumulatedTarget: String? = null
+        for (assignment in script.assignments.filter { it.start in range }) {
+            if (!jsIdentifierRegex.matches(assignment.target)) continue
+            val part = script.string(assignment.expression) ?: continue
+            val value = if (assignment.operator == "+=") {
+                values[assignment.target]?.plus(part) ?: continue
+            } else {
+                part
+            }
+            values[assignment.target] = value
+            if (assignment.operator == "+=") accumulatedTarget = assignment.target
+        }
+        return accumulatedTarget?.let(values::get)
     }
 
     private fun expandedWeeks(ranges: List<Triple<Int, Int, Int>>): List<Int> = ranges.flatMap { (start,end,parity) ->

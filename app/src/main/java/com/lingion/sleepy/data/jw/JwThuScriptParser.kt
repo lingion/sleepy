@@ -23,7 +23,7 @@ class JwThuScriptParser(source:String, private val semesterDataJson:String?=null
         "双创必","双创选","新生必","新生选","学科必修","学科选修","通识必修","通识选修","公共基础","第二课堂","学科实践",
         "专业实践","专业必修","辅修","专业选修","外语","方向","专业必修课","全选","专业","学必","学选")
 
-    private val coordinate = Regex("""(?:document\s*\.\s*)?getElementById\s*\(\s*['"]a([1-6])_([1-7])['"]\s*\)\s*\.\s*innerHTML\s*\+=\s*([\w$]+(?:\.[\w$]+)*)\b""")
+    private val coordinate = Regex("""(?:document\s*\.\s*)?getElementById\s*\(\s*['"]a([1-6])_([1-7])['"]\s*\)\s*\.\s*innerHTML\s*\+=\s*($JS_IDENTIFIER_PATH)""")
     private val scripts by lazy {
         if (source.trimStart().startsWith('<')) Jsoup.parse(source).select("script").map { JwScriptSource(it.data()) }
         else listOf(JwScriptSource(source))
@@ -40,7 +40,7 @@ class JwThuScriptParser(source:String, private val semesterDataJson:String?=null
             val found=mutableMapOf<String,Pending>()
             var from=0
             for (sink in script.matches(coordinate)) {
-                val main=sink.groupValues[3]
+                val main=sink.groupValues[3].replace(Regex("\\s+"), "")
                 val operations=script.assignments.filter { it.start in from until sink.range.first }
                 from=sink.range.last+1
                 val detailGroups=operations.filter { it.target!=main && decode(it.expression)?.let { value ->
@@ -102,7 +102,7 @@ class JwThuScriptParser(source:String, private val semesterDataJson:String?=null
                     }
                 }
             }
-            val mains=script.matches(coordinate).map { it.groupValues[3] }.toSet()
+            val mains=script.matches(coordinate).map { it.groupValues[3].replace(Regex("\\s+"), "") }.toSet()
             var truncated=false
             for (item in script.assignments.filter { it.start>=from && it.target in mains }) {
                 val value=decode(item.expression) ?: continue

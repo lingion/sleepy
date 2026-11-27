@@ -3,6 +3,15 @@ package com.lingion.sleepy.data.jw
 import org.json.JSONTokener
 import org.jsoup.Jsoup
 
+internal const val JS_IDENTIFIER_START = """[\p{L}\p{Nl}_$]"""
+internal const val JS_IDENTIFIER_PART = """[\p{L}\p{Nl}\p{Mn}\p{Mc}\p{Nd}\p{Pc}$\u200C\u200D]"""
+internal const val JS_IDENTIFIER = """$JS_IDENTIFIER_START$JS_IDENTIFIER_PART*"""
+internal const val JS_IDENTIFIER_PATH = """$JS_IDENTIFIER(?:\s*\.\s*$JS_IDENTIFIER)*"""
+internal val jsIdentifierStartRegex = Regex(JS_IDENTIFIER_START)
+internal val jsIdentifierPartRegex = Regex(JS_IDENTIFIER_PART)
+internal val jsIdentifierRegex = Regex(JS_IDENTIFIER)
+internal val jsIdentifierPathRegex = Regex(JS_IDENTIFIER_PATH)
+
 /** Static script text and a same-length lexical mask. No JavaScript is executed. */
 internal class JwScriptSource(source: String) {
     val text: String
@@ -43,7 +52,7 @@ internal class JwScriptSource(source: String) {
     }
 
     val assignments: List<Assignment> by lazy {
-        matches(Regex("""[\w$]+(?:\s*\.\s*[\w$]+)*\s*(\+=|=(?!=|>))\s*""")).map { match ->
+        matches(Regex("""(?<!$JS_IDENTIFIER_PART)$JS_IDENTIFIER_PATH\s*(\+=|=(?!=|>))\s*""")).map { match ->
             val operator = match.groupValues[1]
             val target = match.value.substringBefore(operator).replace(Regex("\\s+"), "")
             val start = match.range.last + 1
@@ -74,11 +83,10 @@ internal class JwScriptSource(source: String) {
 
     /** Bind marshal parameters to the table that actually receives activities. */
     fun marshalArguments(): List<Int>? {
-        val binding = "[\\w$]+(?:\\s*\\.\\s*[\\w$]+)*"
         fun compact(value: String) = value.replace(Regex("\\s+"), "")
-        val receivers = matches(Regex("($binding)\\s*\\.\\s*activities\\s*\\["))
+        val receivers = matches(Regex("($JS_IDENTIFIER_PATH)\\s*\\.\\s*activities\\s*\\["))
             .map { compact(it.groupValues[1]) }.toSet()
-        return matches(Regex("($binding)\\s*\\.\\s*marshalTable\\s*\\("))
+        return matches(Regex("($JS_IDENTIFIER_PATH)\\s*\\.\\s*marshalTable\\s*\\("))
             .filter { receivers.isEmpty() || compact(it.groupValues[1]) in receivers }
             .mapNotNull { match -> arguments(match.range.last)?.first?.takeIf { it.size == 3 }
                 ?.map { it.toIntOrNull() }?.takeIf { values -> values.all { it != null } }?.filterNotNull() }
@@ -117,8 +125,7 @@ internal class JwScriptSource(source: String) {
                         nested
                     }
                     else -> {
-                        val match = Regex("""[\w$]+(?:\s*\.\s*[\w$]+)*""").find(expression, index)
-                            ?.takeIf { it.range.first == index } ?: return null
+                        val match = jsIdentifierPathRegex.matchAt(expression, index) ?: return null
                         index = match.range.last + 1
                         bindings[key(match.value)]
                     }
@@ -137,7 +144,7 @@ internal class JwScriptSource(source: String) {
 
     fun resolveString(binding: String, before: Int, until: Int): String? {
         val name = key(binding)
-        val deferred = Regex("""[\w$]+(?:\s*\.\s*[\w$]+)*""").matches(binding.trim()) &&
+        val deferred = jsIdentifierPathRegex.matches(binding.trim()) &&
             assignments.none { key(it.target) == name && it.start < before }
         val limit = if (deferred) until else before
         val values = mutableMapOf<String, String>()
