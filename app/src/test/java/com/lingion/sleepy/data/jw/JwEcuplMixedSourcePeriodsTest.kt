@@ -8,7 +8,8 @@ class JwEcuplMixedSourcePeriodsTest {
     private fun mixedPage(lastAnnualClock: String = "13:55-14:40"): String = """
         <script>var table0=new CourseTable(2024,84);var unitCount=12;
         activity=new TaskActivity("T1","甲","C1","年表课(C1)","R1","A101","${"0".repeat(35)}1${"0".repeat(18)}");
-        index=2*unitCount+4;index=2*unitCount+5;table0.marshalTable(36,1,20);</script>
+        index=2*unitCount+4;index=2*unitCount+5;table0.activities[index][0]=activity;
+        table0.marshalTable(36,1,20);</script>
         <table class="listTable"><tr><td>星期</td><td>08:00-08:45</td><td>08:55-09:40</td>
         <td>10:00-10:45</td><td>10:55-11:40</td><td>13:00-13:45</td><td>$lastAnnualClock</td></tr></table>
         <table class="listTable"><tr><td>课程序号</td><td>课程名称</td><td>教师</td><td>学分</td><td>备注</td></tr>
@@ -45,5 +46,41 @@ class JwEcuplMixedSourcePeriodsTest {
             assertEquals(type, emptyList<Triple<Int, String, String>>(),
                 JwSourcePeriods.resolve(source, type, "华东政法大学", emptyList()))
         }
+    }
+
+    @Test fun renamedAnnualBindingsStillSelectAnnualPeriods() {
+        val source = mixedPage()
+            .replace(Regex("\\btable0\\b"), "年度表")
+            .replace(Regex("\\bactivity\\b"), "年度活动")
+            .replace(Regex("\\bunitCount\\b"), "每日节数")
+            .replace(Regex("\\bindex\\b"), "时段")
+            .replace("年度表.marshalTable", "年度表 . marshalTable")
+        assertEquals(annualPeriods,
+            JwSourcePeriods.resolve(source, JwProtocol.TYPE_ECUPL, "华东政法大学", emptyList()))
+        assertEquals(annualPeriods,
+            JwSourcePeriods.resolve(source, JwProtocol.TYPE_ECUPL_SUPER, "华东政法大学", emptyList()))
+    }
+
+    @Test fun unrelatedMarshalCallCannotClassifyAnAnnualActivityFromAnotherScript() {
+        val source = mixedPage()
+            .replace("table0.marshalTable(36,1,20);", "")
+            .replace("</script>\n<table class=\"listTable\"><tr><td>星期",
+                "</script><script>unrelatedTable.marshalTable(36,1,20);</script>\n<table class=\"listTable\"><tr><td>星期")
+        val expected = JwEcuplScriptParser.sourcePeriods(source)
+        org.junit.Assert.assertTrue(expected.isNotEmpty())
+        for (type in listOf(JwProtocol.TYPE_ECUPL, JwProtocol.TYPE_ECUPL_SUPER)) {
+            assertEquals(type, expected,
+                JwSourcePeriods.resolve(source, type, "华东政法大学", emptyList()))
+        }
+    }
+
+    @Test fun annualActivityCanUseItsTableMarshalCallFromAnotherScript() {
+        val source = mixedPage()
+            .replace("table0.marshalTable(36,1,20);</script>",
+                "</script><script>table0.marshalTable(36,1,20);</script>")
+        assertEquals(listOf(annualCourse), JwEcuplParser(source).generateCourseList())
+        assertEquals(listOf(annualCourse), JwEcuplSuperParser(source).generateCourseList())
+        assertEquals(annualPeriods,
+            JwSourcePeriods.resolve(source, JwProtocol.TYPE_ECUPL, "华东政法大学", emptyList()))
     }
 }
