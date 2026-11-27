@@ -69,6 +69,8 @@ ECUPL 组执行以下命令，62 项通过。
 
 随后在整合提交 `4acdc374982f98253ae3879d38bf36671f42f537` 上，以 `ANDROID_HOME="$HOME/Library/Android/sdk" ./gradlew --no-daemon --offline --console=plain --max-workers=2 :app:testDebugUnitTest --rerun-tasks` 强制重跑全量单测。结果为 `BUILD SUCCESSFUL in 21m 19s`，59 项 Gradle 任务全部执行。682 份 XML 共计 5105 tests，0 failures，0 errors，3 skipped。三个跳过项分别是缺少 `SLEEPY_WAKEUP_XINPUT` 的离线握手重放、缺少 `SLEEPY_WAKEUP_LIVE` 的 WakeUP 活体直连，以及缺少镜像 HTML fixture 的 `ReleaseNotesContractTest.websiteHtmlAlsoSurvivesTheMirrorFallback`。
 
+PR #485 重放到主线 `30a8b1bd` 后，在代码树 `e5797875` 上重新运行本科定向测试，102 tests、0 failures、0 errors、0 skipped，59 项 Gradle 任务全部执行。PR 的必需 CI 检查 `commit-lint`、`android-unit-test`、`android-assemble` 和 `collector-test` 均通过，lint、学校目录、脚本抓取、Release Notes consumer 与签名构建检查也通过。该代码树与前述 5,105 项全量测试使用的代码树及主线合并后代码树一致。PR #485 于 2026-11-27 15:17 UTC 合并为 `4017cf3241f2ce534d34d368eceba66e90674338`。
+
 lint 在最终成员点号空白调整之前运行。结果为 `BUILD SUCCESSFUL`，报告有 571 个 warning、40 个 hint 和 0 个 error。报告未发现本轮修改文件中的 lint issue。之后的成员点号调整通过 Kotlin 编译和 ECUPL 定向测试。HTML 报告位于 `app/build/reports/lint-results-debug.html`。
 
 本轮证据仍然是脱敏页面、离线静态解析和 JVM 单元测试，没有真实账号认证导入记录。
